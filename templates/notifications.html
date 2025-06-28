@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+
+{% block title %}Reels • Instagram{% endblock %}
+
+{% block reels_active %}active{% endblock %}
+
+{% block content %}
+
+<div class="search-container">
+    <h2 style="padding: 24px; font-size: 24px; font-weight: 600; margin-bottom: 0;">Notifications</h2>
+
+    <div style="padding: 0 24px;">
+        <div class="suggestion-item" style="margin-bottom: 16px; padding: 16px; border: 1px solid #262626; border-radius: 8px;">
+            <div class="suggestion-info">
+                <div class="suggestion-avatar"></div>
+                <div class="suggestion-details">
+                    <h5>john_doe liked your photo</h5>
+                    <p>2 hours ago</p>
+                </div>
+            </div>
+            <div style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;"></div>
+        </div>
+
+        <div class="suggestion-item" style="margin-bottom: 16px; padding: 16px; border: 1px solid #262626; border-radius: 8px;">
+            <div class="suggestion-info">
+                <div class="suggestion-avatar"></div>
+                <div class="suggestion-details">
+                    <h5>sarah_wilson started following you</h5>
+                    <p>5 hours ago</p>
+                </div>
+            </div>
+            <button style="background-color: #0095f6; border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600; padding: 8px 16px; cursor: pointer;">Follow</button>
+        </div>
+
+        <div class="suggestion-item" style="margin-bottom: 16px; padding: 16px; border: 1px solid #262626; border-radius: 8px;">
+            <div class="suggestion-info">
+                <div class="suggestion-avatar"></div>
+                <div class="suggestion-details">
+                    <h5>mike_johnson commented on your post</h5>
+                    <p>1 day ago</p>
+                </div>
+            </div>
+            <div style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;"></div>
+        </div>
+
+        <div class="suggestion-item" style="margin-bottom: 16px; padding: 16px; border: 1px solid #262626; border-radius: 8px;">
+            <div class="suggestion-info">
+                <div class="suggestion-avatar"></div>
+                <div class="suggestion-details">
+                    <h5>emma_davis liked your story</h5>
+                    <p>2 days ago</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="suggestion-item" style="margin-bottom: 16px; padding: 16px; border: 1px solid #262626; border-radius: 8px;">
+            <div class="suggestion-info">
+                <div class="suggestion-avatar"></div>
+                <div class="suggestion-details">
+                    <h5>alex_brown mentioned you in a comment</h5>
+                    <p>3 days ago</p>
+                </div>
+            </div>
+            <div style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

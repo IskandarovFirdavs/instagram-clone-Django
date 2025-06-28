@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Instagram{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Billabong&display=swap" rel="stylesheet">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <div class="main-container">
+        <!-- Include Left Sidebar Navigation -->
+        {% include 'header.html' %}
+
+        <!-- Main content area -->
+        <main class="main-content">
+            {% block content %}
+            <!-- Default content goes here -->
+            {% endblock %}
+        </main>
+
+        <!-- Include Right Sidebar - Only show on home page -->
+        {% block show_suggestions %}
+        {% include 'footer.html' %}
+        {% endblock %}
+    </div>
+
+    {% block scripts %}
+    <!-- Page specific scripts go here -->
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+
+{% block title %}Reels • Instagram{% endblock %}
+
+{% block reels_active %}active{% endblock %}
+
+{% block content %}
+<div class="messages-container">
+    <div class="messages-sidebar">
+        <div class="messages-header">
+            <h2>Direct</h2>
+        </div>
+        
+        <div class="messages-list">
+            <div class="message-item">
+                <div class="message-avatar"></div>
+                <div class="message-info">
+                    <h4>john_doe</h4>
+                    <p class="message-preview">Active now</p>
+                </div>
+            </div>
+            
+            <div class="message-item">
+                <div class="message-avatar"></div>
+                <div class="message-info">
+                    <h4>sarah_wilson</h4>
+                    <p class="message-preview">Active 2h ago</p>
+                </div>
+            </div>
+            
+            <div class="message-item">
+                <div class="message-avatar"></div>
+                <div class="message-info">
+                    <h4>mike_johnson</h4>
+                    <p class="message-preview">Active 1d ago</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="chat-area">
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center;">
+            <div style="width: 96px; height: 96px; border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+            </div>
+            <h2 style="font-size: 22px; margin-bottom: 8px;">Your Messages</h2>
+            <p style="color: #8e8e8e; margin-bottom: 24px;">Send private photos and messages to a friend or group.</p>
+            <button style="background-color: #0095f6; border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600; padding: 8px 16px; cursor: pointer;">Send Message</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

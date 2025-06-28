@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+
+{% block title %}Reels • Instagram{% endblock %}
+
+{% block reels_active %}active{% endblock %}
+
+{% block content %}
+
+<div class="messages-container">
+    <div class="messages-sidebar">
+        <div class="messages-header">
+            <h2>Messages</h2>
+        </div>
+        
+        <div class="messages-list">
+            <div class="message-item">
+                <div class="message-avatar"></div>
+                <div class="message-info">
+                    <h4>john_doe</h4>
+                    <p class="message-preview">Hey, how are you doing?</p>
+                </div>
+            </div>
+            
+            <div class="message-item">
+                <div class="message-avatar"></div>
+                <div class="message-info">
+                    <h4>sarah_wilson</h4>
+                    <p class="message-preview">Thanks for the photo!</p>
+                </div>
+            </div>
+            
+            <div class="message-item">
+                <div class="message-avatar"></div>
+                <div class="message-info">
+                    <h4>mike_johnson</h4>
+                    <p class="message-preview">See you tomorrow</p>
+                </div>
+            </div>
+            
+            <div class="message-item">
+                <div class="message-avatar"></div>
+                <div class="message-info">
+                    <h4>emma_davis</h4>
+                    <p class="message-preview">Great post!</p>
+                </div>
+            </div>
+            
+            <div class="message-item">
+                <div class="message-avatar"></div>
+                <div class="message-info">
+                    <h4>alex_brown</h4>
+                    <p class="message-preview">Let's catch up soon</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="chat-area">
+        <div class="chat-header">
+            <div class="message-avatar" style="margin-right: 12px;"></div>
+            <h3>john_doe</h3>
+        </div>
+        
+        <div class="chat-messages">
+            <div style="text-align: center; color: #8e8e8e; margin-top: 100px;">
+                <p>Select a conversation to start messaging</p>
+                <p style="font-size: 14px; margin-top: 16px;">
+                    Chat messages will appear here when you select a conversation from the sidebar.
+                </p>
+            </div>
+        </div>
+        
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" placeholder="Message...">
+        </div>
+    </div>
+</div>
+{% endblock %}

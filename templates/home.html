@@ -1,0 +1,124 @@
+
+{% extends "base.html" %}
+
+{% load static %}
+
+
+{% block title %}Instagram{% endblock %}
+
+{% block home_active %}active{% endblock %}
+
+{% block content %}
+<div class="home-page">
+    <!-- Stories Section -->
+    <div class="stories-container">
+        <div class="stories-list">
+            <div class="story-item">
+                <div class="story-avatar">
+                    <img src="/placeholder.svg?height=66&width=66" alt="cristiano">
+                </div>
+                <span class="story-username">cristiano</span>
+            </div>
+            <div class="story-item">
+                <div class="story-avatar">
+                    <img src="/placeholder.svg?height=66&width=66" alt="judebellingham">
+                </div>
+                <span class="story-username">judebellingham</span>
+            </div>
+            <div class="story-item">
+                <div class="story-avatar">
+                    <img src="/placeholder.svg?height=66&width=66" alt="kaka">
+                </div>
+                <span class="story-username">kaka</span>
+            </div>
+            <div class="story-item">
+                <div class="story-avatar">
+                    <img src="/placeholder.svg?height=66&width=66" alt="neymarjr">
+                </div>
+                <span class="story-username">neymarjr</span>
+            </div>
+            <div class="story-item">
+                <div class="story-avatar">
+                    <img src="/placeholder.svg?height=66&width=66" alt="leomessi">
+                </div>
+                <span class="story-username">leomessi</span>
+            </div>
+            <div class="story-item">
+                <div class="story-avatar">
+                    <img src="/placeholder.svg?height=66&width=66" alt="kylianmbappe">
+                </div>
+                <span class="story-username">kylianmbappe</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Posts Feed -->
+    <div class="posts-feed">
+        <!-- Sample Post 1 -->
+        <article class="post">
+            <div class="post-header">
+                <div class="post-user-info">
+                    <div class="post-avatar"></div>
+                    <a href="#" class="post-username">ahmad_workout</a>
+                    <span class="post-time">• 1 w</span>
+                </div>
+                <div class="post-options">⋯</div>
+            </div>
+            
+            <img src="/placeholder.svg?height=600&width=600" alt="Post image" class="post-image">
+            
+            <div class="post-actions">
+                <div class="post-actions-left">
+                    <button class="action-btn">♡</button>
+                    <button class="action-btn">💬</button>
+                    <button class="action-btn">📤</button>
+                </div>
+                <button class="action-btn">🔖</button>
+            </div>
+            
+            <div class="post-likes">1,234 likes</div>
+            
+            <div class="post-caption">
+                <strong>ahmad_workout</strong> Great workout session today! 💪 #fitness #motivation
+            </div>
+            
+            <div class="post-comments">
+                View all 23 comments
+            </div>
+        </article>
+        
+        <!-- Sample Post 2 -->
+        <article class="post">
+            <div class="post-header">
+                <div class="post-user-info">
+                    <div class="post-avatar"></div>
+                    <a href="#" class="post-username">travel_blogger</a>
+                    <span class="post-time">• 2 d</span>
+                </div>
+                <div class="post-options">⋯</div>
+            </div>
+            
+            <img src="/placeholder.svg?height=600&width=600" alt="Post image" class="post-image">
+            
+            <div class="post-actions">
+                <div class="post-actions-left">
+                    <button class="action-btn">♡</button>
+                    <button class="action-btn">💬</button>
+                    <button class="action-btn">📤</button>
+                </div>
+                <button class="action-btn">🔖</button>
+            </div>
+            
+            <div class="post-likes">2,567 likes</div>
+            
+            <div class="post-caption">
+                <strong>travel_blogger</strong> Amazing sunset in Bali 🌅 #travel #sunset #bali
+            </div>
+            
+            <div class="post-comments">
+                View all 45 comments
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

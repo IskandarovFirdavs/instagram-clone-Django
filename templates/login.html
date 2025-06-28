@@ -1,0 +1,59 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login • Instagram</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Billabong&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <h1 class="auth-logo">Instagram</h1>
+            
+            <form class="auth-form">
+                <input type="text" class="auth-input" placeholder="Phone number, username, or email" required>
+                <input type="password" class="auth-input" placeholder="Password" required>
+                
+                <button type="submit" class="auth-button">Log in</button>
+            </form>
+            
+            <div class="auth-divider">OR</div>
+            
+            <a href="#" class="auth-link" style="display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#385185" style="margin-right: 8px;">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                Log in with Facebook
+            </a>
+            
+            <a href="#" class="auth-link" style="font-size: 12px;">Forgot password?</a>
+        </div>
+        
+        <div class="auth-box" style="margin-top: 10px; padding: 24px 40px;">
+            <div class="auth-footer">
+                Don't have an account? <a href="register.html" class="auth-link">Sign up</a>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 32px;">
+            <p style="color: #8e8e8e; font-size: 14px; margin-bottom: 16px;">Get the app.</p>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <img src="/placeholder.svg?height=40&width=134" alt="Download on App Store" style="height: 40px;">
+                <img src="/placeholder.svg?height=40&width=134" alt="Get it on Google Play" style="height: 40px;">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('.auth-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Redirect to main Instagram page after login
+            window.location.href = 'base.html';
+        });
+    </script>
+</body>
+</html>

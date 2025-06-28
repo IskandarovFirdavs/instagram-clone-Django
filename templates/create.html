@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+
+{% block title %}Reels • Instagram{% endblock %}
+
+{% block reels_active %}active{% endblock %}
+
+{% block content %}
+<div class="create-container">
+    <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 32px;">Create new post</h2>
+    
+    <div class="create-upload-area" onclick="document.getElementById('file-input').click()">
+        <h3>Drag photos and videos here</h3>
+        <p>Select from computer</p>
+        <button class="upload-btn">Select from computer</button>
+        <input type="file" id="file-input" accept="image/*,video/*" multiple style="display: none;">
+    </div>
+    
+    <div id="preview-area" style="display: none; margin-bottom: 24px;">
+        <img id="image-preview" style="max-width: 100%; border-radius: 8px; margin-bottom: 16px;">
+        <video id="video-preview" controls style="max-width: 100%; border-radius: 8px; margin-bottom: 16px; display: none;"></video>
+    </div>
+    
+    <div style="max-width: 500px; margin: 0 auto;">
+        <textarea 
+            placeholder="Write a caption..." 
+            style="width: 100%; min-height: 120px; background-color: #121212; border: 1px solid #262626; border-radius: 8px; padding: 12px; color: #fff; font-size: 14px; resize: vertical; margin-bottom: 16px;"
+        ></textarea>
+        
+        <input 
+            type="text" 
+            placeholder="Add location" 
+            style="width: 100%; background-color: #121212; border: 1px solid #262626; border-radius: 8px; padding: 12px; color: #fff; font-size: 14px; margin-bottom: 16px;"
+        >
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <label style="display: flex; align-items: center; color: #fff; font-size: 14px;">
+                <input type="checkbox" style="margin-right: 8px;">
+                Hide like and view counts on this post
+            </label>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <label style="display: flex; align-items: center; color: #fff; font-size: 14px;">
+                <input type="checkbox" style="margin-right: 8px;">
+                Turn off commenting
+            </label>
+        </div>
+        
+        <button 
+            style="width: 100%; background-color: #0095f6; border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600; padding: 12px; cursor: pointer;"
+            onclick="sharePost()"
+        >
+            Share
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('file-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        const previewArea = document.getElementById('preview-area');
+        const imagePreview = document.getElementById('image-preview');
+        const videoPreview = document.getElementById('video-preview');
+        
+        reader.onload = function(e) {
+            previewArea.style.display = 'block';
+            
+            if (file.type.startsWith('image/')) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+                videoPreview.style.display = 'none';
+            } else if (file.type.startsWith('video/')) {
+                videoPreview.src = e.target.result;
+                videoPreview.style.display = 'block';
+                imagePreview.style.display = 'none';
+            }
+        };
+        
+        reader.readAsDataURL(file);
+    }
+});
+
+function sharePost() {
+    alert('Post shared successfully! (This is a demo)');
+}
+</script>
+{% endblock %}

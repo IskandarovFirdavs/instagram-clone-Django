@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}Reels • Instagram{% endblock %}
+
+{% block reels_active %}active{% endblock %}
+
+{% block content %}
+<div class="reels-container">
+    <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 24px; text-align: left; width: 100%;">Reels</h2>
+    
+    <!-- Reel Item 1 -->
+    <div class="reel-item" style="position: relative;">
+        <div class="reel-video">
+            <!-- Video placeholder - you can replace this with actual video element -->
+            <div style="text-align: center;">
+                <p>Video Player Area</p>
+                <p style="font-size: 14px; margin-top: 8px;">Replace this div with:</p>
+                <code style="background: #262626; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                    &lt;video controls width="100%" height="720"&gt;<br>
+                    &nbsp;&nbsp;&lt;source src="your-video.mp4" type="video/mp4"&gt;<br>
+                    &lt;/video&gt;
+                </code>
+            </div>
+        </div>
+        
+        <div class="post-actions" style="position: absolute; bottom: 20px; left: 20px; right: 20px; background: rgba(0,0,0,0.5); border-radius: 8px; padding: 16px;">
+            <div class="post-actions-left">
+                <button class="action-btn">♡</button>
+                <button class="action-btn">💬</button>
+                <button class="action-btn">📤</button>
+            </div>
+            <button class="action-btn">🔖</button>
+        </div>
+    </div>
+    
+    <!-- Reel Item 2 -->
+    <div class="reel-item" style="position: relative;">
+        <div class="reel-video">
+            <div style="text-align: center;">
+                <p>Video Player Area</p>
+                <p style="font-size: 14px; margin-top: 8px;">Replace this div with:</p>
+                <code style="background: #262626; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                    &lt;video controls width="100%" height="720"&gt;<br>
+                    &nbsp;&nbsp;&lt;source src="your-video.mp4" type="video/mp4"&gt;<br>
+                    &lt;/video&gt;
+                </code>
+            </div>
+        </div>
+        
+        <div class="post-actions" style="position: absolute; bottom: 20px; left: 20px; right: 20px; background: rgba(0,0,0,0.5); border-radius: 8px; padding: 16px;">
+            <div class="post-actions-left">
+                <button class="action-btn">♡</button>
+                <button class="action-btn">💬</button>
+                <button class="action-btn">📤</button>
+            </div>
+            <button class="action-btn">🔖</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

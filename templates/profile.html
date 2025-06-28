@@ -1,0 +1,74 @@
+
+{% extends "base.html" %}
+
+{% load static %}
+
+
+{% block title %}Instagram{% endblock %}
+
+{% block home_active %}active{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="profile-header">
+        <div class="profile-avatar-large"></div>
+        <div class="profile-info">
+            <h1>ahmad_shuhratov2009</h1>
+            <div class="profile-stats">
+                <div class="profile-stat"><strong>42</strong> posts</div>
+                <div class="profile-stat"><strong>1,234</strong> followers</div>
+                <div class="profile-stat"><strong>567</strong> following</div>
+            </div>
+            <div class="profile-bio">
+                <strong>Ahmad Shuhratov</strong><br>
+                Digital Creator<br>
+                📍 Uzbekistan<br>
+                ✨ Living my best life<br>
+                📧 ahmad@example.com
+            </div>
+            <div style="margin-top: 16px;">
+                <button style="background-color: #262626; border: 1px solid #262626; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600; padding: 8px 16px; margin-right: 8px; cursor: pointer;">Edit profile</button>
+                <button style="background-color: #262626; border: 1px solid #262626; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600; padding: 8px 16px; cursor: pointer;">Share profile</button>
+            </div>
+        </div>
+    </div>
+    
+    <div style="border-top: 1px solid #262626; margin-top: 32px;">
+        <div style="display: flex; justify-content: center; gap: 60px; padding: 16px 0;">
+            <button style="background: none; border: none; color: #fff; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 16px 0; border-top: 1px solid #fff; cursor: pointer;">Posts</button>
+            <button style="background: none; border: none; color: #8e8e8e; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 16px 0; cursor: pointer;">Reels</button>
+            <button style="background: none; border: none; color: #8e8e8e; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 16px 0; cursor: pointer;">Tagged</button>
+        </div>
+    </div>
+    
+    <div class="profile-posts">
+        <div class="profile-post">
+            <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
+        </div>
+        <div class="profile-post">
+            <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
+        </div>
+        <div class="profile-post">
+            <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
+        </div>
+        <div class="profile-post">
+            <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
+        </div>
+        <div class="profile-post">
+            <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
+        </div>
+        <div class="profile-post">
+            <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
+        </div>
+        <div class="profile-post">
+            <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
+        </div>
+        <div class="profile-post">
+            <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
+        </div>
+        <div class="profile-post">
+            <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
+        </div>
+    </div>
+</div>
+{% endblock %}
