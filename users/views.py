@@ -1,13 +1,47 @@
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
+from django.shortcuts import render, redirect
+from users.forms import RegisterForm, LoginForm
+from django.contrib.auth import authenticate, login, logout
 
 
-class RegisterView(TemplateView):
-    template_name = 'register.html'
+def register_view(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = RegisterForm()
+    return render(request, 'register.html', {'form': form})
 
 
-class LoginView(TemplateView):
-    template_name = 'login.html'
+
+def login_view(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('profile')
+            else:
+                form.add_error(None, 'Username or password id invalid')
+    else:
+        form = LoginForm()
+    return render(request, 'login.html', {'form': form} )
 
 
-class ProfileView(TemplateView):
-    template_name = 'profile.html'
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+
+@login_required
+def profile_view(request):
+    return render(request, 'profile.html', {
+        'user': request.user
+    })

@@ -12,25 +12,29 @@
 <div class="profile-page">
     <div class="profile-header">
         <div class="profile-avatar-large"></div>
+        {% if user.is_authenticated %}
         <div class="profile-info">
-            <h1>ahmad_shuhratov2009</h1>
+            <h1>{{user.username}}</h1>
             <div class="profile-stats">
                 <div class="profile-stat"><strong>42</strong> posts</div>
                 <div class="profile-stat"><strong>1,234</strong> followers</div>
                 <div class="profile-stat"><strong>567</strong> following</div>
             </div>
             <div class="profile-bio">
-                <strong>Ahmad Shuhratov</strong><br>
-                Digital Creator<br>
-                📍 Uzbekistan<br>
-                ✨ Living my best life<br>
-                📧 ahmad@example.com
+                <strong>{{ user.full_name }}</strong>
+                <p>{{ user.bio }}</p>
             </div>
             <div style="margin-top: 16px;">
                 <button style="background-color: #262626; border: 1px solid #262626; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600; padding: 8px 16px; margin-right: 8px; cursor: pointer;">Edit profile</button>
                 <button style="background-color: #262626; border: 1px solid #262626; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600; padding: 8px 16px; cursor: pointer;">Share profile</button>
+                <a href="{% url 'logout' %}">
+                    <button style="background-color: #262626; border: 1px solid #262626; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600; padding: 8px 16px; cursor: pointer;">Logout</button>
+                </a>
             </div>
         </div>
+        {% else %}
+          <p>You are not logged in. <a href="{% url 'login' %}">Login</a></p>
+        {% endif %}
     </div>
     
     <div style="border-top: 1px solid #262626; margin-top: 32px;">

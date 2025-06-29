@@ -1,10 +1,11 @@
+{% if user.is_authenticated %}
 <aside class="right-sidebar">
     <div class="user-profile-section">
         <div class="user-info">
             <div class="user-avatar"></div>
             <div class="user-details">
-                <h3>ahmad_shuhratov2009</h3>
-                <p>Ahmad Shuhratov</p>
+                <h3>{{ user.username }}</h3>
+                <p>{{ user.full_name }}</p>
             </div>
         </div>
         <a href="#" class="switch-btn">Switch</a>
@@ -20,17 +21,6 @@
             <div class="suggestion-info">
                 <div class="suggestion-avatar"></div>
                 <div class="suggestion-details">
-                    <h5>azizbek_qurbonov_g</h5>
-                    <p>Followed by iskandarov_firdavs09</p>
-                </div>
-            </div>
-            <a href="#" class="follow-btn">Follow</a>
-        </div>
-
-        <div class="suggestion-item">
-            <div class="suggestion-info">
-                <div class="suggestion-avatar"></div>
-                <div class="suggestion-details">
                     <h5>gulmira_5747</h5>
                     <p>Followed by iskandarov_firdavs09</p>
                 </div>
@@ -38,38 +28,6 @@
             <a href="#" class="follow-btn">Follow</a>
         </div>
 
-        <div class="suggestion-item">
-            <div class="suggestion-info">
-                <div class="suggestion-avatar"></div>
-                <div class="suggestion-details">
-                    <h5>asil_bek2704</h5>
-                    <p>Followed by iskandarov_firdavs09</p>
-                </div>
-            </div>
-            <a href="#" class="follow-btn">Follow</a>
-        </div>
-
-        <div class="suggestion-item">
-            <div class="suggestion-info">
-                <div class="suggestion-avatar"></div>
-                <div class="suggestion-details">
-                    <h5>berdijev.aktam</h5>
-                    <p>Followed by iskandarov_firdavs09</p>
-                </div>
-            </div>
-            <a href="#" class="follow-btn">Follow</a>
-        </div>
-
-        <div class="suggestion-item">
-            <div class="suggestion-info">
-                <div class="suggestion-avatar"></div>
-                <div class="suggestion-details">
-                    <h5>azik.302</h5>
-                    <p>Followed by iskandarov_firdavs09</p>
-                </div>
-            </div>
-            <a href="#" class="follow-btn">Follow</a>
-        </div>
     </div>
 
     <div class="footer-links">
@@ -80,3 +38,14 @@
         </div>
     </div>
 </aside>
+{% else %}
+<aside class="right-sidebar">
+    <div class="footer-links">
+        <a href="#">About</a> · <a href="#">Help</a> · <a href="#">Press</a> · <a href="#">API</a> · <a href="#">Jobs</a> · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Locations</a> · <a href="#">Language</a> · <a href="#">Meta Verified</a>
+
+        <div class="copyright">
+            © 2025 INSTAGRAM FROM META
+        </div>
+    </div>
+</aside>
+{% endif %}
