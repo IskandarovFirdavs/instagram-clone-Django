@@ -308,29 +308,34 @@
                 {% endif %}
 
                 <input
-                    type="email"
-                    name="email"
-                    class="form-input"
-                    placeholder="Mobile Number or Email"
-                    value="{{ form.email.value|default:'' }}"
-                    required
-                >
-
-                <input
-                    type="text"
-                    name="full_name"
-                    class="form-input"
-                    placeholder="Full Name"
-                    value="{{ form.full_name.value|default:'' }}"
-                    required
-                >
-
-                <input
                     type="text"
                     name="username"
                     class="form-input"
                     placeholder="Username"
-                    value="{{ form.username.value|default:'' }}"
+                    required
+                >
+
+                <input
+                    type="text"
+                    name="first_name"
+                    class="form-input"
+                    placeholder="First Name"
+                    required
+                >
+
+                <input
+                    type="text"
+                    name="last_name"
+                    class="form-input"
+                    placeholder="Last Name"
+                    required
+                >
+
+                <input
+                    type="email"
+                    name="email"
+                    class="form-input"
+                    placeholder="Email"
                     required
                 >
 

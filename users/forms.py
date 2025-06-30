@@ -8,7 +8,7 @@ class RegisterForm(forms.ModelForm):
 
     class Meta:
         model = UserModel
-        fields = ['username', 'full_name', 'email']
+        fields = ['username', 'first_name', 'last_name', 'email']
 
     def clean(self):
         cleaned_data = super().clean()
@@ -29,3 +29,15 @@ class RegisterForm(forms.ModelForm):
 class LoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
+
+
+class UserUpdateForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=30, required=True)
+    last_name = forms.CharField(max_length=35, required=True)
+    avatar = forms.ImageField(required=False)
+    bio = forms.CharField(max_length=30, required=False)
+    website = forms.URLField(required=False)
+
+    class Meta:
+        model = UserModel
+        fields = ['first_name', 'last_name', 'avatar', 'bio', 'website']
