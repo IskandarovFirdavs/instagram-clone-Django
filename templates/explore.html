@@ -11,53 +11,21 @@
 
 <div class="search-container">
     <h2 style="padding: 24px; font-size: 24px; font-weight: 600; margin-bottom: 0;">Explore</h2>
-    
+    {% if posts %}
     <div class="search-results">
+    {% for post in posts %}
         <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
+                <img src="{{ post.contentUrl.url }}" alt="Profile post">
         </div>
+    {% endfor %}
+
+    {% for reel in reels %}
         <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
+                <img src="{{ reel.contentUrl.url }}" alt="Profile post">
         </div>
-        <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
-        </div>
-        <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
-        </div>
-        <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
-        </div>
-        <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
-        </div>
-        <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
-        </div>
-        <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
-        </div>
-        <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
-        </div>
-        <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
-        </div>
-        <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
-        </div>
-        <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
-        </div>
-        <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
-        </div>
-        <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
-        </div>
-        <div class="search-result-item">
-            <img src="/placeholder.svg?height=200&width=200" alt="Explore content">
-        </div>
+    {% endfor %}
+
     </div>
+    {% endif %}
 </div>
 {% endblock %}

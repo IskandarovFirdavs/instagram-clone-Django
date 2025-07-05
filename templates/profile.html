@@ -11,9 +11,10 @@
     <div class="profile-header">
         <div class="profile-avatar-large">
             {% if user.avatar %}
-                <img style="height: 150px; width: 150px; border-radius: 50%; object-fit: fit;" src="{{ user.avatar.url }}" alt="">
+            <img style="height: 150px; width: 150px; border-radius: 50%; object-fit: fit;" src="{{ user.avatar.url }}"
+                 alt="">
             {% else %}
-                <h1>Fuck you</h1>
+            <h1>Fuck you</h1>
             {% endif %}
         </div>
         {% if user.is_authenticated %}
@@ -31,9 +32,7 @@
             <div class="profile-actions">
                 <button class="profile-btn" id="edit-profile-btn">Edit profile</button>
                 <button class="profile-btn" id="share-profile-btn">Share profile</button>
-                <a href="{% url 'logout' %}">
-                    <button class="profile-btn logout-btn">Logout</button>
-                </a>
+
             </div>
         </div>
         {% else %}
@@ -73,8 +72,11 @@
     <!-- Posts Content -->
     <div class="tab-content active" id="posts-content">
         <div class="profile-posts">
+
+        {% for post in posts %}
             <div class="profile-post">
-                <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
+
+                <img src="{{ post.contentUrl.url }}" alt="Profile post">
                 <div class="post-overlay">
                     <div class="post-stats">
                         <span>❤️ 124</span>
@@ -82,59 +84,19 @@
                     </div>
                 </div>
             </div>
-            <div class="profile-post">
-                <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
-                <div class="post-overlay">
-                    <div class="post-stats">
-                        <span>❤️ 89</span>
-                        <span>💬 12</span>
-                    </div>
-                </div>
-            </div>
-            <div class="profile-post">
-                <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
-                <div class="post-overlay">
-                    <div class="post-stats">
-                        <span>❤️ 156</span>
-                        <span>💬 23</span>
-                    </div>
-                </div>
-            </div>
-            <div class="profile-post">
-                <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
-                <div class="post-overlay">
-                    <div class="post-stats">
-                        <span>❤️ 203</span>
-                        <span>💬 15</span>
-                    </div>
-                </div>
-            </div>
-            <div class="profile-post">
-                <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
-                <div class="post-overlay">
-                    <div class="post-stats">
-                        <span>❤️ 78</span>
-                        <span>💬 6</span>
-                    </div>
-                </div>
-            </div>
-            <div class="profile-post">
-                <img src="/placeholder.svg?height=200&width=200" alt="Profile post">
-                <div class="post-overlay">
-                    <div class="post-stats">
-                        <span>❤️ 134</span>
-                        <span>💬 19</span>
-                    </div>
-                </div>
-            </div>
+        {% endfor %}
+
         </div>
+
+
     </div>
 
     <!-- Reels Content -->
     <div class="tab-content" id="reels-content">
+        {% for reel in reels %}
         <div class="profile-reels">
             <div class="profile-reel">
-                <img src="/placeholder.svg?height=200&width=200" alt="Profile reel">
+                <img src="{{ reel.contentUrl.url }}" alt="Profile reel">
                 <div class="reel-overlay">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
                         <polygon points="5,3 19,12 5,21"/>
@@ -144,29 +106,8 @@
                     </div>
                 </div>
             </div>
-            <div class="profile-reel">
-                <img src="/placeholder.svg?height=200&width=200" alt="Profile reel">
-                <div class="reel-overlay">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                        <polygon points="5,3 19,12 5,21"/>
-                    </svg>
-                    <div class="reel-stats">
-                        <span>👁️ 856</span>
-                    </div>
-                </div>
-            </div>
-            <div class="profile-reel">
-                <img src="/placeholder.svg?height=200&width=200" alt="Profile reel">
-                <div class="reel-overlay">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                        <polygon points="5,3 19,12 5,21"/>
-                    </svg>
-                    <div class="reel-stats">
-                        <span>👁️ 2.1K</span>
-                    </div>
-                </div>
-            </div>
         </div>
+        {% endfor %}
     </div>
 
     <!-- Tagged Content -->
@@ -178,15 +119,6 @@
                     <div class="post-stats">
                         <span>❤️ 67</span>
                         <span>💬 4</span>
-                    </div>
-                </div>
-            </div>
-            <div class="profile-post">
-                <img src="/placeholder.svg?height=200&width=200" alt="Tagged post">
-                <div class="post-overlay">
-                    <div class="post-stats">
-                        <span>❤️ 92</span>
-                        <span>💬 7</span>
                     </div>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
+
+from posts.models import PostModel
 from users.forms import RegisterForm, LoginForm, UserUpdateForm
 from django.contrib.auth import authenticate, login, logout
 
@@ -43,6 +43,9 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
+    posts = PostModel.objects.filter(userID=request.user, post_type=PostModel.PostTypeChoice.Post).order_by('-created_at')
+    reels = PostModel.objects.filter(userID=request.user,  post_type=PostModel.PostTypeChoice.Reels).order_by('-created_at')
+
     if request.method == "POST":
         form = UserUpdateForm(request.POST, request.FILES, instance=request.user)
 
@@ -53,6 +56,10 @@ def profile_view(request):
     else:
         form = UserUpdateForm(instance=request.user)
 
+
+
     return render(request, 'profile.html', {
         'user': request.user,
+        'posts': posts,
+        'reels': reels,
     })

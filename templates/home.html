@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% load static %}
@@ -10,63 +9,54 @@
 
 {% block content %}
 <div class="home-page">
-    <!-- Stories Section -->
-    <div class="stories-container">
-        <div class="stories-list">
-            <div class="story-item">
+
+<!-- Stories Section -->
+<div class="stories-container">
+    <div class="stories-list">
+        {% for user, user_histories in grouped_histories %}
+            <div class="story-item" onclick="openStoryViewer('{{ user.username }}')">
                 <div class="story-avatar">
-                    <img src="/placeholder.svg?height=66&width=66" alt="cristiano">
+                    <img src="{{ user_histories.0.contentUrl.url }}" alt="{{ user.username }}">
                 </div>
-                <span class="story-username">cristiano</span>
-            </div>
-            <div class="story-item">
-                <div class="story-avatar">
-                    <img src="/placeholder.svg?height=66&width=66" alt="judebellingham">
+                <span class="story-username">{{ user.username }}</span>
+
+                <!-- Hidden stories container -->
+                <div class="hidden-stories" id="stories-{{ user.username }}" style="display: none;">
+                    {% for story in user_histories %}
+                        <img src="{{ story.contentUrl.url }}" alt="story">
+                    {% endfor %}
                 </div>
-                <span class="story-username">judebellingham</span>
             </div>
-            <div class="story-item">
-                <div class="story-avatar">
-                    <img src="/placeholder.svg?height=66&width=66" alt="kaka">
-                </div>
-                <span class="story-username">kaka</span>
-            </div>
-            <div class="story-item">
-                <div class="story-avatar">
-                    <img src="/placeholder.svg?height=66&width=66" alt="neymarjr">
-                </div>
-                <span class="story-username">neymarjr</span>
-            </div>
-            <div class="story-item">
-                <div class="story-avatar">
-                    <img src="/placeholder.svg?height=66&width=66" alt="leomessi">
-                </div>
-                <span class="story-username">leomessi</span>
-            </div>
-            <div class="story-item">
-                <div class="story-avatar">
-                    <img src="/placeholder.svg?height=66&width=66" alt="kylianmbappe">
-                </div>
-                <span class="story-username">kylianmbappe</span>
-            </div>
-        </div>
+        {% endfor %}
     </div>
-    
+</div>
+
+
     <!-- Posts Feed -->
     <div class="posts-feed">
-        <!-- Sample Post 1 -->
+        {% for post in posts %}
+
         <article class="post">
             <div class="post-header">
                 <div class="post-user-info">
-                    <div class="post-avatar"></div>
-                    <a href="#" class="post-username">ahmad_workout</a>
-                    <span class="post-time">• 1 w</span>
+                    <div class="post-avatar">
+                        {% if post.userID.avatar %}
+                        <img src="{{ post.userID.avatar.url }}" style="height: 35px; width: 35px; border-radius: 50%; object-fit: fit" alt="">
+                        {% else %}
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        {% endif %}
+                    </div>
+                    <a href="#" class="post-username">{{ post.userID.username }}</a>
+                    <span class="post-time">• {{ post.since_created }}</span>
                 </div>
                 <div class="post-options">⋯</div>
             </div>
-            
-            <img src="/placeholder.svg?height=600&width=600" alt="Post image" class="post-image">
-            
+
+            <img src="{{ post.contentUrl.url }}" alt="Post image" class="post-image">
+
             <div class="post-actions">
                 <div class="post-actions-left">
                     <button class="action-btn">♡</button>
@@ -75,50 +65,51 @@
                 </div>
                 <button class="action-btn">🔖</button>
             </div>
-            
+
             <div class="post-likes">1,234 likes</div>
-            
+
             <div class="post-caption">
-                <strong>ahmad_workout</strong> Great workout session today! 💪 #fitness #motivation
+                <strong>ahmad_workout</strong> {{ post.caption }}
             </div>
-            
+
             <div class="post-comments">
                 View all 23 comments
             </div>
         </article>
-        
-        <!-- Sample Post 2 -->
-        <article class="post">
-            <div class="post-header">
-                <div class="post-user-info">
-                    <div class="post-avatar"></div>
-                    <a href="#" class="post-username">travel_blogger</a>
-                    <span class="post-time">• 2 d</span>
-                </div>
-                <div class="post-options">⋯</div>
-            </div>
-            
-            <img src="/placeholder.svg?height=600&width=600" alt="Post image" class="post-image">
-            
-            <div class="post-actions">
-                <div class="post-actions-left">
-                    <button class="action-btn">♡</button>
-                    <button class="action-btn">💬</button>
-                    <button class="action-btn">📤</button>
-                </div>
-                <button class="action-btn">🔖</button>
-            </div>
-            
-            <div class="post-likes">2,567 likes</div>
-            
-            <div class="post-caption">
-                <strong>travel_blogger</strong> Amazing sunset in Bali 🌅 #travel #sunset #bali
-            </div>
-            
-            <div class="post-comments">
-                View all 45 comments
-            </div>
-        </article>
+        {% endfor %}
     </div>
 </div>
+
+{% endblock %}
+{% block scripts %}
+<!-- Story Viewer Modal -->
+<div id="storyViewer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000; justify-content:center; align-items:center; z-index:1000;">
+    <img id="storyImage" src="" style="max-width:90%; max-height:90%; border-radius:20px;" />
+</div>
+
+<script>
+    let currentIndex = 0;
+    let currentImages = [];
+
+    function openStoryViewer(username) {
+        const container = document.getElementById(`stories-${username}`);
+        currentImages = Array.from(container.querySelectorAll('img'));
+        currentIndex = 0;
+
+        if (currentImages.length === 0) return;
+
+        document.getElementById('storyImage').src = currentImages[currentIndex].src;
+        document.getElementById('storyViewer').style.display = 'flex';
+    }
+
+    document.getElementById('storyViewer').addEventListener('click', () => {
+        currentIndex++;
+        if (currentIndex < currentImages.length) {
+            document.getElementById('storyImage').src = currentImages[currentIndex].src;
+        } else {
+            document.getElementById('storyViewer').style.display = 'none';
+        }
+    });
+</script>
+
 {% endblock %}

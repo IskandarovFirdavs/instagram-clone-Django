@@ -2,7 +2,14 @@
 <aside class="right-sidebar">
     <div class="user-profile-section">
         <div class="user-info">
-            <div class="user-avatar"></div>
+            {% if user.avatar %}
+            <img style="height: 50px; width: 50px; border-radius: 50%; object-fit: fit; margin-right: 15px;" src="{{ user.avatar.url }}">
+            {% else %}
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            {% endif %}
             <div class="user-details">
                 <h3>{{ user.username }}</h3>
                 <p>{{ user.full_name }}</p>
@@ -21,8 +28,8 @@
             <div class="suggestion-info">
                 <div class="suggestion-avatar"></div>
                 <div class="suggestion-details">
-                    <h5>gulmira_5747</h5>
-                    <p>Followed by iskandarov_firdavs09</p>
+                    <h5></h5>
+                    <p>Followed by  </p>
                 </div>
             </div>
             <a href="#" class="follow-btn">Follow</a>
