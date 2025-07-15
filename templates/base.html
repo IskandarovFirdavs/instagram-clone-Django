@@ -7,7 +7,13 @@
     <title>{% block title %}Instagram{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Billabong&display=swap" rel="stylesheet">
-</head>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    /></head>
+<style>
+{% block extra_css %}{% endblock %}
+</style>
 <body class="{% block body_class %}{% endblock %}">
     <div class="main-container">
         <!-- Include Left Sidebar Navigation -->

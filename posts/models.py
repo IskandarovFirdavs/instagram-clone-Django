@@ -45,6 +45,15 @@ class PostModel(models.Model):
         else:
             return "Just now"
 
+    def comments_count(self):
+        return self.comments.count()
+
+    def likes_count(self):
+        return self.likes.count()
+
+    def location(self):
+        return f"{self.latitude},{self.longitude}"
+
 
 class HashtagModel(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -53,23 +62,94 @@ class HashtagModel(models.Model):
         return f'#{self.name}'
 
 
+
+class PostLikeModel(models.Model):
+    postID = models.ForeignKey(PostModel, on_delete=models.CASCADE, related_name='likes')
+    userID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='likes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+
 class SingerModel(models.Model):
     full_name = models.CharField(max_length=100)
 
 
 class MusicModel(models.Model):
-    singer = models.ForeignKey(SingerModel, on_delete=models.CASCADE)
+    singer = models.ForeignKey(SingerModel, on_delete=models.CASCADE, related_name='musics')
     music_name = models.CharField(max_length=100)
     file = models.FileField(upload_to='music')
 
 
-class PostLikeModel(models.Model):
-    postID = models.ForeignKey(PostModel, on_delete=models.CASCADE)
-    userID = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+class CommentModel(models.Model):
+    postID = models.ForeignKey(PostModel, on_delete=models.CASCADE, related_name='comments')
+    userID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='comments')
+    comment = models.CharField(max_length=250)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Comment by {self.userID} on {self.postID}'
+
+    def since_created(self):
+        now = timezone.now()
+        diff = now - self.created_at
+
+        days = diff.days
+        seconds = diff.seconds
+
+        if days > 0:
+            return f"{days} day{'s' if days > 1 else ''} ago"
+        elif seconds >= 3600:
+            hours = seconds // 3600
+            return f"{hours} hour{'s' if hours > 1 else ''} ago"
+        elif seconds >= 60:
+            minutes = seconds // 60
+            return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+        else:
+            return "Just now"
+
+    def comment_likes_count(self):
+        return self.comment_likes.count()
+
+
+class CommentLikeModel(models.Model):
+    commentID = models.ForeignKey(CommentModel, on_delete=models.CASCADE, related_name='comment_likes')
+    userID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='comment_likes')
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-class CommentModel(models.Model):
-    postID = models.ForeignKey(PostModel, on_delete=models.CASCADE)
-    userID = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+
+class ReplyCommentModel(models.Model):
+    commentID = models.ForeignKey(CommentModel, on_delete=models.CASCADE, related_name='reply_comments')
+    userID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='reply_comments')
+    reply_comment = models.CharField(max_length=250)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Reply_comment by {self.userID} on {self.commentID}'
+
+    def since_created(self):
+        now = timezone.now()
+        diff = now - self.created_at
+
+        days = diff.days
+        seconds = diff.seconds
+
+        if days > 0:
+            return f"{days} day{'s' if days > 1 else ''} ago"
+        elif seconds >= 3600:
+            hours = seconds // 3600
+            return f"{hours} hour{'s' if hours > 1 else ''} ago"
+        elif seconds >= 60:
+            minutes = seconds // 60
+            return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+        else:
+            return "Just now"
+
+    def reply_comment_likes_count(self):
+        return self.reply_comment_likes.count()
+
+
+class ReplyCommentLikeModel(models.Model):
+    reply_commentID = models.ForeignKey(ReplyCommentModel, on_delete=models.CASCADE, related_name='reply_comment_likes')
+    userID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='reply_comment_likes')
     created_at = models.DateTimeField(auto_now_add=True)

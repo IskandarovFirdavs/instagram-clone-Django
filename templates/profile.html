@@ -1,211 +1,84 @@
 {% extends "base.html" %}
-
 {% load static %}
 
-{% block title %}Instagram{% endblock %}
+{% block title %}{{ user.username }} • Instagram{% endblock %}
 
 {% block home_active %}active{% endblock %}
 
-{% block content %}
-<div class="profile-page">
-    <div class="profile-header">
-        <div class="profile-avatar-large">
-            {% if user.avatar %}
-            <img style="height: 150px; width: 150px; border-radius: 50%; object-fit: fit;" src="{{ user.avatar.url }}"
-                 alt="">
-            {% else %}
-            <h1>Fuck you</h1>
-            {% endif %}
-        </div>
-        {% if user.is_authenticated %}
-        <div class="profile-info">
-            <h1>{{user.username}}</h1>
-            <div class="profile-stats">
-                <div class="profile-stat"><strong>42</strong> posts</div>
-                <div class="profile-stat"><strong>1,234</strong> followers</div>
-                <div class="profile-stat"><strong>567</strong> following</div>
-            </div>
-            <div class="profile-bio">
-                <strong>{{ user.get_full_name|default:user.username }}</strong>
-                <p>{{ user.bio|default:" " }}</p>
-            </div>
-            <div class="profile-actions">
-                <button class="profile-btn" id="edit-profile-btn">Edit profile</button>
-                <button class="profile-btn" id="share-profile-btn">Share profile</button>
-
-            </div>
-        </div>
-        {% else %}
-        <p>You are not logged in. <a href="{% url 'login' %}">Login</a></p>
-        {% endif %}
-    </div>
-
-    <!-- Profile Navigation Tabs -->
-    <div class="profile-nav">
-        <div class="profile-nav-tabs">
-            <button class="profile-tab active" data-tab="posts">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="3" y="3" width="7" height="7"/>
-                    <rect x="14" y="3" width="7" height="7"/>
-                    <rect x="14" y="14" width="7" height="7"/>
-                    <rect x="3" y="14" width="7" height="7"/>
-                </svg>
-                Posts
-            </button>
-            <button class="profile-tab" data-tab="reels">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <line x1="22" y1="2" x2="9.218" y2="14.782"/>
-                    <path d="M14.828 14.828a4 4 0 0 1-5.656 0"/>
-                    <path d="M2 2l20 20"/>
-                </svg>
-                Reels
-            </button>
-            <button class="profile-tab" data-tab="tagged">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-                Tagged
-            </button>
-        </div>
-    </div>
-
-    <!-- Posts Content -->
-    <div class="tab-content active" id="posts-content">
-        <div class="profile-posts">
-
-        {% for post in posts %}
-            <div class="profile-post">
-
-                <img src="{{ post.contentUrl.url }}" alt="Profile post">
-                <div class="post-overlay">
-                    <div class="post-stats">
-                        <span>❤️ 124</span>
-                        <span>💬 8</span>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-
-        </div>
-
-
-    </div>
-
-    <!-- Reels Content -->
-    <div class="tab-content" id="reels-content">
-        {% for reel in reels %}
-        <div class="profile-reels">
-            <div class="profile-reel">
-                <img src="{{ reel.contentUrl.url }}" alt="Profile reel">
-                <div class="reel-overlay">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                        <polygon points="5,3 19,12 5,21"/>
-                    </svg>
-                    <div class="reel-stats">
-                        <span>👁️ 1.2K</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Tagged Content -->
-    <div class="tab-content" id="tagged-content">
-        <div class="tagged-posts">
-            <div class="profile-post">
-                <img src="/placeholder.svg?height=200&width=200" alt="Tagged post">
-                <div class="post-overlay">
-                    <div class="post-stats">
-                        <span>❤️ 67</span>
-                        <span>💬 4</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Profile Modal -->
-<div class="modal" id="edit-profile-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Edit Profile</h3>
-            <button class="close-modal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <form id="edit-profile-form" method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label>Avatar</label>
-                    <input type="file" name="avatar" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>First Name</label>
-                    <input type="text" name="first_name" value="{{ user.first_name }}" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Last Name</label>
-                    <input type="text" name="last_name" value="{{ user.last_name }}" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Bio</label>
-                    <textarea class="form-input" name="bio" rows="3">{{ user.email|default:"" }}</textarea>
-                </div>
-                <div class="form-group">
-                    <label>Website</label>
-                    <input type="url" name="website" class="form-input" placeholder="https://example.com">
-                </div>
-                <div class="modal-footer">
-                    <button class="cancel-btn">Cancel</button>
-                    <button type="submit" class="save-btn">Save Changes</button>
-                </div>
-            </form>
-        </div>
-
-    </div>
-</div>
-
-<!-- Share Profile Modal -->
-<div class="modal" id="share-profile-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Share Profile</h3>
-            <button class="close-modal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="share-options">
-                <button class="share-option" onclick="shareToFacebook()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#1877f2">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                    Share to Facebook
-                </button>
-                <button class="share-option" onclick="shareToTwitter()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#1da1f2">
-                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                    </svg>
-                    Share to Twitter
-                </button>
-                <button class="share-option" onclick="copyProfileLink()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#8e8e8e">
-                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-                    </svg>
-                    Copy Link
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
+{% block extra_css %}
 <style>
-    .avatar-img{
-    height:50px,
+    .profile-page {
+        max-width: 975px;
+        margin: 0 auto;
+        padding: 30px 20px;
+        color: #fff;
+    }
+
+    /* Profile Header */
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 80px;
+        margin-bottom: 44px;
+        padding-bottom: 44px;
+        border-bottom: 1px solid #262626;
+    }
+
+    .profile-avatar-large {
+        flex-shrink: 0;
+    }
+
+    .profile-avatar-large img {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #262626;
+    }
+
+    .profile-info {
+        flex: 1;
+    }
+
+    .profile-info h1 {
+        font-size: 28px;
+        font-weight: 300;
+        margin-bottom: 20px;
+        color: #fff;
+    }
+
+    .profile-stats {
+        display: flex;
+        gap: 40px;
+        margin-bottom: 20px;
+    }
+
+    .profile-stat {
+        font-size: 16px;
+        color: #fff;
+    }
+
+    .profile-stat strong {
+        font-weight: 600;
+    }
+
+    .profile-bio {
+        margin-bottom: 20px;
+    }
+
+    .profile-bio strong {
+        display: block;
+        margin-bottom: 4px;
+        color: #fff;
+    }
+
+    .profile-bio p {
+        color: #fff;
+        line-height: 1.4;
     }
 
     /* Profile Actions */
     .profile-actions {
-        margin-top: 16px;
         display: flex;
         gap: 8px;
     }
@@ -227,20 +100,10 @@
         border-color: #363636;
     }
 
-    .logout-btn {
-        background-color: #ed4956;
-        border-color: #ed4956;
-    }
-
-    .logout-btn:hover {
-        background-color: #c13584;
-        border-color: #c13584;
-    }
-
     /* Profile Navigation */
     .profile-nav {
         border-top: 1px solid #262626;
-        margin-top: 32px;
+        margin-bottom: 28px;
     }
 
     .profile-nav-tabs {
@@ -285,61 +148,457 @@
         display: block;
     }
 
-    /* Profile Posts Grid */
+    /* Profile Grid - Same as Explore */
     .profile-posts, .profile-reels, .tagged-posts {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 4px;
-        margin-top: 20px;
+        gap: 3px;
+        padding: 0;
     }
 
-    .profile-post, .profile-reel {
-        aspect-ratio: 1;
+    .profile-item {
         position: relative;
-        overflow: hidden;
         cursor: pointer;
-        border-radius: 4px;
+        overflow: hidden;
+        background-color: #262626;
+        transition: transform 0.1s ease;
+        aspect-ratio: 1;
     }
 
-    .profile-post img, .profile-reel img {
+    .profile-item:hover {
+        transform: scale(1.02);
+        z-index: 10;
+    }
+
+    .profile-item img,
+    .profile-item video {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.2s;
+        display: block;
+        transition: filter 0.2s ease;
     }
 
-    .profile-post:hover img, .profile-reel:hover img {
-        transform: scale(1.05);
+    .profile-item:hover img,
+    .profile-item:hover video {
+        filter: brightness(0.8);
     }
 
-    /* Post Overlay */
-    .post-overlay, .reel-overlay {
+    /* Overlay that appears on hover */
+    .profile-overlay {
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.3);
         display: flex;
         align-items: center;
         justify-content: center;
         opacity: 0;
-        transition: opacity 0.2s;
+        transition: opacity 0.2s ease;
     }
 
-    .profile-post:hover .post-overlay,
-    .profile-reel:hover .reel-overlay {
+    .profile-item:hover .profile-overlay {
         opacity: 1;
     }
 
-    .post-stats, .reel-stats {
+    .profile-stats-overlay {
         display: flex;
+        align-items: center;
         gap: 20px;
-        color: white;
+        color: #fff;
+        font-size: 16px;
         font-weight: 600;
     }
 
-    /* Modal Styles */
+    .profile-stat-overlay {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .profile-stat-overlay svg {
+        fill: currentColor;
+    }
+
+    /* Content type indicators */
+    .content-indicator {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 5;
+    }
+
+    .reel-indicator {
+        width: 24px;
+        height: 24px;
+        fill: #fff;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+    }
+
+    .carousel-indicator {
+        width: 20px;
+        height: 20px;
+        fill: #fff;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+    }
+
+    /* Video specific styles */
+    .profile-item video {
+        pointer-events: none;
+    }
+
+    .profile-item.reel video {
+        object-fit: cover;
+    }
+
+    /* Modal Styles - Same as Explore */
+    .post-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+    }
+
+    .post-modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: #000;
+        border-radius: 8px;
+        max-width: 1200px;
+        max-height: 90vh;
+        width: 90%;
+        display: flex;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .modal-media {
+        flex: 1;
+        max-width: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #000;
+    }
+
+    .modal-media img,
+    .modal-media video {
+        width: 100%;
+        height: auto;
+        max-height: 90vh;
+        object-fit: contain;
+    }
+
+    .modal-sidebar {
+        width: 400px;
+        background: #000;
+        border-left: 1px solid #262626;
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh;
+    }
+
+    .modal-header {
+        padding: 16px;
+        border-bottom: 1px solid #262626;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .modal-user-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .modal-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        margin-right: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+    .modal-username {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+        margin-right: 12px;
+    }
+
+    .modal-follow-btn {
+        background: none;
+        border: 1px solid #0095f6;
+        color: #0095f6;
+        padding: 6px 16px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .modal-follow-btn:hover {
+        background-color: #0095f6;
+        color: #fff;
+    }
+
+    .modal-body {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-post-info {
+        padding: 16px;
+        border-bottom: 1px solid #262626;
+    }
+
+    .modal-caption {
+        color: #fff;
+        font-size: 14px;
+        line-height: 1.4;
+        margin-bottom: 16px;
+    }
+
+    .modal-location {
+        display: flex;
+        align-items: center;
+        color: #8e8e8e;
+        font-size: 12px;
+        margin-bottom: 16px;
+    }
+
+    .modal-location svg {
+        width: 12px;
+        height: 12px;
+        margin-right: 6px;
+        fill: currentColor;
+    }
+
+    .modal-stats {
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    .modal-time {
+        color: #8e8e8e;
+        font-size: 12px;
+        margin-bottom: 0;
+    }
+
+    .modal-comments {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+        max-height: 300px;
+    }
+
+    .comment-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .comment-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        margin-right: 8px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 10px;
+    }
+
+    .comment-content {
+        flex: 1;
+    }
+
+    .comment-username {
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
+        margin-right: 8px;
+    }
+
+    .comment-text {
+        font-size: 13px;
+        color: #fff;
+        line-height: 1.3;
+    }
+
+    .comment-time {
+        font-size: 12px;
+        color: #8e8e8e;
+        margin-top: 4px;
+    }
+
+    .modal-actions {
+        padding: 16px;
+        border-top: 1px solid #262626;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-actions-left {
+        display: flex;
+        gap: 16px;
+    }
+
+    .modal-action-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: background-color 0.2s ease;
+    }
+
+    .modal-action-btn:hover {
+        background-color: #1a1a1a;
+    }
+
+    .modal-action-btn svg {
+        width: 24px;
+        height: 24px;
+        fill: currentColor;
+    }
+
+    /* Comment Input Section */
+    .comment-input-section {
+        padding: 16px;
+        border-top: 1px solid #262626;
+        background: #000;
+    }
+
+    .comment-input-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .comment-input {
+        flex: 1;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 14px;
+        outline: none;
+        padding: 8px 0;
+    }
+
+    .comment-input::placeholder {
+        color: #8e8e8e;
+    }
+
+    .comment-submit-btn {
+        background: none;
+        border: none;
+        color: #0095f6;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 8px 0;
+        opacity: 0.3;
+        transition: opacity 0.2s ease;
+    }
+
+    .comment-submit-btn.active {
+        opacity: 1;
+    }
+
+    .comment-submit-btn:hover.active {
+        color: #1877f2;
+    }
+
+    .emoji-btn {
+        background: none;
+        border: none;
+        color: #8e8e8e;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: background-color 0.2s ease;
+    }
+
+    .emoji-btn:hover {
+        background-color: #1a1a1a;
+    }
+
+    .emoji-btn svg {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+
+    .modal-close:hover {
+        background: rgba(0, 0, 0, 0.9);
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        color: #8e8e8e;
+        grid-column: 1 / -1;
+    }
+
+    .empty-state svg {
+        margin-bottom: 24px;
+        opacity: 0.3;
+    }
+
+    .empty-state h3 {
+        font-size: 22px;
+        margin-bottom: 8px;
+        color: #fff;
+    }
+
+    /* Edit Profile Modal Styles */
     .modal {
         display: none;
         position: fixed;
@@ -358,7 +617,7 @@
         justify-content: center;
     }
 
-    .modal-content {
+    .edit-modal-content {
         background-color: #262626;
         border-radius: 12px;
         width: 90%;
@@ -367,7 +626,7 @@
         overflow-y: auto;
     }
 
-    .modal-header {
+    .edit-modal-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -375,7 +634,7 @@
         border-bottom: 1px solid #363636;
     }
 
-    .modal-header h3 {
+    .edit-modal-header h3 {
         color: #fff;
         margin: 0;
         font-size: 18px;
@@ -399,7 +658,7 @@
         color: #fff;
     }
 
-    .modal-body {
+    .edit-modal-body {
         padding: 20px;
     }
 
@@ -491,8 +750,39 @@
         background-color: #363636;
     }
 
-    /* Mobile Responsive */
+    /* Loading state for videos */
+    .profile-item.loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top: 2px solid #fff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Responsive adjustments */
     @media (max-width: 768px) {
+        .profile-header {
+            gap: 30px;
+            flex-direction: column;
+            text-align: center;
+        }
+
         .profile-nav-tabs {
             gap: 40px;
         }
@@ -503,17 +793,426 @@
         }
 
         .modal-content {
+            flex-direction: column;
+            width: 95%;
+            max-height: 95vh;
+        }
+
+        .modal-sidebar {
+            width: 100%;
+            max-height: 60vh;
+        }
+
+        .modal-media {
+            max-width: 100%;
+        }
+
+        .modal-comments {
+            max-height: 200px;
+        }
+
+        .edit-modal-content {
             width: 95%;
             margin: 20px;
         }
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+    @media (max-width: 480px) {
+        .profile-posts, .profile-reels, .tagged-posts {
+            gap: 1px;
+        }
+
+        .comment-input-container {
+            gap: 8px;
+        }
+
+        .comment-input {
+            font-size: 13px;
+        }
     }
 </style>
+{% endblock %}
 
+{% block content %}
+<div class="profile-page">
+    <div class="profile-header">
+        <div class="profile-avatar-large">
+            {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" alt="{{ user.username }}">
+            {% else %}
+            <svg class="icon"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 style="height: 150; width: 150px; border-radius: 50%; margin-right: 15px;">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+            {% endif %}
+        </div>
+
+        {% if user.is_authenticated %}
+        <div class="profile-info">
+            <h1>{{ user.username }}</h1>
+            <div class="profile-stats">
+                <div class="profile-stat"><strong>{{ posts.count|default:"0" }}</strong> posts</div>
+                <div class="profile-stat"><strong>1,234</strong> followers</div>
+                <div class="profile-stat"><strong>567</strong> following</div>
+            </div>
+            <div class="profile-bio">
+                <strong>{{ user.get_full_name|default:user.username }}</strong>
+                <p>{{ user.bio|default:"No bio yet." }}</p>
+            </div>
+            <div class="profile-actions">
+                <button class="profile-btn" id="edit-profile-btn">Edit profile</button>
+                <button class="profile-btn" id="share-profile-btn">Share profile</button>
+            </div>
+        </div>
+        {% else %}
+        <p>You are not logged in. <a href="{% url 'login' %}">Login</a></p>
+        {% endif %}
+    </div>
+
+    <!-- Profile Navigation Tabs -->
+    <div class="profile-nav">
+        <div class="profile-nav-tabs">
+            <button class="profile-tab active" data-tab="posts">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                Posts
+            </button>
+            <button class="profile-tab" data-tab="reels">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8.5 8.7c.3-.2.6-.2.9 0l6.9 4.1c.3.2.3.6 0 .8l-6.9 4.1c-.3.2-.6.2-.9 0-.3-.2-.5-.4-.5-.7V9.4c0-.3.2-.5.5-.7z"/>
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                </svg>
+                Reels
+            </button>
+            <button class="profile-tab" data-tab="tagged">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                Tagged
+            </button>
+        </div>
+    </div>
+
+    <!-- Posts Content -->
+    <div class="tab-content active" id="posts-content">
+        {% if posts %}
+        <div class="profile-posts">
+            {% for post in posts %}
+            <div class="profile-item"
+                 data-type="post"
+                 data-id="{{ post.id }}"
+                 data-url="{{ post.contentUrl.url }}"
+                 data-username="{{ post.userID.username|default:user.username }}"
+                 data-caption="{{ post.caption|default:'' }}"
+                 data-likes="{{ post.likes_count|default:'0' }}"
+                 data-comments="{{ post.comments_count|default:'0' }}"
+                 data-location="{{ post.location|default:'' }}">
+                <img src="{{ post.contentUrl.url }}" alt="Profile post" loading="lazy">
+
+                {% if post.is_carousel %}
+                <div class="content-indicator">
+                    <svg class="carousel-indicator" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor"
+                              stroke-width="2"/>
+                        <rect x="7" y="7" width="10" height="10" rx="1" ry="1" fill="none" stroke="currentColor"
+                              stroke-width="2"/>
+                    </svg>
+                </div>
+                {% endif %}
+
+                <div class="profile-overlay">
+                    <div class="profile-stats-overlay">
+                        <div class="profile-stat-overlay">
+                            <svg width="19" height="19" viewBox="0 0 24 24">
+                                <path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938z"/>
+                            </svg>
+                            <span>{{ post.likes_count|default:"0" }}</span>
+                        </div>
+                        <div class="profile-stat-overlay">
+                            <svg width="19" height="19" viewBox="0 0 24 24">
+                                <path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"/>
+                            </svg>
+                            <span>{{ post.comments_count|default:"0" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="profile-posts">
+            <div class="empty-state">
+                <svg width="96" height="96" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+                <h3>No posts yet</h3>
+                <p>When you share photos, they'll appear on your profile.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Reels Content -->
+    <div class="tab-content" id="reels-content">
+        {% if reels %}
+        <div class="profile-reels">
+            {% for reel in reels %}
+            <div class="profile-item reel"
+                 data-type="reel"
+                 data-id="{{ reel.id }}"
+                 data-url="{{ reel.contentUrl.url }}"
+                 data-username="{{ reel.userID.username|default:user.username }}"
+                 data-caption="{{ reel.caption|default:'' }}"
+                 data-likes="{{ reel.likes_count|default:'0' }}"
+                 data-views="{{ reel.views_count|default:'0' }}"
+                 data-location="{{ reel.location|default:'' }}">
+                <video muted loop playsinline preload="metadata">
+                    <source src="{{ reel.contentUrl.url }}" type="video/mp4">
+                </video>
+
+                <div class="content-indicator">
+                    <svg class="reel-indicator" viewBox="0 0 24 24">
+                        <path d="M8.5 8.7c.3-.2.6-.2.9 0l6.9 4.1c.3.2.3.6 0 .8l-6.9 4.1c-.3.2-.6.2-.9 0-.3-.2-.5-.4-.5-.7V9.4c0-.3.2-.5.5-.7z"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                    </svg>
+                </div>
+
+                <div class="profile-overlay">
+                    <div class="profile-stats-overlay">
+                        <div class="profile-stat-overlay">
+                            <svg width="19" height="19" viewBox="0 0 24 24">
+                                <path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938z"/>
+                            </svg>
+                            <span>{{ reel.likes_count|default:"0" }}</span>
+                        </div>
+                        <div class="profile-stat-overlay">
+                            <svg width="19" height="19" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            <span>{{ reel.views_count|default:"0" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="profile-reels">
+            <div class="empty-state">
+                <svg width="96" height="96" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+                <h3>No reels yet</h3>
+                <p>When you share reels, they'll appear on your profile.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tagged Content -->
+    <div class="tab-content" id="tagged-content">
+        <div class="tagged-posts">
+            <div class="empty-state">
+                <svg width="96" height="96" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <h3>No tagged posts yet</h3>
+                <p>When people tag you in photos, they'll appear here.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Post Modal -->
+<div class="post-modal" id="postModal">
+    <button class="modal-close" onclick="closeModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+    </button>
+
+    <div class="modal-content">
+        <div class="modal-media">
+            <img id="modalImage" src="/placeholder.svg" alt="" style="display: none;">
+            <video id="modalVideo" controls muted loop playsinline style="display: none;">
+                <source src="/placeholder.svg" type="video/mp4">
+            </video>
+        </div>
+
+        <div class="modal-sidebar">
+            <div class="modal-header">
+                <div class="modal-user-info">
+                    <div class="modal-avatar" id="modalAvatar">U</div>
+                    <span class="modal-username" id="modalUsername">username</span>
+                    <button class="modal-follow-btn" style="display: none;">Follow</button>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div class="modal-post-info">
+                    <div class="modal-caption" id="modalCaption"></div>
+                    <div class="modal-location" id="modalLocation" style="display: none;">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        <span id="modalLocationText"></span>
+                    </div>
+                    <div class="modal-stats" id="modalStats"></div>
+                    <div class="modal-time">14 hours ago</div>
+                </div>
+
+                <div class="modal-comments" id="modalComments">
+                    <div class="comment-item">
+                        <div class="comment-avatar">U</div>
+                        <div class="comment-content">
+                            <span class="comment-username">user123</span>
+                            <span class="comment-text">Amazing shot! 🔥</span>
+                            <div class="comment-time">2h</div>
+                        </div>
+                    </div>
+                    <div class="comment-item">
+                        <div class="comment-avatar">E</div>
+                        <div class="comment-content">
+                            <span class="comment-username">explorer_jane</span>
+                            <span class="comment-text">I need to visit this place!</span>
+                            <div class="comment-time">1h</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <div class="modal-actions-left">
+                    <button class="modal-action-btn" onclick="toggleModalLike()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938z"/>
+                        </svg>
+                    </button>
+                    <button class="modal-action-btn" onclick="focusCommentInput()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"/>
+                        </svg>
+                    </button>
+                    <button class="modal-action-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M22 3L2 3 10 12.46 2 22 22 22 14 12.54 22 3Z"/>
+                        </svg>
+                    </button>
+                </div>
+                <button class="modal-action-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Comment Input Section -->
+            <div class="comment-input-section">
+                <div class="comment-input-container">
+                    <button class="emoji-btn">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                            <line x1="9" y1="9" x2="9.01" y2="9"/>
+                            <line x1="15" y1="9" x2="15.01" y2="9"/>
+                        </svg>
+                    </button>
+                    <input
+                            type="text"
+                            class="comment-input"
+                            placeholder="Add a comment..."
+                            id="commentInput"
+                            maxlength="2200"
+                    >
+                    <button class="comment-submit-btn" id="commentSubmitBtn" onclick="submitComment()">Post</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal" id="edit-profile-modal">
+    <div class="edit-modal-content">
+        <div class="edit-modal-header">
+            <h3>Edit Profile</h3>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="edit-modal-body">
+            <form id="edit-profile-form" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Avatar</label>
+                    <input type="file" name="avatar" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" name="first_name" value="{{ user.first_name }}" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="last_name" value="{{ user.last_name }}" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Bio</label>
+                    <textarea class="form-input" name="bio" rows="3">{{ user.bio|default:"" }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Website</label>
+                    <input type="url" name="website" class="form-input" placeholder="https://example.com">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="cancel-btn">Cancel</button>
+                    <button type="submit" class="save-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Share Profile Modal -->
+<div class="modal" id="share-profile-modal">
+    <div class="edit-modal-content">
+        <div class="edit-modal-header">
+            <h3>Share Profile</h3>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="edit-modal-body">
+            <div class="share-options">
+                <button class="share-option" onclick="shareToFacebook()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#1877f2">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    Share to Facebook
+                </button>
+                <button class="share-option" onclick="shareToTwitter()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#1da1f2">
+                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                    </svg>
+                    Share to Twitter
+                </button>
+                <button class="share-option" onclick="copyProfileLink()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#8e8e8e">
+                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                    </svg>
+                    Copy Link
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Tab switching functionality
@@ -534,21 +1233,68 @@
             });
         });
 
+        // Video hover functionality for reels
+        const reelItems = document.querySelectorAll('.profile-item.reel');
+
+        reelItems.forEach(item => {
+            const video = item.querySelector('video');
+
+            if (video) {
+                // Auto-play on hover
+                item.addEventListener('mouseenter', function() {
+                    item.classList.add('loading');
+                    video.play().then(() => {
+                        item.classList.remove('loading');
+                    }).catch(() => {
+                        item.classList.remove('loading');
+                    });
+                });
+
+                // Pause on mouse leave
+                item.addEventListener('mouseleave', function() {
+                    video.pause();
+                    video.currentTime = 0;
+                    item.classList.remove('loading');
+                });
+
+                // Handle video loading
+                video.addEventListener('loadstart', function() {
+                    item.classList.add('loading');
+                });
+
+                video.addEventListener('canplay', function() {
+                    item.classList.remove('loading');
+                });
+            }
+        });
+
+        // Click handlers for opening modal
+        const profileItems = document.querySelectorAll('.profile-item');
+        profileItems.forEach(item => {
+            item.addEventListener('click', function() {
+                openModal(this);
+            });
+        });
+
         // Edit Profile Modal
         const editProfileBtn = document.getElementById('edit-profile-btn');
         const editProfileModal = document.getElementById('edit-profile-modal');
 
-        editProfileBtn.addEventListener('click', function() {
-            editProfileModal.classList.add('show');
-        });
+        if (editProfileBtn) {
+            editProfileBtn.addEventListener('click', function() {
+                editProfileModal.classList.add('show');
+            });
+        }
 
         // Share Profile Modal
         const shareProfileBtn = document.getElementById('share-profile-btn');
         const shareProfileModal = document.getElementById('share-profile-modal');
 
-        shareProfileBtn.addEventListener('click', function() {
-            shareProfileModal.classList.add('show');
-        });
+        if (shareProfileBtn) {
+            shareProfileBtn.addEventListener('click', function() {
+                shareProfileModal.classList.add('show');
+            });
+        }
 
         // Close modals
         document.querySelectorAll('.close-modal, .cancel-btn').forEach(btn => {
@@ -568,12 +1314,171 @@
             });
         });
 
+        // Comment input functionality
+        const commentInput = document.getElementById('commentInput');
+        const commentSubmitBtn = document.getElementById('commentSubmitBtn');
+
+        if (commentInput && commentSubmitBtn) {
+            commentInput.addEventListener('input', function() {
+                if (this.value.trim().length > 0) {
+                    commentSubmitBtn.classList.add('active');
+                } else {
+                    commentSubmitBtn.classList.remove('active');
+                }
+            });
+
+            commentInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && this.value.trim().length > 0) {
+                    submitComment();
+                }
+            });
+        }
+
         // Save profile changes
-        document.querySelector('.save-btn').addEventListener('click', function() {
-            // Here you would typically send the data to your Django backend
-            alert('Profile updated successfully!');
-            editProfileModal.classList.remove('show');
-        });
+        const saveBtn = document.querySelector('.save-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Here you would typically send the data to your Django backend
+                alert('Profile updated successfully!');
+                editProfileModal.classList.remove('show');
+            });
+        }
+    });
+
+    function openModal(item) {
+        const modal = document.getElementById('postModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalVideo = document.getElementById('modalVideo');
+        const modalUsername = document.getElementById('modalUsername');
+        const modalAvatar = document.getElementById('modalAvatar');
+        const modalCaption = document.getElementById('modalCaption');
+        const modalLocation = document.getElementById('modalLocation');
+        const modalLocationText = document.getElementById('modalLocationText');
+        const modalStats = document.getElementById('modalStats');
+
+        const type = item.dataset.type;
+        const url = item.dataset.url;
+        const username = item.dataset.username;
+        const caption = item.dataset.caption;
+        const likes = item.dataset.likes;
+        const comments = item.dataset.comments;
+        const views = item.dataset.views;
+        const location = item.dataset.location;
+
+        // Set user info
+        modalUsername.textContent = username;
+        modalAvatar.textContent = username.charAt(0).toUpperCase();
+
+        // Set caption
+        modalCaption.textContent = caption;
+
+        // Set location
+        if (location && location !== 'None' && location !== '') {
+            modalLocationText.textContent = location;
+            modalLocation.style.display = 'flex';
+        } else {
+            modalLocation.style.display = 'none';
+        }
+
+        // Set stats
+        if (type === 'reel') {
+            modalStats.textContent = `${likes} likes • ${views} views`;
+            modalImage.style.display = 'none';
+            modalVideo.style.display = 'block';
+            modalVideo.querySelector('source').src = url;
+            modalVideo.load();
+        } else {
+            modalStats.textContent = `${likes} likes • ${comments} comments`;
+            modalVideo.style.display = 'none';
+            modalImage.style.display = 'block';
+            modalImage.src = url;
+        }
+
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('postModal');
+        const modalVideo = document.getElementById('modalVideo');
+        const commentInput = document.getElementById('commentInput');
+        const commentSubmitBtn = document.getElementById('commentSubmitBtn');
+
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+
+        // Pause video if playing
+        if (modalVideo.style.display === 'block') {
+            modalVideo.pause();
+        }
+
+        // Clear comment input
+        if (commentInput) {
+            commentInput.value = '';
+            commentSubmitBtn.classList.remove('active');
+        }
+    }
+
+    function focusCommentInput() {
+        const commentInput = document.getElementById('commentInput');
+        if (commentInput) {
+            commentInput.focus();
+        }
+    }
+
+    function toggleModalLike() {
+        // Add your like functionality here
+        console.log('Like toggled');
+    }
+
+    function submitComment() {
+        const commentInput = document.getElementById('commentInput');
+        const commentSubmitBtn = document.getElementById('commentSubmitBtn');
+        const commentsContainer = document.getElementById('modalComments');
+
+        if (commentInput && commentInput.value.trim().length > 0) {
+            const commentText = commentInput.value.trim();
+
+            // Create new comment element
+            const newComment = document.createElement('div');
+            newComment.className = 'comment-item';
+            newComment.innerHTML = `
+                <div class="comment-avatar">Y</div>
+                <div class="comment-content">
+                    <span class="comment-username">your_username</span>
+                    <span class="comment-text">${commentText}</span>
+                    <div class="comment-time">now</div>
+                </div>
+            `;
+
+            // Add to comments container
+            commentsContainer.appendChild(newComment);
+
+            // Clear input
+            commentInput.value = '';
+            commentSubmitBtn.classList.remove('active');
+
+            // Scroll to bottom of comments
+            commentsContainer.scrollTop = commentsContainer.scrollHeight;
+
+            // Here you would typically send the comment to your backend
+            console.log('Comment submitted:', commentText);
+        }
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('postModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
     });
 
     // Share functions

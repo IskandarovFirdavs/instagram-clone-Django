@@ -2,174 +2,178 @@
     <div class="sidebar-logo">
         <h1>Instagram</h1>
     </div>
-
     <ul class="sidebar-nav">
         <li>
             <a href="{% url 'home' %}" class="{% block home_active %}{% endblock %}">
+                <!-- Instagram Home Icon -->
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                    <polyline points="9,22 9,12 15,12 15,22"/>
+                    <path d="M22 12.01L12.01 2L2 12.01V21C2 21.55 2.45 22 3 22H9V16H15V22H21C21.55 22 22 21.55 22 21V12.01Z" stroke="none" fill="currentColor"/>
                 </svg>
                 <span>Home</span>
             </a>
         </li>
         <li>
             <a href="{% url 'search' %}" class="{% block search_active %}{% endblock %}">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.35-4.35"/>
+                <!-- Instagram Search Icon -->
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="11" cy="11" r="8" stroke="currentColor" fill="none"/>
+                    <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-linecap="round"/>
                 </svg>
                 <span>Search</span>
             </a>
         </li>
         <li>
             <a href="{% url 'explore' %}" class="{% block explore_active %}{% endblock %}">
+                <!-- Instagram Explore Icon -->
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2" stroke="currentColor" fill="none"/>
                 </svg>
                 <span>Explore</span>
             </a>
         </li>
         <li>
             <a href="{% url 'reels' %}" class="{% block reels_active %}{% endblock %}">
+                <!-- Instagram Reels Icon -->
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                    <line x1="8" y1="21" x2="16" y2="21"/>
-                    <line x1="12" y1="17" x2="12" y2="21"/>
+                    <path d="M15.5 2.25L9 8.75V21.25L15.5 14.75V2.25Z" stroke="currentColor" fill="none"/>
+                    <path d="M9 8.75L2.5 15.25V21.25L9 14.75V8.75Z" stroke="currentColor" fill="none"/>
+                    <path d="M15.5 14.75L22 8.25V2.25L15.5 8.75V14.75Z" stroke="currentColor" fill="none"/>
                 </svg>
                 <span>Reels</span>
             </a>
         </li>
         <li>
             <a href="{% url 'messages' %}" class="{% block messages_active %}{% endblock %}">
+                <!-- Instagram Messages Icon -->
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                    <polyline points="22,6 12,13 2,6"/>
+                    <path d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C10.3596 22 8.77516 21.6039 7.35418 20.8583L2.5 22L3.64175 17.3542C2.89608 15.9332 2.5 14.3488 2.5 12.7C2.5 6.47715 6.97715 2 12.5 2H12Z" stroke="currentColor" fill="none"/>
+                    <path d="M8 12L12 8L16 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 <span>Messages</span>
             </a>
         </li>
         <li>
             <a href="{% url 'notifications' %}" class="{% block notifications_active %}{% endblock %}">
+                <!-- Instagram Heart/Notifications Icon -->
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    <path d="M20.84 4.61C19.32 3.09 17.16 3.09 15.64 4.61L12 8.25L8.36 4.61C6.84 3.09 4.68 3.09 3.16 4.61C1.64 6.13 1.64 8.29 3.16 9.81L12 18.65L20.84 9.81C22.36 8.29 22.36 6.13 20.84 4.61Z" stroke="currentColor" fill="none"/>
                 </svg>
                 <span>Notifications</span>
             </a>
         </li>
         <li>
             <a href="{% url 'create' %}" class="{% block create_active %}{% endblock %}">
+                <!-- Instagram Create/Plus Icon -->
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="12" y1="8" x2="12" y2="16"/>
-                    <line x1="8" y1="12" x2="16" y2="12"/>
+                    <rect x="3" y="3" width="18" height="18" rx="3" ry="3" stroke="currentColor" fill="none"/>
+                    <line x1="12" y1="8" x2="12" y2="16" stroke="currentColor" stroke-linecap="round"/>
+                    <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-linecap="round"/>
                 </svg>
                 <span>Create</span>
             </a>
         </li>
     </ul>
-
     <div class="sidebar-profile">
         {% if user.is_authenticated %}
             <a href="{% url 'profile' %}" class="{% block profile_active %}{% endblock %}">
+                <!-- Instagram Profile Icon -->
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
+                    <circle cx="12" cy="8" r="5" stroke="currentColor" fill="none"/>
+                    <path d="M20 21C20 16.58 16.42 13 12 13S4 16.58 4 21" stroke="currentColor" fill="none" stroke-linecap="round"/>
                 </svg>
                 <span>Profile</span>
             </a>
         {% else %}
             <a href="{% url 'login' %}">
+                <!-- Login Icon -->
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                    <polyline points="10,17 15,12 10,7"/>
-                    <line x1="15" y1="12" x2="3" y2="12"/>
+                    <path d="M15 3H19C20.1 3 21 3.9 21 5V19C21 20.1 20.1 21 19 21H15" stroke="currentColor" fill="none"/>
+                    <polyline points="10,17 15,12 10,7" stroke="currentColor" fill="none"/>
+                    <line x1="15" y1="12" x2="3" y2="12" stroke="currentColor"/>
                 </svg>
                 <span>Login</span>
             </a>
         {% endif %}
     </div>
-
     <!-- More Button - Now positioned under profile -->
     <div class="sidebar-more">
         <a href="#" class="more-btn" id="more-btn">
+            <!-- Instagram More/Menu Icon -->
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="3" y1="6" x2="21" y2="6"/>
-                <line x1="3" y1="12" x2="21" y2="12"/>
-                <line x1="3" y1="18" x2="21" y2="18"/>
+                <line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" stroke-linecap="round"/>
+                <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-linecap="round"/>
+                <line x1="4" y1="18" x2="20" y2="18" stroke="currentColor" stroke-linecap="round"/>
             </svg>
             <span>More</span>
         </a>
-
         <!-- More Dropdown Menu -->
         <div class="more-dropdown" id="more-dropdown">
             <div class="more-menu">
                 <a href="#" class="more-item">
+                    <!-- Settings Icon -->
                     <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V6a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" fill="none"/>
+                        <path d="M19.4 15C19.2669 15.3016 19.2272 15.6362 19.286 15.9606C19.3448 16.285 19.4995 16.5843 19.73 16.82L19.79 16.88C19.976 17.0657 20.1235 17.2863 20.2241 17.5291C20.3248 17.7719 20.3766 18.0322 20.3766 18.295C20.3766 18.5578 20.3248 18.8181 20.2241 19.0609C20.1235 19.3037 19.976 19.5243 19.79 19.71C19.6043 19.896 19.3837 20.0435 19.1409 20.1441C18.8981 20.2448 18.6378 20.2966 18.375 20.2966C18.1122 20.2966 17.8519 20.2448 17.6091 20.1441C17.3663 20.0435 17.1457 19.896 16.96 19.71L16.9 19.65C16.6643 19.4195 16.365 19.2648 16.0406 19.206C15.7162 19.1472 15.3816 19.1869 15.08 19.32C14.7842 19.4468 14.532 19.6572 14.3543 19.9255C14.1766 20.1938 14.0813 20.5082 14.08 20.83V21C14.08 21.5304 13.8693 22.0391 13.4942 22.4142C13.1191 22.7893 12.6104 23 12.08 23C11.5496 23 11.0409 22.7893 10.6658 22.4142C10.2907 22.0391 10.08 21.5304 10.08 21V20.91C10.0723 20.579 9.96512 20.2573 9.77251 19.9887C9.5799 19.7201 9.31074 19.5176 9 19.41C8.69838 19.2769 8.36381 19.2372 8.03941 19.296C7.71502 19.3548 7.41568 19.5095 7.18 19.74L7.12 19.8C6.93425 19.986 6.71368 20.1335 6.47088 20.2341C6.22808 20.3348 5.96783 20.3866 5.705 20.3866C5.44217 20.3866 5.18192 20.3348 4.93912 20.2341C4.69632 20.1335 4.47575 19.986 4.29 19.8C4.10405 19.6143 3.95653 19.3937 3.85588 19.1509C3.75523 18.9081 3.70343 18.6478 3.70343 18.385C3.70343 18.1222 3.75523 17.8619 3.85588 17.6191C3.95653 17.3763 4.10405 17.1557 4.29 16.97L4.35 16.91C4.58054 16.6743 4.73519 16.375 4.794 16.0506C4.85282 15.7262 4.81312 15.3916 4.68 15.09C4.55324 14.7942 4.34276 14.542 4.07447 14.3643C3.80618 14.1866 3.49179 14.0913 3.17 14.09H3C2.46957 14.09 1.96086 13.8793 1.58579 13.5042C1.21071 13.1291 1 12.6204 1 12.09C1 11.5596 1.21071 11.0509 1.58579 10.6758C1.96086 10.3007 2.46957 10.09 3 10.09H3.09C3.42099 10.0823 3.742 9.97512 4.01062 9.78251C4.27925 9.5899 4.48167 9.32074 4.59 9.01C4.72312 8.70838 4.76282 8.37381 4.704 8.04941C4.64519 7.72502 4.49054 7.42568 4.26 7.19L4.2 7.13C4.01405 6.94425 3.86653 6.72368 3.76588 6.48088C3.66523 6.23808 3.61343 5.97783 3.61343 5.715C3.61343 5.45217 3.66523 5.19192 3.76588 4.94912C3.86653 4.70632 4.01405 4.48575 4.2 4.3C4.38575 4.11405 4.60632 3.96653 4.84912 3.86588C5.09192 3.76523 5.35217 3.71343 5.615 3.71343C5.87783 3.71343 6.13808 3.76523 6.38088 3.86588C6.62368 3.96653 6.84425 4.11405 7.03 4.3L7.09 4.36C7.32568 4.59054 7.62502 4.74519 7.94941 4.804C8.27381 4.86282 8.60838 4.82312 8.91 4.69H9C9.29577 4.56324 9.54802 4.35276 9.72569 4.08447C9.90337 3.81618 9.99872 3.50179 10 3.18V3C10 2.46957 10.2107 1.96086 10.5858 1.58579C10.9609 1.21071 11.4696 1 12 1C12.5304 1 13.0391 1.21071 13.4142 1.58579C13.7893 1.96086 14 2.46957 14 3V3.09C14.0013 3.41179 14.0966 3.72618 14.2743 3.99447C14.452 4.26276 14.7042 4.47324 15 4.6C15.3016 4.73312 15.6362 4.77282 15.9606 4.714C16.285 4.65519 16.5843 4.50054 16.82 4.27L16.88 4.21C17.0657 4.02405 17.2863 3.87653 17.5291 3.77588C17.7719 3.67523 18.0322 3.62343 18.295 3.62343C18.5578 3.62343 18.8181 3.67523 19.0609 3.77588C19.3037 3.87653 19.5243 4.02405 19.71 4.21C19.896 4.39575 20.0435 4.61632 20.1441 4.85912C20.2448 5.10192 20.2966 5.36217 20.2966 5.625C20.2966 5.88783 20.2448 6.14808 20.1441 6.39088C20.0435 6.63368 19.896 6.85425 19.71 7.04L19.65 7.1C19.4195 7.33568 19.2648 7.63502 19.206 7.95941C19.1472 8.28381 19.1869 8.61838 19.32 8.92V9C19.4468 9.29577 19.6572 9.54802 19.9255 9.72569C20.1938 9.90337 20.5082 9.99872 20.83 10H21C21.5304 10 22.0391 10.2107 22.4142 10.5858C22.7893 10.9609 23 11.4696 23 12C23 12.5304 22.7893 13.0391 22.4142 13.4142C22.0391 13.7893 21.5304 14 21 14H20.91C20.5882 14.0013 20.2738 14.0966 20.0055 14.2743C19.7372 14.452 19.5268 14.7042 19.4 15Z" stroke="currentColor" fill="none"/>
                     </svg>
                     <span>Settings</span>
                 </a>
-
                 <a href="#" class="more-item">
+                    <!-- Activity Icon -->
                     <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" stroke="currentColor" fill="none"/>
                     </svg>
                     <span>Your activity</span>
                 </a>
-
                 <a href="#" class="more-item">
+                    <!-- Saved Icon -->
                     <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                        <path d="M19 21L12 16L5 21V5C5 4.46957 5.21071 3.96086 5.58579 3.58579C5.96086 3.21071 6.46957 3 7 3H17C17.5304 3 18.0391 3.21071 18.4142 3.58579C18.7893 3.96086 19 4.46957 19 5V21Z" stroke="currentColor" fill="none"/>
                     </svg>
                     <span>Saved</span>
                 </a>
-
                 <a href="#" class="more-item">
+                    <!-- Theme Switch Icon -->
                     <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="5"/>
-                        <line x1="12" y1="1" x2="12" y2="3"/>
-                        <line x1="12" y1="21" x2="12" y2="23"/>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                        <line x1="1" y1="12" x2="3" y2="12"/>
-                        <line x1="21" y1="12" x2="23" y2="12"/>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        <circle cx="12" cy="12" r="5" stroke="currentColor" fill="none"/>
+                        <line x1="12" y1="1" x2="12" y2="3" stroke="currentColor"/>
+                        <line x1="12" y1="21" x2="12" y2="23" stroke="currentColor"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor"/>
+                        <line x1="1" y1="12" x2="3" y2="12" stroke="currentColor"/>
+                        <line x1="21" y1="12" x2="23" y2="12" stroke="currentColor"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor"/>
                     </svg>
                     <span>Switch appearance</span>
                 </a>
-
                 <a href="#" class="more-item">
+                    <!-- Report Icon -->
                     <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14,2 14,8 20,8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                        <polyline points="10,9 9,9 8,9"/>
+                        <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" fill="none"/>
+                        <polyline points="14,2 14,8 20,8" stroke="currentColor" fill="none"/>
+                        <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor"/>
+                        <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor"/>
+                        <polyline points="10,9 9,9 8,9" stroke="currentColor" fill="none"/>
                     </svg>
                     <span>Report a problem</span>
                 </a>
-
                 <div class="more-divider"></div>
-
                 <a href="#" class="more-item">
+                    <!-- Switch Accounts Icon -->
                     <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="8.5" cy="7" r="4"/>
-                        <line x1="20" y1="8" x2="20" y2="14"/>
-                        <line x1="23" y1="11" x2="17" y2="11"/>
+                        <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" fill="none"/>
+                        <circle cx="8.5" cy="7" r="4" stroke="currentColor" fill="none"/>
+                        <line x1="20" y1="8" x2="20" y2="14" stroke="currentColor"/>
+                        <line x1="23" y1="11" x2="17" y2="11" stroke="currentColor"/>
                     </svg>
                     <span>Switch accounts</span>
                 </a>
-
                 <a href="{% url 'logout' %}" class="more-item">
+                    <!-- Logout Icon -->
                     <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                        <polyline points="16,17 21,12 16,7"/>
-                        <line x1="21" y1="12" x2="9" y2="12"/>
+                        <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" fill="none"/>
+                        <polyline points="16,17 21,12 16,7" stroke="currentColor" fill="none"/>
+                        <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor"/>
                     </svg>
                     <span>Log out</span>
                 </a>
@@ -179,6 +183,95 @@
 </nav>
 
 <style>
+/* Enhanced Sidebar Styles with Instagram-like Icons */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 245px;
+    height: 100vh;
+    background-color: #000;
+    border-right: 1px solid #262626;
+    padding: 8px 12px 20px 12px;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}
+
+.sidebar-logo {
+    padding: 25px 12px 19px 12px;
+    margin-bottom: 19px;
+}
+
+.sidebar-logo h1 {
+    font-size: 29px;
+    font-weight: bold;
+    color: #fff;
+    font-family: 'Instagram Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+}
+
+.sidebar-nav li {
+    margin-bottom: 4px;
+}
+
+.sidebar-nav a,
+.sidebar-profile a,
+.more-btn {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    font-weight: 400;
+    position: relative;
+}
+
+.sidebar-nav a:hover,
+.sidebar-profile a:hover,
+.more-btn:hover {
+    background-color: #1a1a1a;
+    transform: scale(1.02);
+}
+
+.sidebar-nav a.active,
+.sidebar-profile a.active {
+    font-weight: 700;
+}
+
+.sidebar-nav a.active .icon,
+.sidebar-profile a.active .icon {
+    stroke-width: 3;
+    transform: scale(1.1);
+}
+
+/* Enhanced Icon Styles */
+.icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    transition: all 0.2s ease;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Special styling for filled home icon when active */
+.sidebar-nav a.active .icon path[fill="currentColor"] {
+    fill: currentColor;
+}
+
 /* Sidebar More Section - Positioned under profile */
 .sidebar-more {
     position: absolute;
@@ -194,28 +287,21 @@
     color: #fff;
     text-decoration: none;
     border-radius: 8px;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
     font-size: 16px;
     position: relative;
+    cursor: pointer;
 }
 
 .more-btn:hover {
     background-color: #1a1a1a;
-}
-
-.more-btn .icon {
-    width: 24px;
-    height: 24px;
-    margin-right: 16px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
+    transform: scale(1.02);
 }
 
 /* Adjust sidebar profile positioning */
 .sidebar-profile {
     position: absolute;
-    bottom: 70px; /* Moved up to make room for More button */
+    bottom: 70px;
     left: 12px;
     right: 12px;
 }
@@ -227,36 +313,29 @@
     color: #fff;
     text-decoration: none;
     border-radius: 8px;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
 }
 
 .sidebar-profile a:hover {
     background-color: #1a1a1a;
-}
-
-.sidebar-profile .icon {
-    width: 24px;
-    height: 24px;
-    margin-right: 16px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
+    transform: scale(1.02);
 }
 
 /* More Dropdown Styles */
 .more-dropdown {
     position: absolute;
-    bottom: 60px; /* Positioned above the More button */
+    bottom: 60px;
     left: 0;
     width: 266px;
     background-color: #262626;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     opacity: 0;
     visibility: hidden;
     transform: translateY(10px);
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     z-index: 1000;
+    border: 1px solid #363636;
 }
 
 .more-dropdown.show {
@@ -275,12 +354,14 @@
     padding: 16px 16px;
     color: #fff;
     text-decoration: none;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
     font-size: 14px;
+    font-weight: 400;
 }
 
 .more-item:hover {
     background-color: #363636;
+    transform: translateX(2px);
 }
 
 .more-icon {
@@ -290,6 +371,13 @@
     stroke: currentColor;
     fill: none;
     stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: all 0.2s ease;
+}
+
+.more-item:hover .more-icon {
+    transform: scale(1.1);
 }
 
 .more-divider {
@@ -298,7 +386,7 @@
     margin: 8px 0;
 }
 
-/* Dark theme styles */
+/* Enhanced Theme Styles */
 body.dark-theme {
     background-color: #000;
     color: #fff;
@@ -335,9 +423,16 @@ body.light-theme .more-btn {
     color: #262626;
 }
 
+body.light-theme .sidebar-nav a:hover,
+body.light-theme .sidebar-profile a:hover,
+body.light-theme .more-btn:hover {
+    background-color: #f5f5f5;
+}
+
 body.light-theme .more-dropdown {
     background-color: #fff;
     border: 1px solid #dbdbdb;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 body.light-theme .more-item {
@@ -352,21 +447,85 @@ body.light-theme .more-divider {
     background-color: #dbdbdb;
 }
 
+/* Icon Animation Effects */
+@keyframes iconPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.sidebar-nav a:active .icon,
+.sidebar-profile a:active .icon,
+.more-btn:active .icon {
+    animation: iconPulse 0.3s ease;
+}
+
 /* Mobile responsive */
-@media (max-width: 768px) {
-    .sidebar-more {
-        bottom: 15px;
+@media (max-width: 1264px) {
+    .sidebar {
+        width: 72px;
     }
 
-    .sidebar-profile {
-        bottom: 65px;
+    .sidebar-logo h1 {
+        display: none;
+    }
+
+    .sidebar-nav span,
+    .sidebar-profile span,
+    .more-btn span {
+        display: none;
+    }
+
+    .sidebar-nav a,
+    .sidebar-profile a,
+    .more-btn {
+        justify-content: center;
+        padding: 12px;
+    }
+
+    .icon {
+        margin-right: 0;
     }
 
     .more-dropdown {
-        left: 8px;
-        width: 250px;
-        bottom: 55px;
+        left: 72px;
+        bottom: 20px;
     }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+}
+
+/* Notification Badge */
+.notification-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background-color: #ff3040;
+    border-radius: 50%;
+    border: 2px solid #000;
+}
+
+/* Active state for navigation items */
+.sidebar-nav a.active::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 24px;
+    background-color: #fff;
+    border-radius: 0 2px 2px 0;
+}
+
+body.light-theme .sidebar-nav a.active::before {
+    background-color: #262626;
 }
 </style>
 
@@ -375,9 +534,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const moreBtn = document.getElementById('more-btn');
     const moreDropdown = document.getElementById('more-dropdown');
 
-    // Toggle more dropdown
+    // Toggle more dropdown with enhanced animation
     moreBtn.addEventListener('click', function(e) {
         e.preventDefault();
+        e.stopPropagation();
         moreDropdown.classList.toggle('show');
     });
 
@@ -388,23 +548,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle menu item clicks
+    // Handle menu item clicks with enhanced interactions
     document.querySelectorAll('.more-item').forEach(item => {
         item.addEventListener('click', function(e) {
             const text = this.querySelector('span').textContent;
 
+            // Add click animation
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+
             switch(text) {
                 case 'Settings':
                     e.preventDefault();
-                    alert('Settings page would open here');
+                    showNotification('Settings page would open here', 'info');
                     break;
                 case 'Your activity':
                     e.preventDefault();
-                    alert('Your activity page would open here');
+                    showNotification('Your activity page would open here', 'info');
                     break;
                 case 'Saved':
                     e.preventDefault();
-                    alert('Saved posts would open here');
+                    showNotification('Saved posts would open here', 'info');
                     break;
                 case 'Switch appearance':
                     e.preventDefault();
@@ -412,32 +578,113 @@ document.addEventListener('DOMContentLoaded', function() {
                     break;
                 case 'Report a problem':
                     e.preventDefault();
-                    alert('Report problem form would open here');
+                    showNotification('Report problem form would open here', 'info');
                     break;
                 case 'Switch accounts':
                     e.preventDefault();
-                    alert('Account switcher would open here');
+                    showNotification('Account switcher would open here', 'info');
                     break;
             }
-
             moreDropdown.classList.remove('show');
         });
     });
 
-    // Theme switching functionality
+    // Enhanced theme switching functionality
     function toggleTheme() {
         const body = document.body;
         const currentTheme = localStorage.getItem('theme') || 'dark';
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
+        // Add transition effect
+        body.style.transition = 'all 0.3s ease';
+
         body.classList.remove('dark-theme', 'light-theme');
         body.classList.add(newTheme + '-theme');
-
         localStorage.setItem('theme', newTheme);
+
+        showNotification(`Switched to ${newTheme} mode`, 'success');
+
+        // Remove transition after animation
+        setTimeout(() => {
+            body.style.transition = '';
+        }, 300);
     }
 
     // Load saved theme
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.body.classList.add(savedTheme + '-theme');
+
+    // Enhanced notification system
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span>${message}</span>
+                <button class="notification-close">&times;</button>
+            </div>
+        `;
+
+        // Add notification styles
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        `;
+
+        document.body.appendChild(notification);
+
+        // Animate in
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+
+        // Close button functionality
+        const closeBtn = notification.querySelector('.notification-close');
+        closeBtn.addEventListener('click', () => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        });
+
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }, 3000);
+    }
+
+    // Add hover effects to navigation items
+    document.querySelectorAll('.sidebar-nav a, .sidebar-profile a').forEach(link => {
+        link.addEventListener('mouseenter', function() {
+            const icon = this.querySelector('.icon');
+            if (icon) {
+                icon.style.transform = 'scale(1.1)';
+            }
+        });
+
+        link.addEventListener('mouseleave', function() {
+            const icon = this.querySelector('.icon');
+            if (icon && !this.classList.contains('active')) {
+                icon.style.transform = 'scale(1)';
+            }
+        });
+    });
 });
 </script>

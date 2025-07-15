@@ -1,7 +1,6 @@
 {% extends "base.html" %}
-
 {% load static %}
-
+{% load my_tags %}
 
 {% block title %}Instagram{% endblock %}
 
@@ -9,107 +8,468 @@
 
 {% block content %}
 <div class="home-page">
-
-<!-- Stories Section -->
-<div class="stories-container">
-    <div class="stories-list">
-        {% for user, user_histories in grouped_histories %}
-            <div class="story-item" onclick="openStoryViewer('{{ user.username }}')">
-                <div class="story-avatar">
-                    <img src="{{ user_histories.0.contentUrl.url }}" alt="{{ user.username }}">
+    <!-- Stories Section -->
+    <div class="stories-container">
+        <div class="stories-list">
+            {% for user, user_histories in grouped_histories %}
+                <div class="story-item" onclick="openStoryViewer('{{ user.username }}', {{ user_histories|length }})">
+                    <div class="story-avatar">
+                        <img src="{{ user_histories.0.contentUrl.url }}" alt="{{ user.username }}">
+                    </div>
+                    <span class="story-username">{{ user.username }}</span>
+                    <!-- Hidden stories container -->
+                    <div class="hidden-stories" id="stories-{{ user.username }}" style="display: none;">
+                        {% for story in user_histories %}
+                            <img src="{{ story.contentUrl.url }}" alt="story" data-username="{{ user.username }}" data-time="{{ story.since_created }}">
+                        {% endfor %}
+                    </div>
                 </div>
-                <span class="story-username">{{ user.username }}</span>
-
-                <!-- Hidden stories container -->
-                <div class="hidden-stories" id="stories-{{ user.username }}" style="display: none;">
-                    {% for story in user_histories %}
-                        <img src="{{ story.contentUrl.url }}" alt="story">
-                    {% endfor %}
-                </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
     </div>
-</div>
-
 
     <!-- Posts Feed -->
-    <div class="posts-feed">
-        {% for post in posts %}
+    {% for post in posts %}
+    <article class="post" data-post-id="{{ post.id }}">
+        <div class="post-header">
+            <div class="post-user-info">
+                <div class="post-avatar">
+                    {% if post.userID.avatar %}
+                    <img src="{{ post.userID.avatar.url }}" style="height: 32px; width: 32px; border-radius: 50%; object-fit: cover" alt="">
+                    {% else %}
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 32px; height: 32px;">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    {% endif %}
+                </div>
+                <a href="#" class="post-username">{{ post.userID.username }}</a>
+                <span class="post-time">• {{ post.since_created }}</span>
+            </div>
+            <div class="post-options">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="12" cy="5" r="1"/>
+                    <circle cx="12" cy="19" r="1"/>
+                </svg>
+            </div>
+        </div>
 
-        <article class="post">
-            <div class="post-header">
-                <div class="post-user-info">
-                    <div class="post-avatar">
-                        {% if post.userID.avatar %}
-                        <img src="{{ post.userID.avatar.url }}" style="height: 35px; width: 35px; border-radius: 50%; object-fit: fit" alt="">
-                        {% else %}
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                        {% endif %}
+        <img src="{{ post.contentUrl.url }}" alt="Post image" class="post-image">
+
+        <div class="post-actions">
+            <div class="post-actions-left">
+                <button class="action-btn like-btn" onclick="togglePostLike(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 24px; height: 24px;">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </button>
+                <button class="action-btn comment-btn" onclick="toggleComments(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 24px; height: 24px;">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                </button>
+                <button class="action-btn share-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 24px; height: 24px;">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22,2 15,22 11,13 2,9 22,2"/>
+                    </svg>
+                </button>
+            </div>
+            <button class="action-btn save-btn" onclick="toggleSave(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 24px; height: 24px;">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="post-likes">{{ post.likes_count|default:"0" }} likes</div>
+
+        <div class="post-caption">
+            <strong>{{ post.userID.username }}</strong> {{ post.caption }}
+        </div>
+
+        <div class="post-comments" onclick="toggleComments(this)">
+            View all {{ post.comments_count|default:"0" }} comments
+        </div>
+
+        <!-- Comments Section -->
+        <div class="comments-section" style="display: none; border-top: 1px solid #262626; padding: 16px;">
+            {% for comment in post.comments.all %}
+            <div class="comment-item" style="display: flex; align-items: flex-start; margin-bottom: 12px; gap: 12px;">
+                <div class="comment-avatar" style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                    {% if comment.userID.avatar %}
+                    <img src="{{ comment.userID.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ comment.userID.username }}">
+                    {% else %}
+                    <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px;">
+                        {{ comment.userID.username|upper|first }}
                     </div>
-                    <a href="#" class="post-username">{{ post.userID.username }}</a>
-                    <span class="post-time">• {{ post.since_created }}</span>
+                    {% endif %}
                 </div>
-                <div class="post-options">⋯</div>
-            </div>
+                <div class="comment-content" style="flex: 1;">
+                    <div class="comment-text" style="font-size: 14px; color: #fff; line-height: 1.4; margin-bottom: 4px;">
+                        <strong style="font-weight: 600; margin-right: 8px;">{{ comment.userID.username }}</strong>{{ comment.comment }}
+                    </div>
+                    <div class="comment-actions" style="display: flex; align-items: center; gap: 16px; font-size: 12px; color: #8e8e8e;">
+                        <span class="comment-time">{{ comment.since_created }}</span>
+                        <span class="comment-likes" style="font-weight: 600;">{{ comment.comment_likes_count }} likes</span>
+                        <span class="comment-reply" style="cursor: pointer; font-weight: 600;" onclick="showReplyInput(this)">Reply</span>
+                    </div>
 
-            <img src="{{ post.contentUrl.url }}" alt="Post image" class="post-image">
+                    <!-- Reply Input Section -->
+                    <div class="reply-input-section" style="margin-left: 44px; margin-top: 8px; display: none;">
+                        <div class="reply-input-container" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <div class="reply-avatar" style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                {% if request.user.avatar %}
+                                <img src="{{ request.user.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ request.user.username }}">
+                                {% else %}
+                                <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">
+                                    {{ request.user.username|upper|first }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <input type="text" class="reply-input" placeholder="Reply to {{ comment.userID.username }}..." style="flex: 1; border: none; outline: none; font-size: 14px; color: #fff; background: transparent;">
+                        </div>
+                        <div class="reply-actions" style="display: flex; gap: 12px; margin-left: 32px;">
+                            <button class="reply-post-btn" onclick="postReply(this)" style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; color: #0095f6;">Post</button>
+                            <button class="reply-cancel-btn" onclick="cancelReply(this)" style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; color: #8e8e8e;">Cancel</button>
+                        </div>
+                    </div>
 
-            <div class="post-actions">
-                <div class="post-actions-left">
-                    <button class="action-btn">♡</button>
-                    <button class="action-btn">💬</button>
-                    <button class="action-btn">📤</button>
+                    <!-- Replies -->
+                    {% if comment.replies.exists %}
+                    <div class="view-replies" onclick="toggleReplies(this)" style="margin-left: 44px; font-size: 12px; color: #8e8e8e; cursor: pointer; margin-bottom: 8px; display: flex; align-items: center; gap: 16px;">
+                        <span style="width: 24px; height: 1px; background: #262626;"></span>
+                        View replies ({{ comment.replies.count }})
+                    </div>
+                    <div class="replies-container" style="display: none; margin-left: 44px; margin-top: 8px;">
+                        {% for reply in comment.replies.all %}
+                        <div class="reply-item" style="display: flex; align-items: flex-start; margin-bottom: 8px; gap: 8px;">
+                            <div class="reply-avatar" style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                {% if reply.userID.avatar %}
+                                <img src="{{ reply.userID.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ reply.userID.username }}">
+                                {% else %}
+                                <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">
+                                    {{ reply.userID.username|upper|first }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="comment-content" style="flex: 1;">
+                                <div class="comment-text" style="font-size: 14px; color: #fff; line-height: 1.4; margin-bottom: 4px;">
+                                    <strong style="font-weight: 600; margin-right: 8px;">{{ reply.userID.username }}</strong>{{ reply.comment }}
+                                </div>
+                                <div class="comment-actions" style="display: flex; align-items: center; gap: 16px; font-size: 12px; color: #8e8e8e;">
+                                    <span class="comment-time">{{ reply.since_created }}</span>
+                                    <span class="comment-likes" style="font-weight: 600;">{{ reply.comment_likes_count }} likes</span>
+                                    <span class="comment-reply" style="cursor: pointer; font-weight: 600;" onclick="showReplyInput(this)">Reply</span>
+                                </div>
+                            </div>
+                            <button class="comment-heart" onclick="toggleCommentLike(this)" style="background: none; border: none; cursor: pointer; padding: 0; margin-left: auto;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#8e8e8e" stroke-width="1.5" style="width: 12px; height: 12px;">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                 </div>
-                <button class="action-btn">🔖</button>
+                <button class="comment-heart" onclick="toggleCommentLike(this)" style="background: none; border: none; cursor: pointer; padding: 0; margin-left: auto;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#8e8e8e" stroke-width="1.5" style="width: 12px; height: 12px;">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </button>
             </div>
+            {% endfor %}
+        </div>
 
-            <div class="post-likes">1,234 likes</div>
-
-            <div class="post-caption">
-                <strong>ahmad_workout</strong> {{ post.caption }}
+        <!-- Comment Input -->
+        <form class="comment-input-section" method="POST" style="border-top: 1px solid #262626; padding: 16px; display: flex; align-items: center; gap: 12px;">
+            {% csrf_token %}
+            <div class="comment-avatar" style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden;">
+                {% if request.user.avatar %}
+                <img src="{{ request.user.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ request.user.username }}">
+                {% else %}
+                <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px;">
+                    {{ request.user.username|upper|first }}
+                </div>
+                {% endif %}
             </div>
+            <input type="hidden" name="post_id" value="{{ post.id }}">
+            <input type="text" name="comment" class="comment-input" placeholder="Add a comment..." oninput="togglePostButton(this)" style="flex: 1; border: none; outline: none; font-size: 14px; color: #fff; background: transparent;">
+            <button type="submit" class="comment-post-btn" style="background: none; border: none; color: #0095f6; font-size: 14px; font-weight: 600; cursor: pointer; opacity: 0.3; pointer-events: none;">Post</button>
+        </form>
+    </article>
+    {% endfor %}
+</div>
 
-            <div class="post-comments">
-                View all 23 comments
+<!-- Story Viewer Modal -->
+<div id="storyViewer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index:1000;">
+    <div class="story-content" style="position: relative; max-width: 400px; max-height: 90vh;">
+        <div class="story-progress" id="storyProgress" style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 4px; z-index: 10;"></div>
+        <div class="story-header" style="position: absolute; top: 40px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; z-index: 10;">
+            <div class="story-user-info" style="display: flex; align-items: center; gap: 8px;">
+                <div class="story-user-avatar" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; overflow: hidden;">
+                    <img id="storyUserAvatar" src="/placeholder.svg" style="width: 100%; height: 100%; object-fit: cover;" alt="">
+                </div>
+                <div>
+                    <div class="story-username-text" id="storyUsername" style="color: #fff; font-size: 14px; font-weight: 600;"></div>
+                    <div class="story-time" id="storyTime" style="color: rgba(255, 255, 255, 0.7); font-size: 12px;"></div>
+                </div>
             </div>
-        </article>
-        {% endfor %}
+            <button class="story-close" onclick="closeStoryViewer()" style="background: none; border: none; color: #fff; cursor: pointer; padding: 4px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <img id="storyImage" class="story-image" src="/placeholder.svg" style="width: 100%; height: auto; border-radius: 8px; max-height: 90vh; object-fit: contain;" alt="">
+        <button class="story-nav prev" id="storyPrev" onclick="previousStory()" style="position: absolute; top: 50%; left: 12px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.3); border: none; color: #fff; cursor: pointer; padding: 12px; border-radius: 50%; display: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+                <polyline points="15,18 9,12 15,6"/>
+            </svg>
+        </button>
+        <button class="story-nav next" id="storyNext" onclick="nextStory()" style="position: absolute; top: 50%; right: 12px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.3); border: none; color: #fff; cursor: pointer; padding: 12px; border-radius: 50%; display: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+                <polyline points="9,18 15,12 9,6"/>
+            </svg>
+        </button>
     </div>
 </div>
-
 {% endblock %}
+
 {% block scripts %}
-<!-- Story Viewer Modal -->
-<div id="storyViewer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000; justify-content:center; align-items:center; z-index:1000;">
-    <img id="storyImage" src="" style="max-width:90%; max-height:90%; border-radius:20px;" />
-</div>
-
 <script>
-    let currentIndex = 0;
-    let currentImages = [];
+    let currentStoryIndex = 0;
+    let currentStories = [];
+    let storyTimer;
 
-    function openStoryViewer(username) {
+    function openStoryViewer(username, totalStories) {
         const container = document.getElementById(`stories-${username}`);
-        currentImages = Array.from(container.querySelectorAll('img'));
-        currentIndex = 0;
+        currentStories = Array.from(container.querySelectorAll('img'));
+        currentStoryIndex = 0;
 
-        if (currentImages.length === 0) return;
+        if (currentStories.length === 0) return;
 
-        document.getElementById('storyImage').src = currentImages[currentIndex].src;
+        setupStoryViewer(username, totalStories);
         document.getElementById('storyViewer').style.display = 'flex';
+        showStory();
     }
 
-    document.getElementById('storyViewer').addEventListener('click', () => {
-        currentIndex++;
-        if (currentIndex < currentImages.length) {
-            document.getElementById('storyImage').src = currentImages[currentIndex].src;
+    function setupStoryViewer(username, totalStories) {
+        const progressContainer = document.getElementById('storyProgress');
+        progressContainer.innerHTML = '';
+
+        for (let i = 0; i < totalStories; i++) {
+            const progressBar = document.createElement('div');
+            progressBar.style.cssText = 'flex: 1; height: 2px; background: rgba(255, 255, 255, 0.3); border-radius: 1px; overflow: hidden;';
+            progressBar.innerHTML = '<div class="progress-fill" style="height: 100%; background: #fff; width: 0%; transition: width 0.1s linear;"></div>';
+            progressContainer.appendChild(progressBar);
+        }
+
+        document.getElementById('storyUsername').textContent = username;
+        document.getElementById('storyUserAvatar').src = currentStories[0].src;
+
+        // Show/hide navigation buttons
+        document.getElementById('storyPrev').style.display = totalStories > 1 ? 'flex' : 'none';
+        document.getElementById('storyNext').style.display = totalStories > 1 ? 'flex' : 'none';
+    }
+
+    function showStory() {
+        if (currentStoryIndex >= currentStories.length) {
+            closeStoryViewer();
+            return;
+        }
+
+        const story = currentStories[currentStoryIndex];
+        document.getElementById('storyImage').src = story.src;
+        document.getElementById('storyTime').textContent = story.dataset.time;
+
+        // Update progress bars
+        const progressBars = document.querySelectorAll('.progress-fill');
+        progressBars.forEach((bar, index) => {
+            if (index < currentStoryIndex) {
+                bar.style.width = '100%';
+            } else if (index === currentStoryIndex) {
+                bar.style.width = '0%';
+                setTimeout(() => bar.style.width = '100%', 100);
+            } else {
+                bar.style.width = '0%';
+            }
+        });
+
+        // Auto advance after 5 seconds
+        clearTimeout(storyTimer);
+        storyTimer = setTimeout(() => {
+            nextStory();
+        }, 5000);
+    }
+
+    function nextStory() {
+        currentStoryIndex++;
+        if (currentStoryIndex >= currentStories.length) {
+            closeStoryViewer();
         } else {
-            document.getElementById('storyViewer').style.display = 'none';
+            showStory();
+        }
+    }
+
+    function previousStory() {
+        if (currentStoryIndex > 0) {
+            currentStoryIndex--;
+            showStory();
+        }
+    }
+
+    function closeStoryViewer() {
+        clearTimeout(storyTimer);
+        document.getElementById('storyViewer').style.display = 'none';
+    }
+
+    // Post interactions
+    function togglePostLike(button) {
+        const svg = button.querySelector('svg');
+        if (button.classList.contains('liked')) {
+            button.classList.remove('liked');
+            svg.style.fill = 'none';
+            svg.style.stroke = '#fff';
+        } else {
+            button.classList.add('liked');
+            svg.style.fill = '#ed4956';
+            svg.style.stroke = '#ed4956';
+        }
+    }
+
+    function toggleSave(button) {
+        const svg = button.querySelector('svg');
+        if (button.classList.contains('saved')) {
+            button.classList.remove('saved');
+            svg.style.fill = 'none';
+        } else {
+            button.classList.add('saved');
+            svg.style.fill = '#fff';
+        }
+    }
+
+    function toggleComments(element) {
+        const post = element.closest('.post');
+        const commentsSection = post.querySelector('.comments-section');
+        commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function toggleCommentLike(button) {
+        const svg = button.querySelector('svg');
+        if (button.classList.contains('liked')) {
+            button.classList.remove('liked');
+            svg.style.fill = 'none';
+            svg.style.stroke = '#8e8e8e';
+        } else {
+            button.classList.add('liked');
+            svg.style.fill = '#ed4956';
+            svg.style.stroke = '#ed4956';
+        }
+    }
+
+    function showReplyInput(replyButton) {
+        const commentContent = replyButton.closest('.comment-content');
+        const replySection = commentContent.querySelector('.reply-input-section');
+        const replyInput = replySection.querySelector('.reply-input');
+
+        replyButton.style.display = 'none';
+        replySection.style.display = 'block';
+        replyInput.focus();
+    }
+
+    function postReply(button) {
+        const replySection = button.closest('.reply-input-section');
+        const replyInput = replySection.querySelector('.reply-input');
+        const commentContent = replySection.closest('.comment-content');
+        const replyButton = commentContent.querySelector('.comment-reply');
+
+        const replyText = replyInput.value.trim();
+        if (replyText) {
+            console.log('Reply posted:', replyText);
+            replyInput.value = '';
+        }
+
+        replySection.style.display = 'none';
+        replyButton.style.display = 'inline';
+    }
+
+    function cancelReply(button) {
+        const replySection = button.closest('.reply-input-section');
+        const replyInput = replySection.querySelector('.reply-input');
+        const commentContent = replySection.closest('.comment-content');
+        const replyButton = commentContent.querySelector('.comment-reply');
+
+        replyInput.value = '';
+        replySection.style.display = 'none';
+        replyButton.style.display = 'inline';
+    }
+
+    function toggleReplies(button) {
+        const repliesContainer = button.nextElementSibling;
+        const isVisible = repliesContainer.style.display !== 'none';
+
+        repliesContainer.style.display = isVisible ? 'none' : 'block';
+        const replyCount = repliesContainer.children.length;
+        button.innerHTML = isVisible ?
+            `<span style="width: 24px; height: 1px; background: #262626;"></span>View replies (${replyCount})` :
+            `<span style="width: 24px; height: 1px; background: #262626;"></span>Hide replies`;
+    }
+
+    function togglePostButton(input) {
+        const postButton = input.nextElementSibling;
+        if (input.value.trim()) {
+            postButton.style.opacity = '1';
+            postButton.style.pointerEvents = 'auto';
+        } else {
+            postButton.style.opacity = '0.3';
+            postButton.style.pointerEvents = 'none';
+        }
+    }
+
+    // Close story viewer when clicking outside
+    document.getElementById('storyViewer').addEventListener('click', (e) => {
+        if (e.target.id === 'storyViewer') {
+            closeStoryViewer();
         }
     });
-</script>
 
+    // Keyboard navigation for stories
+    document.addEventListener('keydown', (e) => {
+        if (document.getElementById('storyViewer').style.display === 'flex') {
+            if (e.key === 'ArrowRight') nextStory();
+            if (e.key === 'ArrowLeft') previousStory();
+            if (e.key === 'Escape') closeStoryViewer();
+        }
+    });
+
+    // Make reply input placeholder color work
+    document.addEventListener('DOMContentLoaded', function() {
+        const style = document.createElement('style');
+        style.textContent = `
+            .reply-input::placeholder, .comment-input::placeholder {
+                color: #8e8e8e;
+            }
+            .reply-post-btn:hover {
+                color: #1877f2;
+            }
+            .reply-cancel-btn:hover {
+                color: #fff;
+            }
+            .comment-post-btn:hover {
+                color: #1877f2;
+            }
+            .comment-reply:hover {
+                color: #fff;
+            }
+            .view-replies:hover {
+                color: #fff;
+            }
+        `;
+        document.head.appendChild(style);
+    });
+</script>
 {% endblock %}

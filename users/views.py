@@ -1,9 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.views.generic import ListView, DetailView
 
 from posts.models import PostModel
 from users.forms import RegisterForm, LoginForm, UserUpdateForm
 from django.contrib.auth import authenticate, login, logout
+
+from users.models import UserModel
 
 
 def register_view(request):
@@ -60,6 +63,34 @@ def profile_view(request):
 
     return render(request, 'profile.html', {
         'user': request.user,
+        'posts': posts,
+        'reels': reels,
+    })
+
+
+class UserListView(ListView):
+    template_name = 'search.html'
+    context_object_name = 'users'
+
+    def get_queryset(self):
+        qs = UserModel.objects.exclude(id=self.request.user.id).order_by('username')
+        q = self.request.GET.get('q')
+
+        if q:
+            qs = qs.filter(username__icontains=q)
+
+        return qs
+
+
+
+def another_user_profile_view(request, pk):
+    user = UserModel.objects.get(id=pk)
+    posts = PostModel.objects.filter(userID=user, post_type=PostModel.PostTypeChoice.Post).order_by('-created_at')
+    reels = PostModel.objects.filter(userID=user,  post_type=PostModel.PostTypeChoice.Reels).order_by('-created_at')
+
+
+    return render(request, 'profile.html', {
+        'user': user,
         'posts': posts,
         'reels': reels,
     })

@@ -1,6 +1,6 @@
 from django import forms
 
-from posts.models import PostModel, MusicModel, HashtagModel
+from posts.models import PostModel, MusicModel, HashtagModel, CommentModel
 
 
 class PostModelForm(forms.ModelForm):

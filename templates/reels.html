@@ -1,62 +1,967 @@
 {% extends "base.html" %}
-
+{% load my_tags %}
 {% load static %}
 
 {% block title %}Reels • Instagram{% endblock %}
 
 {% block reels_active %}active{% endblock %}
 
+{% block extra_css %}
+<style>
+    .reels-container {
+        background-color: #000;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+        overflow-x: hidden;
+    }
+
+    .reel-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 405px;
+        height: 100vh;
+        max-height: 720px;
+        margin: 0 auto 20px;
+        background-color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0;
+    }
+
+    .reel-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 0;
+        background-color: #000;
+    }
+
+    /* Sound icon in top right */
+    .sound-toggle {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 32px;
+        height: 32px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        border: none;
+        color: #fff;
+    }
+
+    .sound-toggle:hover {
+        background: rgba(0, 0, 0, 0.8);
+    }
+
+    /* Right side action buttons */
+    .reel-actions {
+        position: absolute;
+        right: 12px;
+        bottom: 100px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        z-index: 10;
+    }
+
+    .action-button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .action-button:hover {
+        transform: scale(1.1);
+        transition: transform 0.2s ease;
+    }
+
+    .action-icon {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 4px;
+        fill: currentColor;
+        stroke: currentColor;
+        stroke-width: 1.5;
+    }
+
+    .action-count {
+        font-size: 12px;
+        font-weight: 600;
+        color: #fff;
+        text-align: center;
+        min-width: 32px;
+    }
+
+    .heart-icon {
+        fill: #ff3040;
+        color: #ff3040;
+    }
+
+    /* Bottom user info overlay */
+    .reel-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 60px;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+        padding: 40px 16px 20px;
+        color: #fff;
+        z-index: 10;
+    }
+
+    .user-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        margin-right: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        border: 2px solid #fff;
+    }
+
+    .username {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+        margin-right: 12px;
+    }
+
+    .follow-button {
+        background: none;
+        border: 1px solid #fff;
+        color: #fff;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .follow-button:hover {
+        background: #fff;
+        color: #000;
+    }
+
+    .caption-text {
+        font-size: 14px;
+        color: #fff;
+        margin-bottom: 8px;
+        line-height: 1.3;
+    }
+
+    .audio-info {
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+        color: #fff;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 6px 12px;
+        border-radius: 12px;
+        width: fit-content;
+    }
+
+    .music-note {
+        width: 12px;
+        height: 12px;
+        margin-right: 6px;
+    }
+
+    /* Profile icon in bottom right */
+    .profile-icon {
+        position: absolute;
+        bottom: 16px;
+        right: 12px;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        background: #333;
+        z-index: 10;
+    }
+
+    /* Comments Panel - Instagram Style */
+    .comments-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 400px;
+        height: 100vh;
+        background: #262626;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .comments-panel.active {
+        transform: translateX(0);
+    }
+
+    .comments-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid #363636;
+        background: #262626;
+    }
+
+    .comments-title {
+        color: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .close-comments {
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+    }
+
+    .close-comments:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .comments-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 20px;
+    }
+
+    .comment-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 16px;
+    }
+
+    .comment-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        margin-right: 12px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+    .comment-content {
+        flex: 1;
+    }
+
+    .comment-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .comment-username {
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .comment-time {
+        font-size: 12px;
+        color: #8e8e8e;
+    }
+
+    .comment-text {
+        font-size: 14px;
+        color: #fff;
+        line-height: 1.4;
+        margin-bottom: 8px;
+    }
+
+    .comment-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .comment-likes {
+        font-size: 12px;
+        color: #8e8e8e;
+        font-weight: 600;
+    }
+
+    .comment-reply {
+        font-size: 12px;
+        color: #8e8e8e;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .comment-reply:hover {
+        color: #fff;
+    }
+
+    /* Reply Input Section */
+    .reply-input-section {
+        display: none;
+        margin-top: 8px;
+        margin-left: 44px;
+    }
+
+    .reply-input-section.active {
+        display: block;
+    }
+
+    .reply-input-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #121212;
+        border-radius: 18px;
+        padding: 6px 12px;
+        margin-bottom: 8px;
+    }
+
+    .reply-avatar {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 8px;
+        flex-shrink: 0;
+    }
+
+    .reply-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #fff;
+        font-size: 12px;
+        padding: 2px 0;
+    }
+
+    .reply-input::placeholder {
+        color: #8e8e8e;
+    }
+
+    .reply-actions {
+        display: flex;
+        gap: 12px;
+        margin-left: 32px;
+    }
+
+    .reply-post-btn {
+        background: none;
+        border: none;
+        color: #0095f6;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 2px 0;
+    }
+
+    .reply-post-btn:hover {
+        color: #1877f2;
+    }
+
+    .reply-cancel-btn {
+        background: none;
+        border: none;
+        color: #8e8e8e;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 2px 0;
+    }
+
+    .reply-cancel-btn:hover {
+        color: #fff;
+    }
+
+    .view-replies {
+        font-size: 12px;
+        color: #8e8e8e;
+        cursor: pointer;
+        margin-top: 8px;
+        margin-left: 44px;
+    }
+
+    .view-replies:hover {
+        color: #fff;
+    }
+
+    .comment-heart {
+        margin-left: auto;
+        background: none;
+        border: none;
+        color: #8e8e8e;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .comment-heart:hover {
+        color: #fff;
+    }
+
+    .comment-heart.liked {
+        color: #ff3040;
+    }
+
+    .comment-heart h1 {
+        font-size: 10px;
+        margin: 2px 0 0 0;
+        font-weight: 400;
+    }
+
+    /* Comment Input */
+    .comment-input-section {
+        padding: 16px 20px;
+        border-top: 1px solid #363636;
+        background: #262626;
+    }
+
+    .comment-input-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #121212;
+        border-radius: 22px;
+        padding: 8px 16px;
+    }
+
+    .input-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 10px;
+        flex-shrink: 0;
+    }
+
+    .comment-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #fff;
+        font-size: 14px;
+        padding: 4px 0;
+    }
+
+    .comment-input::placeholder {
+        color: #8e8e8e;
+    }
+
+    .send-comment {
+        background: none;
+        border: none;
+        color: #0095f6;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .send-comment:hover {
+        background: rgba(0, 149, 246, 0.1);
+    }
+
+    /* Empty state */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color: #8e8e8e;
+        text-align: center;
+    }
+
+    .empty-state svg {
+        width: 96px;
+        height: 96px;
+        margin-bottom: 24px;
+        opacity: 0.3;
+    }
+
+    .empty-state h3 {
+        font-size: 22px;
+        margin-bottom: 8px;
+        color: #fff;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .comments-panel {
+            width: 100%;
+        }
+
+        .reel-wrapper {
+            max-width: 100%;
+            height: 100vh;
+            margin-bottom: 0;
+        }
+
+        .reel-actions {
+            right: 8px;
+            bottom: 120px;
+            gap: 16px;
+        }
+
+        .action-icon {
+            width: 28px;
+            height: 28px;
+        }
+
+        .action-count {
+            font-size: 11px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .reel-info {
+            right: 50px;
+            padding: 30px 12px 16px;
+        }
+
+        .reel-actions {
+            gap: 14px;
+            bottom: 100px;
+        }
+
+        .action-icon {
+            width: 24px;
+            height: 24px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="reels-container">
-    <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 24px; text-align: left; width: 100%;">Reels</h2>
-    
-    <!-- Reel Item 1 -->
-    <div class="reel-item" style="position: relative;">
-        <div class="reel-video">
-            <!-- Video placeholder - you can replace this with actual video element -->
-            <div style="text-align: center;">
-                <p>Video Player Area</p>
-                <p style="font-size: 14px; margin-top: 8px;">Replace this div with:</p>
-                <code style="background: #262626; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
-                    &lt;video controls width="100%" height="720"&gt;<br>
-                    &nbsp;&nbsp;&lt;source src="your-video.mp4" type="video/mp4"&gt;<br>
-                    &lt;/video&gt;
-                </code>
+    {% if reels %}
+    {% for reel in reels %}
+    <div class="reel-wrapper">
+        <video class="reel-video" muted loop playsinline preload="metadata">
+            <source src="{{ reel.contentUrl.url }}" type="video/mp4">
+        </video>
+
+        <!-- Sound toggle button -->
+        <button class="sound-toggle" onclick="toggleSound(this)">
+            <svg class="sound-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M22 9l-6 6M16 9l6 6" stroke-width="2"></path>
+            </svg>
+        </button>
+
+        <!-- Right side actions -->
+        <div class="reel-actions">
+            <!-- Like button -->
+            <button class="action-button" onclick="toggleLike(this)">
+                <a href="{% url 'like' id=reel.id %}?next={{ request.path }}?{{ request.GET.urlencode }}">
+                    <svg class="action-icon heart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    <span class="action-count">{{ reel.likes_count|default:"0" }}</span>
+                </a>
+            </button>
+
+            <!-- Comment button -->
+            <button class="action-button comment-toggle-btn">
+                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span class="action-count">{{ reel.comments_count|default:"0" }}</span>
+                <span class="action-count">id: {{ reel.id }}</span>
+            </button>
+
+            <!-- Share button -->
+            <button class="action-button">
+                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22,2 15,22 11,13 2,9 22,2"></polygon>
+                </svg>
+            </button>
+
+            <!-- Save button -->
+            <button class="action-button" onclick="toggleSave(this)">
+                <svg class="action-icon save-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                </svg>
+            </button>
+
+            <!-- More options -->
+            <button class="action-button">
+                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="1"></circle>
+                    <circle cx="12" cy="5" r="1"></circle>
+                    <circle cx="12" cy="19" r="1"></circle>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Bottom user info -->
+        <div class="reel-info">
+            <div class="user-row">
+                <div class="user-avatar">{{ reel.userID.username|upper|first}}</div>
+                <span class="username">{{ reel.userID.username}}</span>
+                <button class="follow-button">Follow</button>
+            </div>
+
+            <div class="caption-text">
+                {{ reel.caption}}
+            </div>
+
+            <div class="audio-info">
+                <svg class="music-note" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                </svg>
+                {{ reel.userID.username }} • Original audio
             </div>
         </div>
-        
-        <div class="post-actions" style="position: absolute; bottom: 20px; left: 20px; right: 20px; background: rgba(0,0,0,0.5); border-radius: 8px; padding: 16px;">
-            <div class="post-actions-left">
-                <button class="action-btn">♡</button>
-                <button class="action-btn">💬</button>
-                <button class="action-btn">📤</button>
-            </div>
-            <button class="action-btn">🔖</button>
-        </div>
+
+        <!-- Profile icon -->
+        <div class="profile-icon"></div>
     </div>
-    
-    <!-- Reel Item 2 -->
-    <div class="reel-item" style="position: relative;">
-        <div class="reel-video">
-            <div style="text-align: center;">
-                <p>Video Player Area</p>
-                <p style="font-size: 14px; margin-top: 8px;">Replace this div with:</p>
-                <code style="background: #262626; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
-                    &lt;video controls width="100%" height="720"&gt;<br>
-                    &nbsp;&nbsp;&lt;source src="your-video.mp4" type="video/mp4"&gt;<br>
-                    &lt;/video&gt;
-                </code>
-            </div>
+
+    <div id="commentsPanel" class="comments-panel">
+        <div class="comments-header">
+            <h3 class="comments-title">Comments</h3>
+            <button class="close-comments" id="closeComments">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
         </div>
-        
-        <div class="post-actions" style="position: absolute; bottom: 20px; left: 20px; right: 20px; background: rgba(0,0,0,0.5); border-radius: 8px; padding: 16px;">
-            <div class="post-actions-left">
-                <button class="action-btn">♡</button>
-                <button class="action-btn">💬</button>
-                <button class="action-btn">📤</button>
+
+        <div class="comments-list">
+            {% for comment in reel.comments.all %}
+            <div class="comment-item">
+                <div class="input-avatar" style="margin-right: 10px;">
+                    {% if comment.userID.avatar %}
+                    <img class="input-avatar" src="{{ comment.userID.avatar.url }}">
+                    {% else %}
+                    <div class="comment-avatar">{{ comment.userID.username|upper|first }}</div>
+                    {% endif %}
+                </div>
+                <div class="comment-content">
+                    <div class="comment-header">
+                        <span class="comment-username">{{ comment.userID.username }}</span>
+                        <span class="comment-time">{{ comment.since_created }}</span>
+                    </div>
+                    <div class="comment-text">{{ comment.comment }}</div>
+                    <div class="comment-actions">
+                        <span class="comment-reply" onclick="showReplyInput(this)">Reply</span>
+                    </div>
+
+                    <!-- Reply Input Section (Initially Hidden) -->
+                    <form method="POST" class="reply-input-section">
+                        {% csrf_token %}
+                        <div class="reply-input-container">
+                            {% if request.user.avatar %}
+                            <div class="input-avatar" style="margin-right: 10px;">
+                                <img class="input-avatar" src="{{ request.user.avatar.url }}">
+                            </div>
+                            {% else %}
+                            <div class="reply-avatar">{{ request.user.username|upper|first }}</div>
+                            {% endif %}
+                            <input type="hidden" name="reel_id" value="{{ reel.id }}">
+                            <input type="hidden" name="parent_comment_id" value="{{ comment.id }}">
+                            <input type="text" name="reply_comment" class="reply-input"
+                                   placeholder="Reply to {{ comment.userID.username }}...">
+                        </div>
+                        <div class="reply-actions">
+                            <button class="reply-post-btn" type="submit">Post</button>
+                            <button class="reply-cancel-btn" type="button" onclick="cancelReply(this)">Cancel</button>
+                        </div>
+                    </form>
+
+                    <!--Replies -->
+                    {% if comment.replies.exists %}
+                    {% with reply_count=comment.replies.count %}
+                    <div class="view-replies" onclick="toggleReplies(this)">
+                        View all {{ reply_count }} repl{% if reply_count == 1 %}y{% else %}ies{% endif %}
+                    </div>
+
+                    <div class="replies-container" style="display: none; margin-left: 44px; margin-top: 8px;">
+                        {% for reply in comment.replies.all %}
+                        <div class="comment-item" style="margin-bottom: 12px;">
+                            <div class="input-avatar" style="margin-right: 8px;">
+                                {% if reply.userID.avatar %}
+                                <img class="input-avatar" src="{{ reply.userID.avatar.url }}"
+                                     style="width: 24px; height: 24px;">
+                                {% else %}
+                                <div class="comment-avatar" style="width: 24px; height: 24px; font-size: 10px;">{{
+                                    reply.userID.username|upper|first }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="comment-content">
+                                <div class="comment-header">
+                                    <span class="comment-username">{{ reply.userID.username }}</span>
+                                    <span class="comment-time">{{ reply.since_created }}</span>
+                                </div>
+                                <div class="comment-text">{{ reply.comment }}</div>
+                                <div class="comment-actions">
+                                    <span class="comment-reply" onclick="showReplyInput(this)">Reply</span>
+                                </div>
+                            </div>
+                            <button class="comment-heart">
+                                <a href="{% url 'comment-like' id=reply.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
+                                    {% is_comment_liked_by_user reply request.user as reply_liked %}
+                                    {% if reply_liked %}
+                                    <i class="fa-regular fa-heart" style="color: #ff0000;"></i>
+                                    {% else %}
+                                    <i class="fa-regular fa-heart"></i>
+                                    {% endif %}
+                                </a>
+                                <h1 class="comment-likes">{{ reply.comment_likes_count }}</h1>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endwith %}
+                    {% endif %}
+                </div>
+                <button class="comment-heart">
+                    <a href="{% url 'comment-like' id=comment.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
+                        {% is_comment_liked_by_user comment request.user as liked %}
+                        {% if liked %}
+                        <i class="fa-regular fa-heart" style="color: #ff0000;"></i>
+                        {% else %}
+                        <i class="fa-regular fa-heart"></i>
+                        {% endif %}
+                    </a>
+                    <h1 class="comment-likes">{{ comment.comment_likes_count }}</h1>
+                </button>
             </div>
-            <button class="action-btn">🔖</button>
+            {% endfor %}
         </div>
+
+        <form class="comment-input-section" method="POST">
+            {% csrf_token %}
+            <div class="comment-input-container">
+                {% if request.user.avatar %}
+                <div class="input-avatar">
+                    <img class="input-avatar" src="{{ request.user.avatar.url }}">
+                </div>
+                {% else %}
+                <div class="input-avatar">{{ request.user.username|upper|first }}</div>
+                {% endif %}
+                <input type="hidden" name="reel_id" value="{{ reel.id }}">
+                <input type="text" name="comment" placeholder="Add a comment..." class="comment-input"/>
+                <button class="send-comment" type="submit">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 2L11 13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </button>
+            </div>
+        </form>
     </div>
+    {% endfor %}
+
+    {% else %}
+    <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+        </svg>
+        <h3>No reels yet</h3>
+        <p>When people share reels, they'll appear here.</p>
+    </div>
+    {% endif %}
 </div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    // Simple toggle functions with minimal JS
+    function toggleSound(button) {
+        const video = button.parentElement.querySelector('.reel-video');
+        const icon = button.querySelector('.sound-icon');
+
+        if (video.muted) {
+            video.muted = false;
+            icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
+        } else {
+            video.muted = true;
+            icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M22 9l-6 6M16 9l6 6" stroke-width="2"></path>';
+        }
+    }
+
+    function toggleLike(button) {
+        const icon = button.querySelector('.heart-icon');
+
+        if (icon.classList.contains('liked')) {
+            icon.classList.remove('liked');
+            icon.style.fill = 'none';
+        } else {
+            icon.classList.add('liked');
+            icon.style.fill = '#ff3040';
+        }
+    }
+
+    function toggleSave(button) {
+        const icon = button.querySelector('.save-icon');
+
+        if (icon.style.fill === 'currentColor') {
+            icon.style.fill = 'none';
+        } else {
+            icon.style.fill = 'currentColor';
+        }
+    }
+
+    // Reply functionality
+    function showReplyInput(replyButton) {
+        const commentContent = replyButton.closest('.comment-content');
+        const replySection = commentContent.querySelector('.reply-input-section');
+        const replyInput = replySection.querySelector('.reply-input');
+
+        // Hide the reply button and show the input section
+        replyButton.style.display = 'none';
+        replySection.classList.add('active');
+
+        // Focus on the input
+        replyInput.focus();
+    }
+
+    function cancelReply(cancelButton) {
+        const replySection = cancelButton.closest('.reply-input-section');
+        const replyInput = replySection.querySelector('.reply-input');
+        const commentContent = replySection.closest('.comment-content');
+        const replyButton = commentContent.querySelector('.comment-reply');
+
+        // Clear the input
+        replyInput.value = '';
+
+        // Hide the reply section and show the reply button again
+        replySection.classList.remove('active');
+        replyButton.style.display = 'inline';
+    }
+
+    // Toggle replies visibility
+    function toggleReplies(viewRepliesButton) {
+        const repliesContainer = viewRepliesButton.nextElementSibling;
+
+        if (repliesContainer.style.display === 'none') {
+            repliesContainer.style.display = 'block';
+            viewRepliesButton.textContent = 'Hide replies';
+        } else {
+            repliesContainer.style.display = 'none';
+            // Reset text to original
+            const replyCount = repliesContainer.querySelectorAll('.comment-item').length;
+            viewRepliesButton.textContent = `View all ${replyCount} repl${replyCount === 1 ? 'y' : 'ies'}`;
+        }
+    }
+
+    // Auto-play videos and comments functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const videos = document.querySelectorAll('.reel-video');
+        const commentButtons = document.querySelectorAll('.comment-toggle-btn');
+        const commentsPanel = document.getElementById('commentsPanel');
+        const closeComments = document.getElementById('closeComments');
+
+        // Video click to play/pause
+        videos.forEach(video => {
+            video.addEventListener('click', function() {
+                if (this.paused) {
+                    this.play();
+                } else {
+                    this.pause();
+                }
+            });
+        });
+
+        // Keyboard shortcut for mute/unmute
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'k' || e.key === 'K') {
+                videos.forEach(video => {
+                    video.muted = !video.muted;
+                });
+            }
+        });
+
+        // Open comments panel
+        commentButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                commentsPanel.classList.add('active');
+            });
+        });
+
+        // Close comments panel
+        closeComments.addEventListener('click', () => {
+            commentsPanel.classList.remove('active');
+        });
+
+        // Comment heart buttons
+        const commentHearts = document.querySelectorAll('.comment-heart');
+        commentHearts.forEach(heart => {
+            heart.addEventListener('click', function() {
+                this.classList.toggle('liked');
+            });
+        });
+
+        // Handle Enter key in reply inputs
+        document.addEventListener('keypress', function(e) {
+            if (e.target.classList.contains('reply-input') && e.key === 'Enter') {
+                e.preventDefault();
+                const form = e.target.closest('form');
+                form.submit();
+            }
+        });
+    });
+
+</script>
+
+
 {% endblock %}
