@@ -613,12 +613,11 @@
             </button>
 
             <!-- Comment button -->
-            <button class="action-button comment-toggle-btn">
+            <button class="action-button comment-toggle-btn" data-reel-id="{{ reel.id }}">
                 <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
                 <span class="action-count">{{ reel.comments_count|default:"0" }}</span>
-                <span class="action-count">id: {{ reel.id }}</span>
             </button>
 
             <!-- Share button -->
@@ -670,10 +669,10 @@
         <div class="profile-icon"></div>
     </div>
 
-    <div id="commentsPanel" class="comments-panel">
+    <div id="commentsPanel-{{ reel.id }}" class="comments-panel">
         <div class="comments-header">
             <h3 class="comments-title">Comments</h3>
-            <button class="close-comments" id="closeComments">
+            <button class="close-comments" data-reel-id="{{ reel.id }}" id="closeComments">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -824,7 +823,6 @@
 
 {% block scripts %}
 <script>
-
     // Simple toggle functions with minimal JS
     function toggleSound(button) {
         const video = button.parentElement.querySelector('.reel-video');
@@ -907,9 +905,9 @@
     // Auto-play videos and comments functionality
     document.addEventListener('DOMContentLoaded', function() {
         const videos = document.querySelectorAll('.reel-video');
-        const commentButtons = document.querySelectorAll('.comment-toggle-btn');
-        const commentsPanel = document.getElementById('commentsPanel');
-        const closeComments = document.getElementById('closeComments');
+  const commentButtons = document.querySelectorAll('.comment-toggle-btn');
+        const allCommentsPanels = document.querySelectorAll('.comments-panel'); // Get all panels
+        const closeCommentsButtons = document.querySelectorAll('.close-comments'); // Get all close buttons
 
         // Video click to play/pause
         videos.forEach(video => {
@@ -931,18 +929,59 @@
             }
         });
 
-        // Open comments panel
+        // Open comments panel for a specific reel
         commentButtons.forEach(button => {
             button.addEventListener('click', () => {
-                commentsPanel.classList.add('active');
+                const reelId = button.dataset.reelId;
+                const targetCommentsPanel = document.getElementById(`commentsPanel-${reelId}`); // Get the specific panel
+
+                // Close any currently open panels first
+                allCommentsPanels.forEach(panel => {
+                    if (panel.classList.contains('active')) {
+                        panel.classList.remove('active');
+                    }
+                });
+
+                // Open the specific panel
+                if (targetCommentsPanel) {
+                    targetCommentsPanel.classList.add('active');
+                }
             });
         });
+ commentButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                console.log('Comment button clicked!'); // Debugging: Check if this logs
+                const reelId = button.dataset.reelId;
+                console.log('Reel ID:', reelId); // Debugging: Check if reelId is correct
+                const targetCommentsPanel = document.getElementById(`commentsPanel-${reelId}`);
 
-        // Close comments panel
-        closeComments.addEventListener('click', () => {
-            commentsPanel.classList.remove('active');
+                // Close any currently open panels first (optional, but good for single panel experience)
+                allCommentsPanels.forEach(panel => {
+                    if (panel.classList.contains('active')) {
+                        panel.classList.remove('active');
+                    }
+                });
+
+                // Open the specific panel
+                if (targetCommentsPanel) {
+                    targetCommentsPanel.classList.add('active');
+                    console.log(`Comments panel for reel ${reelId} opened.`); // Debugging: Check if panel opens
+                } else {
+                    console.error(`Comments panel for reel ID ${reelId} not found!`); // Debugging: Check if panel is missing
+                }
+            });
         });
-
+        // Close comments panel
+         closeCommentsButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const reelId = button.dataset.reelId;
+                const targetCommentsPanel = document.getElementById(`commentsPanel-${reelId}`);
+                if (targetCommentsPanel) {
+                    targetCommentsPanel.classList.remove('active');
+                    console.log(`Comments panel for reel ${reelId} closed.`); // Debugging: Check if panel closes
+                }
+            });
+        });
         // Comment heart buttons
         const commentHearts = document.querySelectorAll('.comment-heart');
         commentHearts.forEach(heart => {
@@ -960,8 +999,6 @@
             }
         });
     });
-
 </script>
-
-
 {% endblock %}
+
