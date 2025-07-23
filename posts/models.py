@@ -25,6 +25,7 @@ class PostModel(models.Model):
     )
     hashtags = models.ManyToManyField('HashtagModel', blank=True, null=True)
     music = models.ManyToManyField('MusicModel', blank=True, null=True)
+    saved = models.ManyToManyField(UserModel, blank=True, null=True, related_name='saved')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def since_created(self):
@@ -34,7 +35,10 @@ class PostModel(models.Model):
         days = diff.days
         seconds = diff.seconds
 
-        if days > 0:
+        if days >= 7:
+            weeks = days // 7
+            return f"{weeks} week{'s' if weeks > 1 else ''} ago"
+        elif days > 0:
             return f"{days} day{'s' if days > 1 else ''} ago"
         elif seconds >= 3600:
             hours = seconds // 3600
@@ -46,7 +50,7 @@ class PostModel(models.Model):
             return "Just now"
 
     def comments_count(self):
-        return self.comments.count()
+        return self.comments.count() + self.reply_comments.count()
 
     def likes_count(self):
         return self.likes.count()
@@ -62,12 +66,10 @@ class HashtagModel(models.Model):
         return f'#{self.name}'
 
 
-
 class PostLikeModel(models.Model):
     postID = models.ForeignKey(PostModel, on_delete=models.CASCADE, related_name='likes')
     userID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='likes')
     created_at = models.DateTimeField(auto_now_add=True)
-
 
 
 class SingerModel(models.Model):
@@ -96,7 +98,10 @@ class CommentModel(models.Model):
         days = diff.days
         seconds = diff.seconds
 
-        if days > 0:
+        if days > 7:
+            weeks = days // 7
+            return f"{weeks} week{'s' if weeks > 2 else ''} ago"
+        elif days > 0:
             return f"{days} day{'s' if days > 1 else ''} ago"
         elif seconds >= 3600:
             hours = seconds // 3600
@@ -110,6 +115,9 @@ class CommentModel(models.Model):
     def comment_likes_count(self):
         return self.comment_likes.count()
 
+    def replies_count(self):
+        return self.reply_comments.count()
+
 
 class CommentLikeModel(models.Model):
     commentID = models.ForeignKey(CommentModel, on_delete=models.CASCADE, related_name='comment_likes')
@@ -117,8 +125,8 @@ class CommentLikeModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-
 class ReplyCommentModel(models.Model):
+    postID = models.ForeignKey(PostModel, on_delete=models.CASCADE, related_name='reply_comments')
     commentID = models.ForeignKey(CommentModel, on_delete=models.CASCADE, related_name='reply_comments')
     userID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='reply_comments')
     reply_comment = models.CharField(max_length=250)
@@ -134,7 +142,10 @@ class ReplyCommentModel(models.Model):
         days = diff.days
         seconds = diff.seconds
 
-        if days > 0:
+        if days > 7:
+            weeks = days // 7
+            return f"{weeks} week{'s' if weeks > 2 else ''} ago"
+        elif days > 0:
             return f"{days} day{'s' if days > 1 else ''} ago"
         elif seconds >= 3600:
             hours = seconds // 3600

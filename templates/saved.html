@@ -1033,37 +1033,6 @@
     function loadComments(postId, postType) {
         const modalComments = document.getElementById('modalComments');
 
-        // Sample comments - replace with actual Django data
-        const sampleComments = [
-            {
-                id: 1,
-                username: 'user123',
-                avatar: null,
-                comment: 'Amazing shot! 🔥',
-                time: '2h',
-                likes: 12,
-                replies: [
-                    {
-                        id: 2,
-                        username: 'photographer_pro',
-                        avatar: null,
-                        comment: 'Thanks! Used my new lens for this one',
-                        time: '1h',
-                        likes: 3
-                    }
-                ]
-            },
-            {
-                id: 3,
-                username: 'explorer_jane',
-                avatar: null,
-                comment: 'I need to visit this place!',
-                time: '3h',
-                likes: 8,
-                replies: []
-            }
-        ];
-
         modalComments.innerHTML = '';
 
         sampleComments.forEach(comment => {

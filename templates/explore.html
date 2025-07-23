@@ -3,7 +3,6 @@
 {% load my_tags %}
 
 {% block title %}Explore • Instagram{% endblock %}
-
 {% block explore_active %}active{% endblock %}
 
 {% block extra_css %}
@@ -250,6 +249,13 @@
         color: white;
         font-weight: 600;
         font-size: 12px;
+        overflow: hidden;
+    }
+
+    .modal-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .modal-username {
@@ -280,6 +286,7 @@
         flex: 1;
         overflow-y: auto;
         padding: 16px;
+        max-height: calc(90vh - 200px);
     }
 
     .modal-caption {
@@ -287,6 +294,11 @@
         font-size: 14px;
         line-height: 1.4;
         margin-bottom: 16px;
+    }
+
+    .modal-caption .caption-username {
+        font-weight: 600;
+        margin-right: 8px;
     }
 
     .modal-location {
@@ -325,7 +337,7 @@
     .comment-item {
         display: flex;
         align-items: flex-start;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
         gap: 12px;
     }
 
@@ -335,6 +347,13 @@
         border-radius: 50%;
         overflow: hidden;
         flex-shrink: 0;
+        background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
     }
 
     .comment-avatar img {
@@ -354,7 +373,7 @@
         margin-bottom: 4px;
     }
 
-    .comment-text strong {
+    .comment-text .comment-username {
         font-weight: 600;
         margin-right: 8px;
     }
@@ -374,6 +393,10 @@
     .comment-reply {
         cursor: pointer;
         font-weight: 600;
+        background: none;
+        border: none;
+        color: #8e8e8e;
+        padding: 0;
     }
 
     .comment-reply:hover {
@@ -427,96 +450,19 @@
         border-radius: 50%;
         overflow: hidden;
         flex-shrink: 0;
+        background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 600;
     }
 
     .reply-avatar img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-    }
-
-    .view-replies {
-        margin-left: 44px;
-        font-size: 12px;
-        color: #8e8e8e;
-        cursor: pointer;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-
-    .view-replies:hover {
-        color: #fff;
-    }
-
-    .view-replies::before {
-        content: '';
-        width: 24px;
-        height: 1px;
-        background: #262626;
-    }
-
-    /* Reply Input */
-    .reply-input-section {
-        margin-left: 44px;
-        margin-top: 8px;
-        display: none;
-    }
-
-    .reply-input-section.active {
-        display: block;
-    }
-
-    .reply-input-container {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 8px;
-    }
-
-    .reply-input {
-        flex: 1;
-        border: none;
-        outline: none;
-        font-size: 14px;
-        color: #fff;
-        background: transparent;
-    }
-
-    .reply-input::placeholder {
-        color: #8e8e8e;
-    }
-
-    .reply-actions {
-        display: flex;
-        gap: 12px;
-        margin-left: 32px;
-    }
-
-    .reply-post-btn, .reply-cancel-btn {
-        background: none;
-        border: none;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        padding: 0;
-    }
-
-    .reply-post-btn {
-        color: #0095f6;
-    }
-
-    .reply-post-btn:hover {
-        color: #1877f2;
-    }
-
-    .reply-cancel-btn {
-        color: #8e8e8e;
-    }
-
-    .reply-cancel-btn:hover {
-        color: #fff;
     }
 
     .modal-actions {
@@ -561,6 +507,7 @@
 
     .modal-action-btn.saved svg {
         fill: #fff;
+        stroke: #fff;
     }
 
     /* Comment Input */
@@ -645,6 +592,13 @@
         color: #fff;
     }
 
+    .no-comments {
+        text-align: center;
+        padding: 20px;
+        color: #8e8e8e;
+        font-size: 14px;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .explore-grid {
@@ -705,31 +659,13 @@
             padding: 0 4px;
         }
     }
-
-    /* Loading state for videos */
-    .explore-item.loading::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 20px;
-        height: 20px;
-        margin: -10px 0 0 -10px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-top: 2px solid #fff;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="explore-container">
+
+
     {% if posts or reels %}
     <div class="explore-grid">
         {% for post in posts %}
@@ -738,10 +674,16 @@
              data-id="{{ post.id }}"
              data-url="{{ post.contentUrl.url }}"
              data-username="{{ post.userID.username }}"
+             data-user-avatar="{% if post.userID.avatar %}{{ post.userID.avatar.url }}{% else %}None{% endif %}"
              data-caption="{{ post.caption }}"
              data-likes="{{ post.likes_count }}"
              data-comments="{{ post.comments_count }}"
-             data-location="{{ post.location }}">
+             data-location="{{ post.location }}"
+             data-is-carousel="{% if post.is_carousel %}true{% else %}false{% endif %}"
+             data-likedByUser="{% if post|is_liked_by_user:request.user %}True{% else %}False{% endif %}"
+             data-saved-by-user="{% is_saved_by_user request.user post %}"
+             data-saved-count="{{ post.saved.count }}"
+        >
             <img src="{{ post.contentUrl.url }}" alt="Post" loading="lazy">
             {% if post.is_carousel %}
             <div class="content-indicator">
@@ -776,10 +718,15 @@
              data-id="{{ reel.id }}"
              data-url="{{ reel.contentUrl.url }}"
              data-username="{{ reel.userID.username }}"
+             data-user-avatar="{% if reel.userID.avatar %}{{ reel.userID.avatar.url }}{% else %}None{% endif %}"
              data-caption="{{ reel.caption }}"
              data-likes="{{ reel.likes_count }}"
              data-views="{{ reel.views_count }}"
-             data-location="{{ reel.location }}">
+             data-location="{{ reel.location }}"
+             data-likedByUser="{% if reel|is_liked_by_user:request.user %}True{% else %}False{% endif %}"
+             data-saved-by-user="{% is_saved_by_user request.user reel %}"
+             data-saved-count="{{ reel.saved.count }}"
+        >
             <video autoplay muted loop playsinline preload="metadata">
                 <source src="{{ reel.contentUrl.url }}" type="video/mp4">
             </video>
@@ -813,97 +760,92 @@
     <div class="explore-grid">
         <div class="empty-state">
             <svg width="96" height="96" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.07 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.057-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-4.358-.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
             </svg>
             <h3>No posts yet</h3>
             <p>When people share posts, they'll appear here.</p>
         </div>
     </div>
     {% endif %}
-</div>
 
-<!-- Post Modal -->
-<div class="post-modal" id="postModal">
-    <button class="modal-close" onclick="closeModal()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-    </button>
-    <div class="modal-content">
-        <div class="modal-media">
-            <img id="modalImage" src="/placeholder.svg" alt="" style="display: none;">
-            <video id="modalVideo" controls autoplay muted loop playsinline style="display: none;">
-                <source src="/placeholder.svg" type="video/mp4">
-            </video>
-        </div>
-        <div class="modal-sidebar">
-            <div class="modal-header">
-                <div class="modal-user-info">
-                    <div class="modal-avatar" id="modalAvatar"></div>
-                    <span class="modal-username" id="modalUsername"></span>
-                    <button class="modal-follow-btn">Follow</button>
-                </div>
+    <div class="post-modal" id="globalPostModal">
+        <button class="modal-close" onclick="closeModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+        <div class="modal-content">
+            <div class="modal-media">
+                <img id="modalImage" src="/placeholder.svg" alt="" style="display: none;">
+                <video id="modalVideo" controls autoplay muted loop playsinline style="display: none;">
+                    <source src="/placeholder.svg" type="video/mp4">
+                </video>
             </div>
-            <div class="modal-body">
-                <div class="modal-caption" id="modalCaption"></div>
-                <div class="modal-location" id="modalLocation" style="display: none;">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                    </svg>
-                    <span id="modalLocationText"></span>
-                </div>
-                <div class="modal-stats" id="modalStats"></div>
-                <div class="modal-time"></div>
-
-                <!-- Comments Section -->
-                <div class="modal-comments" id="modalComments">
-                    <!-- Dynamic comments will be loaded here -->
-                </div>
-            </div>
-
-            <div class="modal-actions">
-                <div class="modal-actions-left">
-                    <button class="modal-action-btn like-btn" onclick="toggleModalLike(this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                        </svg>
-                    </button>
-                    <button class="modal-action-btn comment-btn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                        </svg>
-                    </button>
-                    <button class="modal-action-btn share-btn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <line x1="22" y1="2" x2="11" y2="13"/>
-                            <polygon points="22,2 15,22 11,13 2,9 22,2"/>
-                        </svg>
-                    </button>
-                </div>
-                <button class="modal-action-btn save-btn" onclick="toggleModalSave(this)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Comment Input -->
-            <form class="comment-input-section" method="POST" id="modalCommentForm">
-                {% csrf_token %}
-                <div class="comment-avatar" style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden;">
-                    {% if request.user.avatar %}
-                    <img src="{{ request.user.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ request.user.username }}">
-                    {% else %}
-                    <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px;">
-                        {{ request.user.username|upper|first }}
+            <div class="modal-sidebar">
+                <div class="modal-header">
+                    <div class="modal-user-info">
+                        <div class="modal-avatar" id="modalAvatar"></div>
+                        <span class="modal-username" id="modalUsername"></span>
+                        <button class="modal-follow-btn">Follow</button>
                     </div>
-                    {% endif %}
                 </div>
-                <input type="hidden" name="post_id" id="modalPostId" value="">
-                <input type="text" name="comment" class="comment-input" placeholder="Add a comment..." oninput="toggleModalPostButton(this)">
-                <button type="submit" class="comment-post-btn">Post</button>
-            </form>
+                <div class="modal-body">
+                    <div class="modal-caption" id="modalCaption"></div>
+                    <div class="modal-location" id="modalLocation" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        <span id="modalLocationText"></span>
+                    </div>
+                    <div class="modal-stats" id="modalStats"></div>
+                    <div class="modal-time"></div>
+                    <div class="modal-comments" id="modalComments">
+                        </div>
+                </div>
+                <div class="modal-actions">
+                    <div class="modal-actions-left">
+                        <button class="modal-action-btn like-btn" id="modalLikeBtn">
+                            <a href="#" id="modalLikeLink">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                </svg>
+                            </a>
+                        </button>
+                        <button class="modal-action-btn comment-btn" onclick="focusCommentInput()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                        </button>
+                        <button class="modal-action-btn share-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22,2 15,22 11,13 2,9 22,2"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="modal-action-btn save-btn" id="modalSaveBtn">
+                        <a href="#" id="modalSaveLink" title="Save">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                            </svg>
+                        </a>
+                    </button>
+                </div>
+                <form class="comment-input-section" method="POST" action="{% url 'explore' %}">
+                    {% csrf_token %}
+                    <div class="comment-avatar">
+                        {% if request.user.avatar %}
+                        <img src="{{ request.user.avatar.url }}" alt="{{ request.user.username }}">
+                        {% else %}
+                        {{ request.user.username|upper|first }}
+                        {% endif %}
+                    </div>
+                    <input type="hidden" name="post_id" id="modalPostIdInput" value="">
+                    <input type="text" name="comment" class="comment-input" placeholder="Add a comment..." oninput="toggleModalPostButton(this)" id="modalCommentInput">
+                    <button type="submit" class="comment-post-btn" id="modalCommentSubmit">Post</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -911,380 +853,320 @@
 
 {% block scripts %}
 <script>
-    let currentPostData = null;
+    const globalPostModal = document.getElementById('globalPostModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalVideo = document.getElementById('modalVideo');
+    const modalAvatar = document.getElementById('modalAvatar');
+    const modalUsername = document.getElementById('modalUsername');
+    const modalCaption = document.getElementById('modalCaption');
+    const modalLocation = document.getElementById('modalLocation');
+    const modalLocationText = document.getElementById('modalLocationText');
+    const modalStats = document.getElementById('modalStats');
+    const modalPostIdInput = document.getElementById('modalPostIdInput');
+    const modalLikeLink = document.getElementById('modalLikeLink');
+    const modalSaveLink = document.getElementById('modalSaveLink');
+    const modalLikeBtn = document.getElementById('modalLikeBtn');
+    const modalSaveBtn = document.getElementById('modalSaveBtn');
+    const modalComments = document.getElementById('modalComments');
+    const modalCommentInput = document.getElementById('modalCommentInput');
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const reelItems = document.querySelectorAll('.explore-item.reel');
-        reelItems.forEach(item => {
-            const video = item.querySelector('video');
-            if (video) {
-                // Auto-play on hover
-                item.addEventListener('mouseenter', function() {
-                    item.classList.add('loading');
-                    video.play().then(() => {
-                        item.classList.remove('loading');
-                    }).catch(() => {
-                        item.classList.remove('loading');
-                    });
-                });
+    // Store all posts and reels data with their comments
+    const postsData = {
+        {% for post in posts %}
+        '{{ post.id }}': {
+            comments: [
+                {% for comment in post.comments.all %}
+                {
+                    id: {{ comment.id }},
+                    username: '{{ comment.userID.username }}',
+                    userAvatar: '{% if comment.userID.avatar %}{{ comment.userID.avatar.url }}{% else %}None{% endif %}',
+                    text: '{{ comment.comment|escapejs }}',
+                    timeAgo: '{{ comment.since_created }}',
+                    replies: [
+                        {% for reply in comment.reply_comments.all %}
+                        {
+                            id: {{ reply.id }},
+                            username: '{{ reply.userID.username }}',
+                            userAvatar: '{% if reply.userID.avatar %}{{ reply.userID.avatar.url }}{% else %}None{% endif %}',
+                            text: '{{ reply.reply_comment|escapejs }}',
+                            timeAgo: '{{ reply.since_created }}'
+                        }{% if not forloop.last %},{% endif %}
+                        {% endfor %}
+                    ]
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ]
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    };
 
-                // Pause on mouse leave
-                item.addEventListener('mouseleave', function() {
-                    video.pause();
-                    video.currentTime = 0;
-                    item.classList.remove('loading');
-                });
+    const reelsData = {
+        {% for reel in reels %}
+        '{{ reel.id }}': {
+            comments: [
+                {% for comment in reel.comments.all %}
+                {
+                    id: {{ comment.id }},
+                    username: '{{ comment.userID.username }}',
+                    userAvatar: '{% if comment.userID.avatar %}{{ comment.userID.avatar.url }}{% else %}None{% endif %}',
+                    text: '{{ comment.comment|escapejs }}',
+                    timeAgo: '{{ comment.since_created }}',
+                    replies: [
+                        {% for reply in comment.reply_comments.all %}
+                        {
+                            id: {{ reply.id }},
+                            username: '{{ reply.userID.username }}',
+                            userAvatar: '{% if reply.userID.avatar %}{{ reply.userID.avatar.url }}{% else %}None{% endif %}',
+                            text: '{{ reply.reply_comment|escapejs }}',
+                            timeAgo: '{{ reply.since_created }}'
+                        }{% if not forloop.last %},{% endif %}
+                        {% endfor %}
+                    ]
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ]
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    };
 
-                // Handle video loading
-                video.addEventListener('loadstart', function() {
-                    item.classList.add('loading');
-                });
+    function renderComments(comments) {
+        modalComments.innerHTML = ''; // Clear existing comments
 
-                video.addEventListener('canplay', function() {
-                    item.classList.remove('loading');
-                });
-            }
-        });
-
-        // Click handlers for opening modal
-        const exploreItems = document.querySelectorAll('.explore-item');
-        exploreItems.forEach(item => {
-            item.addEventListener('click', function() {
-                openModal(this);
-            });
-        });
-    });
-
-    function openModal(item) {
-        const modal = document.getElementById('postModal');
-        const modalImage = document.getElementById('modalImage');
-        const modalVideo = document.getElementById('modalVideo');
-        const modalUsername = document.getElementById('modalUsername');
-        const modalAvatar = document.getElementById('modalAvatar');
-        const modalCaption = document.getElementById('modalCaption');
-        const modalLocation = document.getElementById('modalLocation');
-        const modalLocationText = document.getElementById('modalLocationText');
-        const modalStats = document.getElementById('modalStats');
-        const modalPostId = document.getElementById('modalPostId');
-        const modalComments = document.getElementById('modalComments');
-
-        // Get data from clicked item
-        const type = item.dataset.type;
-        const id = item.dataset.id;
-        const url = item.dataset.url;
-        const username = item.dataset.username;
-        const caption = item.dataset.caption;
-        const likes = item.dataset.likes || "0";
-        const comments = item.dataset.comments || "0";
-        const views = item.dataset.views || "0";
-        const location = item.dataset.location;
-
-        // Store current post data
-        currentPostData = {
-            type: type,
-            id: id,
-            username: username,
-            likes: likes,
-            comments: comments
-        };
-
-        // Set media (image or video)
-        if (type === 'reels') {
-            modalImage.style.display = 'none';
-            modalVideo.style.display = 'block';
-            modalVideo.querySelector('source').src = url;
-            modalVideo.load();
-        } else {
-            modalVideo.style.display = 'none';
-            modalImage.style.display = 'block';
-            modalImage.src = url;
+        if (comments.length === 0) {
+            modalComments.innerHTML = '<div class="no-comments">No comments yet.</div>';
+            return;
         }
 
-        // Set text info
-        modalUsername.textContent = username;
-        modalCaption.innerHTML = `<strong>${username}</strong> ${caption}`;
-        modalPostId.value = id;
+        comments.forEach(comment => {
+            const commentItem = document.createElement('div');
+            commentItem.className = 'comment-item';
+            commentItem.dataset.commentId = comment.id; // Add data attribute for comment ID
 
-        // Set stats
-        modalStats.textContent =
-            type === 'reels'
-                ? `${likes} likes • ${views} views`
-                : `${likes} likes • ${comments} comments`;
+            const avatarHtml = comment.userAvatar && comment.userAvatar !== 'None' ?
+                `<img src="${comment.userAvatar}" alt="${comment.username}">` :
+                comment.username.toUpperCase().charAt(0);
 
-        // Location
-        if (location && location !== "None") {
-            modalLocation.style.display = 'flex';
-            modalLocationText.textContent = location;
-        } else {
-            modalLocation.style.display = 'none';
-        }
-
-        // Set avatar
-        modalAvatar.textContent = username[0].toUpperCase();
-
-        // Load comments
-        loadComments(id, type);
-
-        // Show modal
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function loadComments(postId, postType) {
-        const modalComments = document.getElementById('modalComments');
-
-        // Sample comments - replace with actual Django data
-        const sampleComments = [
-            {
-                id: 1,
-                username: 'user123',
-                avatar: null,
-                comment: 'Amazing shot! 🔥',
-                time: '2h',
-                likes: 12,
-                replies: [
-                    {
-                        id: 2,
-                        username: 'photographer_pro',
-                        avatar: null,
-                        comment: 'Thanks! Used my new lens for this one',
-                        time: '1h',
-                        likes: 3
-                    }
-                ]
-            },
-            {
-                id: 3,
-                username: 'explorer_jane',
-                avatar: null,
-                comment: 'I need to visit this place!',
-                time: '3h',
-                likes: 8,
-                replies: []
-            }
-        ];
-
-        modalComments.innerHTML = '';
-
-        sampleComments.forEach(comment => {
-            const commentHtml = createCommentHTML(comment);
-            modalComments.appendChild(commentHtml);
-        });
-    }
-
-    function createCommentHTML(comment) {
-        const commentDiv = document.createElement('div');
-        commentDiv.className = 'comment-item';
-        commentDiv.innerHTML = `
-            <div class="comment-avatar">
-                ${comment.avatar ?
-                    `<img src="${comment.avatar}" alt="${comment.username}">` :
-                    `<div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px;">${comment.username[0].toUpperCase()}</div>`
-                }
-            </div>
-            <div class="comment-content">
-                <div class="comment-text">
-                    <strong>${comment.username}</strong>${comment.comment}
+            commentItem.innerHTML = `
+                <div class="comment-avatar">
+                    ${avatarHtml}
                 </div>
-                <div class="comment-actions">
-                    <span class="comment-time">${comment.time}</span>
-                    <span class="comment-likes">${comment.likes} likes</span>
-                    <span class="comment-reply" onclick="showModalReplyInput(this)">Reply</span>
-                </div>
-
-                <!-- Reply Input Section -->
-                <div class="reply-input-section">
-                    <div class="reply-input-container">
-                        <div class="reply-avatar" style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-                            {% if request.user.avatar %}
-                            <img src="{{ request.user.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ request.user.username }}">
-                            {% else %}
-                            <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">
-                                {{ request.user.username|upper|first }}
-                            </div>
-                            {% endif %}
+                <div class="comment-content">
+                    <div class="comment-text">
+                        <span class="comment-username">${comment.username}</span>${comment.text}
+                    </div>
+                    <div class="comment-actions">
+                        <span class="comment-time">${comment.timeAgo}</span>
+                        <button class="comment-reply" onclick="startReplyToComment(${comment.id}, '${comment.username}')">Reply</button>
+                        <span class="comment-likes">0 likes</span> <button class="comment-heart">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="replies-container" id="replies-for-comment-${comment.id}">
                         </div>
-                        <input type="text" class="reply-input" placeholder="Reply to ${comment.username}...">
-                    </div>
-                    <div class="reply-actions">
-                        <button class="reply-post-btn" onclick="postModalReply(this)">Post</button>
-                        <button class="reply-cancel-btn" onclick="cancelModalReply(this)">Cancel</button>
-                    </div>
                 </div>
+            `;
+            modalComments.appendChild(commentItem);
 
-                ${comment.replies.length > 0 ? `
-                <div class="view-replies" onclick="toggleModalReplies(this)">
-                    View replies (${comment.replies.length})
-                </div>
-                <div class="replies-container" style="display: none;">
-                    ${comment.replies.map(reply => `
-                        <div class="reply-item">
-                            <div class="reply-avatar">
-                                ${reply.avatar ?
-                                    `<img src="${reply.avatar}" alt="${reply.username}">` :
-                                    `<div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">${reply.username[0].toUpperCase()}</div>`
-                                }
-                            </div>
-                            <div class="comment-content">
-                                <div class="comment-text">
-                                    <strong>${reply.username}</strong>${reply.comment}
-                                </div>
-                                <div class="comment-actions">
-                                    <span class="comment-time">${reply.time}</span>
-                                    <span class="comment-likes">${reply.likes} likes</span>
-                                    <span class="comment-reply" onclick="showModalReplyInput(this)">Reply</span>
-                                </div>
-                            </div>
-                            <button class="comment-heart" onclick="toggleModalCommentLike(this)">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            // Render replies for each comment
+            const repliesContainer = document.getElementById(`replies-for-comment-${comment.id}`);
+            comment.replies.forEach(reply => {
+                const replyItem = document.createElement('div');
+                replyItem.className = 'reply-item';
+                const replyAvatarHtml = reply.userAvatar && reply.userAvatar !== 'None' ?
+                    `<img src="${reply.userAvatar}" alt="${reply.username}">` :
+                    reply.username.toUpperCase().charAt(0);
+
+                replyItem.innerHTML = `
+                    <div class="reply-avatar">
+                        ${replyAvatarHtml}
+                    </div>
+                    <div class="comment-content">
+                        <div class="comment-text">
+                            <span class="comment-username">${reply.username}</span>${reply.text}
+                        </div>
+                        <div class="comment-actions">
+                            <span class="comment-time">${reply.timeAgo}</span>
+                            <span class="comment-likes">0 likes</span>
+                            <button class="comment-heart">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                                 </svg>
                             </button>
                         </div>
-                    `).join('')}
-                </div>
-                ` : ''}
-            </div>
-            <button class="comment-heart" onclick="toggleModalCommentLike(this)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-            </button>
-        `;
-        return commentDiv;
+                    </div>
+                `;
+                repliesContainer.appendChild(replyItem);
+            });
+        });
+    }
+
+    function openModal(postData) {
+        // Reset media display
+        modalImage.style.display = 'none';
+        modalVideo.style.display = 'none';
+        modalVideo.pause();
+
+        // Set media content
+        if (postData.type === 'post') {
+            modalImage.src = postData.url;
+            modalImage.style.display = 'block';
+        } else if (postData.type === 'reels') {
+            modalVideo.src = postData.url;
+            modalVideo.style.display = 'block';
+            modalVideo.load();
+            modalVideo.play();
+        }
+
+        // Set user info
+        modalUsername.textContent = postData.username;
+        modalPostIdInput.value = postData.id;
+
+        // Set user avatar
+        if (postData.userAvatar && postData.userAvatar !== 'None') {
+            modalAvatar.innerHTML = `<img src="${postData.userAvatar}" alt="${postData.username}">`;
+        } else {
+            modalAvatar.textContent = postData.username.toUpperCase().charAt(0);
+        }
+
+        // Set caption
+        if (postData.caption && postData.caption !== 'None') {
+            modalCaption.innerHTML = `<span class="caption-username">${postData.username}</span>${postData.caption}`;
+        } else {
+            modalCaption.innerHTML = `<span class="caption-username">${postData.username}</span>`;
+        }
+
+        // Set location
+        if (postData.location && postData.location !== 'None') {
+            modalLocationText.textContent = postData.location;
+            modalLocation.style.display = 'flex';
+        } else {
+            modalLocation.style.display = 'none';
+        }
+
+        // Set stats
+        let statsText = `${postData.likes} likes`;
+        if (postData.type === 'reels') {
+            statsText += ` • ${postData.views} views`;
+        }
+        modalStats.textContent = statsText;
+
+        // Set like and save states
+        if (postData.likedByUser === 'True') {
+            modalLikeBtn.classList.add('liked');
+        } else {
+            modalLikeBtn.classList.remove('liked');
+        }
+
+        if (postData.saved_by_user === 'True') {
+            modalSaveBtn.classList.add('saved');
+        } else {
+            modalSaveBtn.classList.remove('saved');
+        }
+
+        // Update like and save links
+        modalLikeLink.href = `/like/${postData.id}/?next=${encodeURIComponent(window.location.pathname)}`;
+        modalSaveLink.href = `/saved/${postData.id}/?next=${encodeURIComponent(window.location.pathname)}`;
+
+        // Populate comments
+        let commentsForPost;
+        if (postData.type === 'post') {
+            commentsForPost = postsData[postData.id].comments;
+        } else if (postData.type === 'reels') {
+            commentsForPost = reelsData[postData.id].comments;
+        }
+        renderComments(commentsForPost);
+
+
+        globalPostModal.classList.add('active');
     }
 
     function closeModal() {
-        const modal = document.getElementById('postModal');
-        const modalVideo = document.getElementById('modalVideo');
-        modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
-
-        // Pause video if playing
-        if (modalVideo.style.display === 'block') {
-            modalVideo.pause();
-        }
-    }
-
-    // Modal interaction functions
-    function toggleModalLike(button) {
-        const svg = button.querySelector('svg');
-        if (button.classList.contains('liked')) {
-            button.classList.remove('liked');
-            svg.style.fill = 'none';
-            svg.style.stroke = '#fff';
-        } else {
-            button.classList.add('liked');
-            svg.style.fill = '#ed4956';
-            svg.style.stroke = '#ed4956';
-        }
-    }
-
-    function toggleModalSave(button) {
-        const svg = button.querySelector('svg');
-        if (button.classList.contains('saved')) {
-            button.classList.remove('saved');
-            svg.style.fill = 'none';
-        } else {
-            button.classList.add('saved');
-            svg.style.fill = '#fff';
-        }
-    }
-
-    function toggleModalCommentLike(button) {
-        const svg = button.querySelector('svg');
-        if (button.classList.contains('liked')) {
-            button.classList.remove('liked');
-            svg.style.fill = 'none';
-            svg.style.stroke = '#8e8e8e';
-        } else {
-            button.classList.add('liked');
-            svg.style.fill = '#ed4956';
-            svg.style.stroke = '#ed4956';
-        }
-    }
-
-    function showModalReplyInput(replyButton) {
-        const commentContent = replyButton.closest('.comment-content');
-        const replySection = commentContent.querySelector('.reply-input-section');
-        const replyInput = replySection.querySelector('.reply-input');
-
-        replyButton.style.display = 'none';
-        replySection.style.display = 'block';
-        replyInput.focus();
-    }
-
-    function postModalReply(button) {
-        const replySection = button.closest('.reply-input-section');
-        const replyInput = replySection.querySelector('.reply-input');
-        const commentContent = replySection.closest('.comment-content');
-        const replyButton = commentContent.querySelector('.comment-reply');
-
-        const replyText = replyInput.value.trim();
-        if (replyText) {
-            console.log('Reply posted:', replyText);
-            replyInput.value = '';
-        }
-
-        replySection.style.display = 'none';
-        replyButton.style.display = 'inline';
-    }
-
-    function cancelModalReply(button) {
-        const replySection = button.closest('.reply-input-section');
-        const replyInput = replySection.querySelector('.reply-input');
-        const commentContent = replySection.closest('.comment-content');
-        const replyButton = commentContent.querySelector('.comment-reply');
-
-        replyInput.value = '';
-        replySection.style.display = 'none';
-        replyButton.style.display = 'inline';
-    }
-
-    function toggleModalReplies(button) {
-        const repliesContainer = button.nextElementSibling;
-        const isVisible = repliesContainer.style.display !== 'none';
-
-        repliesContainer.style.display = isVisible ? 'none' : 'block';
-        const replyCount = repliesContainer.children.length;
-        button.textContent = isVisible ? `View replies (${replyCount})` : 'Hide replies';
+        globalPostModal.classList.remove('active');
+        modalVideo.pause();
+        modalVideo.currentTime = 0; // Reset video to start
     }
 
     function toggleModalPostButton(input) {
-        const postButton = input.nextElementSibling;
-        if (input.value.trim()) {
-            postButton.classList.add('active');
+        const button = document.getElementById('modalCommentSubmit');
+        if (input.value.trim() !== '') {
+            button.classList.add('active');
         } else {
-            postButton.classList.remove('active');
+            button.classList.remove('active');
         }
     }
 
-    // Close modal when clicking outside
-    document.getElementById('postModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeModal();
-        }
-    });
+    function focusCommentInput() {
+        modalCommentInput.focus();
+    }
 
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeModal();
-        }
-    });
+    function startReplyToComment(commentId, username) {
+        modalCommentInput.value = `@${username} `;
+        modalCommentInput.focus();
 
-    // Handle comment form submission
-    document.getElementById('modalCommentForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const commentInput = this.querySelector('.comment-input');
-        const commentText = commentInput.value.trim();
-
-        if (commentText) {
-            console.log('Comment posted:', commentText);
-            // Here you would send to Django backend
-            commentInput.value = '';
-            toggleModalPostButton(commentInput);
+        // Add a hidden input for parent_comment_id to the form for replies
+        let parentCommentIdInput = document.getElementById('parentCommentIdInput');
+        if (!parentCommentIdInput) {
+            parentCommentIdInput = document.createElement('input');
+            parentCommentIdInput.type = 'hidden';
+            parentCommentIdInput.name = 'parent_comment_id';
+            parentCommentIdInput.id = 'parentCommentIdInput';
+            document.querySelector('.comment-input-section').appendChild(parentCommentIdInput);
         }
+        parentCommentIdInput.value = commentId;
+
+        // Change the name of the main comment input if it's a reply
+        modalCommentInput.name = 'reply_comment';
+
+        // Ensure the post button is active
+        toggleModalPostButton(modalCommentInput);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const exploreItems = document.querySelectorAll('.explore-item');
+        exploreItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const dataType = item.dataset.type;
+                const dataId = item.dataset.id;
+                const dataUrl = item.dataset.url;
+                const dataUsername = item.dataset.username;
+                const dataUserAvatar = item.dataset.userAvatar;
+                const dataCaption = item.dataset.caption;
+                const dataLikes = item.dataset.likes;
+                const dataComments = item.dataset.comments;
+                const dataLocation = item.dataset.location;
+                const dataViews = item.dataset.views; // Only for reels
+                const isLikedByUser = item.dataset.likedbyuser;
+                const isSavedByUser = item.dataset.savedByUser;
+                const savedCount = item.dataset.savedCount;
+
+
+                const postData = {
+                    type: dataType,
+                    id: dataId,
+                    url: dataUrl,
+                    username: dataUsername,
+                    userAvatar: dataUserAvatar,
+                    caption: dataCaption,
+                    likes: dataLikes,
+                    comments: dataComments,
+                    location: dataLocation,
+                    views: dataViews,
+                    likedByUser: isLikedByUser,
+                    saved_by_user: isSavedByUser,
+                    saved_count: savedCount
+                };
+                openModal(postData);
+            });
+        });
+
+        // Event listener for modal close on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && globalPostModal.classList.contains('active')) {
+                closeModal();
+            }
+        });
     });
 </script>
 {% endblock %}

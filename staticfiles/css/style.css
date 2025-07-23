@@ -155,7 +155,6 @@ body {
 .user-info {
   display: flex;
   align-items: center;
-  padding:10px;
 }
 
 .user-info:hover {

@@ -21,7 +21,6 @@ def register_view(request):
     return render(request, 'register.html', {'form': form})
 
 
-
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -36,7 +35,7 @@ def login_view(request):
                 form.add_error(None, 'Username or password id invalid')
     else:
         form = LoginForm()
-    return render(request, 'login.html', {'form': form} )
+    return render(request, 'login.html', {'form': form})
 
 
 def logout_view(request):
@@ -46,8 +45,10 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    posts = PostModel.objects.filter(userID=request.user, post_type=PostModel.PostTypeChoice.Post).order_by('-created_at')
-    reels = PostModel.objects.filter(userID=request.user,  post_type=PostModel.PostTypeChoice.Reels).order_by('-created_at')
+    posts = PostModel.objects.filter(userID=request.user, post_type=PostModel.PostTypeChoice.Post).order_by(
+        '-created_at')
+    reels = PostModel.objects.filter(userID=request.user, post_type=PostModel.PostTypeChoice.Reels).order_by(
+        '-created_at')
 
     if request.method == "POST":
         form = UserUpdateForm(request.POST, request.FILES, instance=request.user)
@@ -59,8 +60,6 @@ def profile_view(request):
     else:
         form = UserUpdateForm(instance=request.user)
 
-
-
     return render(request, 'profile.html', {
         'user': request.user,
         'posts': posts,
@@ -68,26 +67,10 @@ def profile_view(request):
     })
 
 
-class UserListView(ListView):
-    template_name = 'search.html'
-    context_object_name = 'users'
-
-    def get_queryset(self):
-        qs = UserModel.objects.exclude(id=self.request.user.id).order_by('username')
-        q = self.request.GET.get('q')
-
-        if q:
-            qs = qs.filter(username__icontains=q)
-
-        return qs
-
-
-
 def another_user_profile_view(request, pk):
     user = UserModel.objects.get(id=pk)
     posts = PostModel.objects.filter(userID=user, post_type=PostModel.PostTypeChoice.Post).order_by('-created_at')
-    reels = PostModel.objects.filter(userID=user,  post_type=PostModel.PostTypeChoice.Reels).order_by('-created_at')
-
+    reels = PostModel.objects.filter(userID=user, post_type=PostModel.PostTypeChoice.Reels).order_by('-created_at')
 
     return render(request, 'profile.html', {
         'user': user,

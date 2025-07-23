@@ -1,44 +1,64 @@
-{% if user.is_authenticated %}
+{% if request.user.is_authenticated %}
 <aside class="right-sidebar">
     <div class="user-profile-section">
         <div class="user-info">
-            {% if user.avatar %}
-            <img style="height: 50px; width: 50px; border-radius: 50%; object-fit: fit; margin-right: 15px;" src="{{ user.avatar.url }}">
+            {% if request.user.avatar %}
+            <img style="height: 50px; width: 50px; border-radius: 50%; object-fit: fit; margin-right: 15px;"
+                 src="{{ user.avatar.url }}">
             {% else %}
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                </svg>
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
             {% endif %}
             <div class="user-details">
-                <h3>{{ user.username }}</h3>
-                <p>{{ user.full_name }}</p>
+                <h3>{{ request.user.username }}</h3>
+                <p>{{ request.user.full_name }}</p>
             </div>
         </div>
-        <a href="#" class="switch-btn">Switch</a>
+        <a href="{% url 'logout' %}" class="switch-btn">Switch</a>
     </div>
 
     <div class="suggestions-section">
         <h4>
             Suggested for you
-            <a href="#" class="see-all">See All</a>
+            <a href="" class="see-all">See All</a>
         </h4>
+        <div class="users-list">
+            {% for user in users %}
+            <div class="user-profile-section">
+                <div class="user-info">
+                    {% if user.avatar %}
+                    <img style="height: 30px; width: 30px; border-radius: 50%; object-fit: fit; margin-right: 15px;"
+                         src="{{ user.avatar.url }}">
+                    {% else %}
+                    <svg class="icon"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         style="height: 30px; width: 30px; border-radius: 50%; margin-right: 15px;">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    {% endif %}
+                    <div class="user-details">
+                        <a style="text-decoration:none" href="{% url 'profile-another' pk=user.pk %}">
+                            <h3>{{ user.username }}</h3>
+                        </a>
+                        <p>{{ user.first_name }} {{ user.last_name }} </p>
 
-        <div class="suggestion-item">
-            <div class="suggestion-info">
-                <div class="suggestion-avatar"></div>
-                <div class="suggestion-details">
-                    <h5></h5>
-                    <p>Followed by  </p>
+                    </div>
                 </div>
             </div>
-            <a href="#" class="follow-btn">Follow</a>
+            {% endfor %}
         </div>
-
     </div>
 
     <div class="footer-links">
-        <a href="#">About</a> · <a href="#">Help</a> · <a href="#">Press</a> · <a href="#">API</a> · <a href="#">Jobs</a> · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Locations</a> · <a href="#">Language</a> · <a href="#">Meta Verified</a>
+        <a href="#">About</a> · <a href="#">Help</a> · <a href="#">Press</a> · <a href="#">API</a> · <a
+            href="#">Jobs</a> · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Locations</a> · <a
+            href="#">Language</a> · <a href="#">Meta Verified</a>
 
         <div class="copyright">
             © 2025 INSTAGRAM FROM META
@@ -48,7 +68,9 @@
 {% else %}
 <aside class="right-sidebar">
     <div class="footer-links">
-        <a href="#">About</a> · <a href="#">Help</a> · <a href="#">Press</a> · <a href="#">API</a> · <a href="#">Jobs</a> · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Locations</a> · <a href="#">Language</a> · <a href="#">Meta Verified</a>
+        <a href="#">About</a> · <a href="#">Help</a> · <a href="#">Press</a> · <a href="#">API</a> · <a
+            href="#">Jobs</a> · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Locations</a> · <a
+            href="#">Language</a> · <a href="#">Meta Verified</a>
 
         <div class="copyright">
             © 2025 INSTAGRAM FROM META

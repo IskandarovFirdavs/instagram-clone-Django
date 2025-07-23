@@ -124,7 +124,7 @@
                     </svg>
                     <span>Your activity</span>
                 </a>
-                <a href="#" class="more-item">
+                <a href="{% url 'saved' %}" class="more-item">
                     <!-- Saved Icon -->
                     <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M19 21L12 16L5 21V5C5 4.46957 5.21071 3.96086 5.58579 3.58579C5.96086 3.21071 6.46957 3 7 3H17C17.5304 3 18.0391 3.21071 18.4142 3.58579C18.7893 3.96086 19 4.46957 19 5V21Z" stroke="currentColor" fill="none"/>
@@ -568,10 +568,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     e.preventDefault();
                     showNotification('Your activity page would open here', 'info');
                     break;
-                case 'Saved':
-                    e.preventDefault();
-                    showNotification('Saved posts would open here', 'info');
-                    break;
                 case 'Switch appearance':
                     e.preventDefault();
                     toggleTheme();
@@ -610,9 +606,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 300);
     }
 
-    // Load saved theme
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.body.classList.add(savedTheme + '-theme');
+
 
     // Enhanced notification system
     function showNotification(message, type = 'info') {

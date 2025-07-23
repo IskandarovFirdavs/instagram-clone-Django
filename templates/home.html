@@ -12,18 +12,19 @@
     <div class="stories-container">
         <div class="stories-list">
             {% for user, user_histories in grouped_histories %}
-                <div class="story-item" onclick="openStoryViewer('{{ user.username }}', {{ user_histories|length }})">
-                    <div class="story-avatar">
-                        <img src="{{ user_histories.0.contentUrl.url }}" alt="{{ user.username }}">
-                    </div>
-                    <span class="story-username">{{ user.username }}</span>
-                    <!-- Hidden stories container -->
-                    <div class="hidden-stories" id="stories-{{ user.username }}" style="display: none;">
-                        {% for story in user_histories %}
-                            <img src="{{ story.contentUrl.url }}" alt="story" data-username="{{ user.username }}" data-time="{{ story.since_created }}">
-                        {% endfor %}
-                    </div>
+            <div class="story-item" onclick="openStoryViewer('{{ user.username }}', {{ user_histories|length }})">
+                <div class="story-avatar">
+                    <img src="{{ user_histories.0.contentUrl.url }}" alt="{{ user.username }}">
                 </div>
+                <span class="story-username">{{ user.username }}</span>
+                <!-- Hidden stories container -->
+                <div class="hidden-stories" id="stories-{{ user.username }}" style="display: none;">
+                    {% for story in user_histories %}
+                    <img src="{{ story.contentUrl.url }}" alt="story" data-username="{{ user.username }}"
+                         data-time="{{ story.since_created }}">
+                    {% endfor %}
+                </div>
+            </div>
             {% endfor %}
         </div>
     </div>
@@ -35,15 +36,17 @@
             <div class="post-user-info">
                 <div class="post-avatar">
                     {% if post.userID.avatar %}
-                    <img src="{{ post.userID.avatar.url }}" style="height: 32px; width: 32px; border-radius: 50%; object-fit: cover" alt="">
+                    <img src="{{ post.userID.avatar.url }}"
+                         style="height: 32px; width: 32px; border-radius: 50%; object-fit: cover" alt="">
                     {% else %}
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 32px; height: 32px;">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         style="width: 32px; height: 32px;">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
                     </svg>
                     {% endif %}
                 </div>
-                <a href="#" class="post-username">{{ post.userID.username }}</a>
+                <a href="{% url 'profile-another' pk=post.userID.id %}" class="post-username">{{ post.userID.username }}</a>
                 <span class="post-time">• {{ post.since_created }}</span>
             </div>
             <div class="post-options">
@@ -59,31 +62,41 @@
 
         <div class="post-actions">
             <div class="post-actions-left">
-                <button class="action-btn like-btn" onclick="togglePostLike(this)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 24px; height: 24px;">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                    </svg>
+                <button class="action-btn like-btn">
+                    <a href="{% url 'like' id=post.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
+                        {% if post|is_liked_by_user:request.user %}
+                            <i class="fa-solid fa-heart" style="color: #ff0000;font-size:25px;"></i>
+                        {% else %}
+                            <i class="fa-regular fa-heart" style="color:#fff;font-size:25px"></i>
+                        {% endif %}
+                    </a>
                 </button>
                 <button class="action-btn comment-btn" onclick="toggleComments(this)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 24px; height: 24px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                         style="width: 24px; height: 24px;">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                     </svg>
                 </button>
                 <button class="action-btn share-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 24px; height: 24px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                         style="width: 24px; height: 24px;">
                         <line x1="22" y1="2" x2="11" y2="13"/>
                         <polygon points="22,2 15,22 11,13 2,9 22,2"/>
                     </svg>
                 </button>
             </div>
             <button class="action-btn save-btn" onclick="toggleSave(this)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 24px; height: 24px;">
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-                </svg>
+                <a href="{% url 'saved-create' id=post.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
+                   title="Save" style="height: 100%; width: 100%;">
+                    <i
+                       class="{% is_saved_by_user request.user post %}"></i>
+
+                </a>
             </button>
         </div>
 
         <div class="post-likes">{{ post.likes_count|default:"0" }} likes</div>
+        <div class="post-likes">{{ post.saved.count }} saved</div>
 
         <div class="post-caption">
             <strong>{{ post.userID.username }}</strong> {{ post.caption }}
@@ -97,9 +110,11 @@
         <div class="comments-section" style="display: none; border-top: 1px solid #262626; padding: 16px;">
             {% for comment in post.comments.all %}
             <div class="comment-item" style="display: flex; align-items: flex-start; margin-bottom: 12px; gap: 12px;">
-                <div class="comment-avatar" style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                <div class="comment-avatar"
+                     style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                     {% if comment.userID.avatar %}
-                    <img src="{{ comment.userID.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ comment.userID.username }}">
+                    <img src="{{ comment.userID.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;"
+                         alt="{{ comment.userID.username }}">
                     {% else %}
                     <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px;">
                         {{ comment.userID.username|upper|first }}
@@ -107,47 +122,68 @@
                     {% endif %}
                 </div>
                 <div class="comment-content" style="flex: 1;">
-                    <div class="comment-text" style="font-size: 14px; color: #fff; line-height: 1.4; margin-bottom: 4px;">
+                    <div class="comment-text"
+                         style="font-size: 14px; color: #fff; line-height: 1.4; margin-bottom: 4px;">
                         <strong style="font-weight: 600; margin-right: 8px;">{{ comment.userID.username }}</strong>{{ comment.comment }}
                     </div>
-                    <div class="comment-actions" style="display: flex; align-items: center; gap: 16px; font-size: 12px; color: #8e8e8e;">
+                    <div class="comment-actions"
+                         style="display: flex; align-items: center; gap: 16px; font-size: 12px; color: #8e8e8e;">
                         <span class="comment-time">{{ comment.since_created }}</span>
-                        <span class="comment-likes" style="font-weight: 600;">{{ comment.comment_likes_count }} likes</span>
-                        <span class="comment-reply" style="cursor: pointer; font-weight: 600;" onclick="showReplyInput(this)">Reply</span>
+                        <span class="comment-likes"
+                              style="font-weight: 600;">{{ comment.comment_likes_count }} likes</span>
+                        <span class="comment-reply" style="cursor: pointer; font-weight: 600;"
+                              onclick="showReplyInput(this)">Reply</span>
                     </div>
 
                     <!-- Reply Input Section -->
                     <div class="reply-input-section" style="margin-left: 44px; margin-top: 8px; display: none;">
-                        <div class="reply-input-container" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                            <div class="reply-avatar" style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                        <div class="reply-input-container"
+                             style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <div class="reply-avatar"
+                                 style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                                 {% if request.user.avatar %}
-                                <img src="{{ request.user.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ request.user.username }}">
+                                <img src="{{ request.user.avatar.url }}"
+                                     style="width: 100%; height: 100%; object-fit: cover;"
+                                     alt="{{ request.user.username }}">
                                 {% else %}
                                 <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">
                                     {{ request.user.username|upper|first }}
                                 </div>
                                 {% endif %}
                             </div>
-                            <input type="text" class="reply-input" placeholder="Reply to {{ comment.userID.username }}..." style="flex: 1; border: none; outline: none; font-size: 14px; color: #fff; background: transparent;">
+                            <input type="text" class="reply-input"
+                                   placeholder="Reply to {{ comment.userID.username }}..."
+                                   style="flex: 1; border: none; outline: none; font-size: 14px; color: #fff; background: transparent;">
                         </div>
                         <div class="reply-actions" style="display: flex; gap: 12px; margin-left: 32px;">
-                            <button class="reply-post-btn" onclick="postReply(this)" style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; color: #0095f6;">Post</button>
-                            <button class="reply-cancel-btn" onclick="cancelReply(this)" style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; color: #8e8e8e;">Cancel</button>
+                            <button class="reply-post-btn" onclick="postReply(this)"
+                                    style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; color: #0095f6;">
+                                Post
+                            </button>
+                            <button class="reply-cancel-btn" onclick="cancelReply(this)"
+                                    style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; color: #8e8e8e;">
+                                Cancel
+                            </button>
                         </div>
                     </div>
 
                     <!-- Replies -->
                     {% if comment.replies.exists %}
-                    <div class="view-replies" onclick="toggleReplies(this)" style="margin-left: 44px; font-size: 12px; color: #8e8e8e; cursor: pointer; margin-bottom: 8px; display: flex; align-items: center; gap: 16px;">
+                    <div class="view-replies" onclick="toggleReplies(this)"
+                         style="margin-left: 44px; font-size: 12px; color: #8e8e8e; cursor: pointer; margin-bottom: 8px; display: flex; align-items: center; gap: 16px;">
                         <span style="width: 24px; height: 1px; background: #262626;"></span>
                         View replies ({{ comment.replies.count }})
                     </div>
                     <div class="replies-container" style="display: none; margin-left: 44px; margin-top: 8px;">
                         {% for reply in comment.replies.all %}
-                        <div class="reply-item" style="display: flex; align-items: flex-start; margin-bottom: 8px; gap: 8px;">
-                            <div class="reply-avatar" style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                        <div class="reply-item"
+                             style="display: flex; align-items: flex-start; margin-bottom: 8px; gap: 8px;">
+                            <div class="reply-avatar"
+                                 style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                                 {% if reply.userID.avatar %}
-                                <img src="{{ reply.userID.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ reply.userID.username }}">
+                                <img src="{{ reply.userID.avatar.url }}"
+                                     style="width: 100%; height: 100%; object-fit: cover;"
+                                     alt="{{ reply.userID.username }}">
                                 {% else %}
                                 <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">
                                     {{ reply.userID.username|upper|first }}
@@ -155,17 +191,23 @@
                                 {% endif %}
                             </div>
                             <div class="comment-content" style="flex: 1;">
-                                <div class="comment-text" style="font-size: 14px; color: #fff; line-height: 1.4; margin-bottom: 4px;">
-                                    <strong style="font-weight: 600; margin-right: 8px;">{{ reply.userID.username }}</strong>{{ reply.comment }}
+                                <div class="comment-text"
+                                     style="font-size: 14px; color: #fff; line-height: 1.4; margin-bottom: 4px;">
+                                    <strong style="font-weight: 600; margin-right: 8px;">{{ reply.userID.username
+                                        }}</strong>{{ reply.comment }}
                                 </div>
-                                <div class="comment-actions" style="display: flex; align-items: center; gap: 16px; font-size: 12px; color: #8e8e8e;">
+                                <div class="comment-actions"
+                                     style="display: flex; align-items: center; gap: 16px; font-size: 12px; color: #8e8e8e;">
                                     <span class="comment-time">{{ reply.since_created }}</span>
                                     <span class="comment-likes" style="font-weight: 600;">{{ reply.comment_likes_count }} likes</span>
-                                    <span class="comment-reply" style="cursor: pointer; font-weight: 600;" onclick="showReplyInput(this)">Reply</span>
+                                    <span class="comment-reply" style="cursor: pointer; font-weight: 600;"
+                                          onclick="showReplyInput(this)">Reply</span>
                                 </div>
                             </div>
-                            <button class="comment-heart" onclick="toggleCommentLike(this)" style="background: none; border: none; cursor: pointer; padding: 0; margin-left: auto;">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="#8e8e8e" stroke-width="1.5" style="width: 12px; height: 12px;">
+                            <button class="comment-heart" onclick="toggleCommentLike(this)"
+                                    style="background: none; border: none; cursor: pointer; padding: 0; margin-left: auto;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#8e8e8e" stroke-width="1.5"
+                                     style="width: 12px; height: 12px;">
                                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                                 </svg>
                             </button>
@@ -174,8 +216,10 @@
                     </div>
                     {% endif %}
                 </div>
-                <button class="comment-heart" onclick="toggleCommentLike(this)" style="background: none; border: none; cursor: pointer; padding: 0; margin-left: auto;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#8e8e8e" stroke-width="1.5" style="width: 12px; height: 12px;">
+                <button class="comment-heart" onclick="toggleCommentLike(this)"
+                        style="background: none; border: none; cursor: pointer; padding: 0; margin-left: auto;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#8e8e8e" stroke-width="1.5"
+                         style="width: 12px; height: 12px;">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                     </svg>
                 </button>
@@ -184,11 +228,13 @@
         </div>
 
         <!-- Comment Input -->
-        <form class="comment-input-section" method="POST" style="border-top: 1px solid #262626; padding: 16px; display: flex; align-items: center; gap: 12px;">
+        <form class="comment-input-section" method="POST"
+              style="border-top: 1px solid #262626; padding: 16px; display: flex; align-items: center; gap: 12px;">
             {% csrf_token %}
             <div class="comment-avatar" style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden;">
                 {% if request.user.avatar %}
-                <img src="{{ request.user.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ request.user.username }}">
+                <img src="{{ request.user.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;"
+                     alt="{{ request.user.username }}">
                 {% else %}
                 <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px;">
                     {{ request.user.username|upper|first }}
@@ -196,42 +242,61 @@
                 {% endif %}
             </div>
             <input type="hidden" name="post_id" value="{{ post.id }}">
-            <input type="text" name="comment" class="comment-input" placeholder="Add a comment..." oninput="togglePostButton(this)" style="flex: 1; border: none; outline: none; font-size: 14px; color: #fff; background: transparent;">
-            <button type="submit" class="comment-post-btn" style="background: none; border: none; color: #0095f6; font-size: 14px; font-weight: 600; cursor: pointer; opacity: 0.3; pointer-events: none;">Post</button>
+            <input type="text" name="comment" class="comment-input" placeholder="Add a comment..."
+                   oninput="togglePostButton(this)"
+                   style="flex: 1; border: none; outline: none; font-size: 14px; color: #fff; background: transparent;">
+            <button type="submit" class="comment-post-btn"
+                    style="background: none; border: none; color: #0095f6; font-size: 14px; font-weight: 600; cursor: pointer; opacity: 0.3; pointer-events: none;">
+                Post
+            </button>
         </form>
     </article>
     {% endfor %}
 </div>
 
 <!-- Story Viewer Modal -->
-<div id="storyViewer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index:1000;">
+<div id="storyViewer"
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index:1000;">
     <div class="story-content" style="position: relative; max-width: 400px; max-height: 90vh;">
-        <div class="story-progress" id="storyProgress" style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 4px; z-index: 10;"></div>
-        <div class="story-header" style="position: absolute; top: 40px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; z-index: 10;">
+        <div class="story-progress" id="storyProgress"
+             style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 4px; z-index: 10;"></div>
+        <div class="story-header"
+             style="position: absolute; top: 40px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; z-index: 10;">
             <div class="story-user-info" style="display: flex; align-items: center; gap: 8px;">
-                <div class="story-user-avatar" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; overflow: hidden;">
-                    <img id="storyUserAvatar" src="/placeholder.svg" style="width: 100%; height: 100%; object-fit: cover;" alt="">
+                <div class="story-user-avatar"
+                     style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; overflow: hidden;">
+                    <img id="storyUserAvatar" src="/placeholder.svg"
+                         style="width: 100%; height: 100%; object-fit: cover;" alt="">
                 </div>
                 <div>
-                    <div class="story-username-text" id="storyUsername" style="color: #fff; font-size: 14px; font-weight: 600;"></div>
-                    <div class="story-time" id="storyTime" style="color: rgba(255, 255, 255, 0.7); font-size: 12px;"></div>
+                    <div class="story-username-text" id="storyUsername"
+                         style="color: #fff; font-size: 14px; font-weight: 600;"></div>
+                    <div class="story-time" id="storyTime"
+                         style="color: rgba(255, 255, 255, 0.7); font-size: 12px;"></div>
                 </div>
             </div>
-            <button class="story-close" onclick="closeStoryViewer()" style="background: none; border: none; color: #fff; cursor: pointer; padding: 4px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;">
+            <button class="story-close" onclick="closeStoryViewer()"
+                    style="background: none; border: none; color: #fff; cursor: pointer; padding: 4px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     style="width: 24px; height: 24px;">
                     <line x1="18" y1="6" x2="6" y2="18"/>
                     <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </button>
         </div>
-        <img id="storyImage" class="story-image" src="/placeholder.svg" style="width: 100%; height: auto; border-radius: 8px; max-height: 90vh; object-fit: contain;" alt="">
-        <button class="story-nav prev" id="storyPrev" onclick="previousStory()" style="position: absolute; top: 50%; left: 12px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.3); border: none; color: #fff; cursor: pointer; padding: 12px; border-radius: 50%; display: none;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+        <img id="storyImage" class="story-image" src="/placeholder.svg"
+             style="width: 100%; height: auto; border-radius: 8px; max-height: 90vh; object-fit: contain;" alt="">
+        <button class="story-nav prev" id="storyPrev" onclick="previousStory()"
+                style="position: absolute; top: 50%; left: 12px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.3); border: none; color: #fff; cursor: pointer; padding: 12px; border-radius: 50%; display: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 style="width: 20px; height: 20px;">
                 <polyline points="15,18 9,12 15,6"/>
             </svg>
         </button>
-        <button class="story-nav next" id="storyNext" onclick="nextStory()" style="position: absolute; top: 50%; right: 12px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.3); border: none; color: #fff; cursor: pointer; padding: 12px; border-radius: 50%; display: none;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
+        <button class="story-nav next" id="storyNext" onclick="nextStory()"
+                style="position: absolute; top: 50%; right: 12px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.3); border: none; color: #fff; cursor: pointer; padding: 12px; border-radius: 50%; display: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 style="width: 20px; height: 20px;">
                 <polyline points="9,18 15,12 9,6"/>
             </svg>
         </button>

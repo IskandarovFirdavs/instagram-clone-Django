@@ -25,7 +25,7 @@ class PostModelAdmin(admin.ModelAdmin):
     list_display = ('id', 'caption', 'userID', 'post_type', 'since_created')
     list_filter = ('post_type', 'created_at')
     search_fields = ('caption', 'userID__username')
-    inlines = [PostLikeInline, CommentInline]
+    inlines = [PostLikeInline, CommentInline, ReplyCommentInline]
     filter_horizontal = ('hashtags', 'music')
     readonly_fields = ('since_created', 'created_at')
 

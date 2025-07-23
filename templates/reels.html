@@ -98,6 +98,14 @@
         stroke: currentColor;
         stroke-width: 1.5;
     }
+    #saved_icon {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 4px;
+        fill: currentColor;
+        stroke: currentColor;
+        stroke-width: 1.5;
+    }
 
     .action-count {
         font-size: 12px;
@@ -110,6 +118,13 @@
     .heart-icon {
         fill: #ff3040;
         color: #ff3040;
+    }
+
+    .like-a {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
     }
 
     /* Bottom user info overlay */
@@ -603,14 +618,14 @@
         <!-- Right side actions -->
         <div class="reel-actions">
             <!-- Like button -->
-            <button class="action-button" onclick="toggleLike(this)">
-                <a href="{% url 'like' id=reel.id %}?next={{ request.path }}?{{ request.GET.urlencode }}">
-                    <svg class="action-icon heart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                    <span class="action-count">{{ reel.likes_count|default:"0" }}</span>
+            <button class="action-button">
+                <a href="{% url 'like' id=reel.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
+                    <i style="color:white;height: 50px; width: 50px; font-size: 30px;"
+                       class="{% is_reels_liked_by_user reel request.user %}"></i>
                 </a>
+                <span class="action-count">{{ reel.likes_count|default:"0" }}</span>
             </button>
+
 
             <!-- Comment button -->
             <button class="action-button comment-toggle-btn" data-reel-id="{{ reel.id }}">
@@ -626,14 +641,19 @@
                     <line x1="22" y1="2" x2="11" y2="13"></line>
                     <polygon points="22,2 15,22 11,13 2,9 22,2"></polygon>
                 </svg>
+                <span>0</span>
             </button>
 
             <!-- Save button -->
-            <button class="action-button" onclick="toggleSave(this)">
-                <svg class="action-icon save-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                </svg>
+            <button style="height: 50px; width: 50px;" class="action-button" onclick="toggleSave(this)">
+                <a href="{% url 'saved-create' id=reel.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
+                   title="Save" style="height: 100%; width: 100%;">
+                    <i style="color:white;height: 50px; width: 50px; font-size: 30px;"
+                       class="{% is_saved_by_user request.user reel %}"></i>
+                    <span style="color: white;">{{ reel.saved.count }}</span>
+                </a>
             </button>
+
 
             <!-- More options -->
             <button class="action-button">
@@ -723,22 +743,22 @@
                     </form>
 
                     <!--Replies -->
-                    {% if comment.replies.exists %}
-                    {% with reply_count=comment.replies.count %}
+                    {% if comment.reply_comments %}
+                    <!--                    {% with reply_count=comment.replies.count %}-->
                     <div class="view-replies" onclick="toggleReplies(this)">
                         View all {{ reply_count }} repl{% if reply_count == 1 %}y{% else %}ies{% endif %}
                     </div>
 
                     <div class="replies-container" style="display: none; margin-left: 44px; margin-top: 8px;">
-                        {% for reply in comment.replies.all %}
+                        {% for reply in comment.reply_comments.all %}
                         <div class="comment-item" style="margin-bottom: 12px;">
                             <div class="input-avatar" style="margin-right: 8px;">
                                 {% if reply.userID.avatar %}
                                 <img class="input-avatar" src="{{ reply.userID.avatar.url }}"
                                      style="width: 24px; height: 24px;">
                                 {% else %}
-                                <div class="comment-avatar" style="width: 24px; height: 24px; font-size: 10px;">{{
-                                    reply.userID.username|upper|first }}
+                                <div class="comment-avatar" style="width: 24px; height: 24px; font-size: 10px;">
+                                    {{ reply.userID.username|upper|first }}
                                 </div>
                                 {% endif %}
                             </div>
@@ -747,21 +767,21 @@
                                     <span class="comment-username">{{ reply.userID.username }}</span>
                                     <span class="comment-time">{{ reply.since_created }}</span>
                                 </div>
-                                <div class="comment-text">{{ reply.comment }}</div>
+                                <div class="comment-text">{{ reply.reply_comment }}</div>
                                 <div class="comment-actions">
                                     <span class="comment-reply" onclick="showReplyInput(this)">Reply</span>
                                 </div>
                             </div>
                             <button class="comment-heart">
-                                <a href="{% url 'comment-like' id=reply.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
-                                    {% is_comment_liked_by_user reply request.user as reply_liked %}
+                                <a href="{% url 'reply-comment-like' id=reply.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
+                                    {% reply_comment_like_icon reply user as reply_liked %}
                                     {% if reply_liked %}
-                                    <i class="fa-regular fa-heart" style="color: #ff0000;"></i>
+                                    <i class="fa-solid fa-heart" style="color: #ff0000;"></i>
                                     {% else %}
                                     <i class="fa-regular fa-heart"></i>
                                     {% endif %}
                                 </a>
-                                <h1 class="comment-likes">{{ reply.comment_likes_count }}</h1>
+                                <h1 class="comment-likes">{{ reply.reply_comment_likes_count }}</h1>
                             </button>
                         </div>
                         {% endfor %}
@@ -771,9 +791,9 @@
                 </div>
                 <button class="comment-heart">
                     <a href="{% url 'comment-like' id=comment.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
-                        {% is_comment_liked_by_user comment request.user as liked %}
+                        {% comment_like_icon comment user as liked %}
                         {% if liked %}
-                        <i class="fa-regular fa-heart" style="color: #ff0000;"></i>
+                        <i class="fa-solid fa-heart" style="color: #ff0000;"></i>
                         {% else %}
                         <i class="fa-regular fa-heart"></i>
                         {% endif %}
@@ -849,15 +869,7 @@
         }
     }
 
-    function toggleSave(button) {
-        const icon = button.querySelector('.save-icon');
 
-        if (icon.style.fill === 'currentColor') {
-            icon.style.fill = 'none';
-        } else {
-            icon.style.fill = 'currentColor';
-        }
-    }
 
     // Reply functionality
     function showReplyInput(replyButton) {
