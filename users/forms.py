@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.hashers import make_password
-from users.models import UserModel
+from users.models import UserModel, Follow
+
 
 class RegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
@@ -41,3 +42,4 @@ class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = UserModel
         fields = ['first_name', 'last_name', 'avatar', 'bio', 'website']
+

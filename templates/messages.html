@@ -6,7 +6,29 @@
 {% block title %}Reels • Instagram{% endblock %}
 
 {% block reels_active %}active{% endblock %}
+{% block extra_css %}
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
 
+.chat-input {
+    width: 100%;
+    padding: 10px 40px 10px 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.send-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #555;
+    cursor: pointer;
+}
+
+{% endblock %}
 {% block content %}
 
 <div class="messages-container">
@@ -73,9 +95,19 @@
             </div>
         </div>
         
-        <div class="chat-input-area">
-            <input type="text" class="chat-input" placeholder="Message...">
-        </div>
+<form method="POST" class="chat-input-area">
+    <div class="input-wrapper">
+        <input type="text" class="chat-input" placeholder="Message...">
+        <i class="fa-solid fa-paper-plane send-icon"></i>
+    </div>
+</form>
+
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+document.querySelector('.send-icon').addEventListener('click', () => {
+  document.querySelector('.chat-input-area').submit();
+});
 {% endblock %}

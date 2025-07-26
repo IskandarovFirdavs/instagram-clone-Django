@@ -14,7 +14,15 @@
             {% for user, user_histories in grouped_histories %}
             <div class="story-item" onclick="openStoryViewer('{{ user.username }}', {{ user_histories|length }})">
                 <div class="story-avatar">
-                    <img src="{{ user_histories.0.contentUrl.url }}" alt="{{ user.username }}">
+                    {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="{{ user.username }}">
+                    {% else %}
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         style="width: 32px; height: 32px; ">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    {% endif %}
                 </div>
                 <span class="story-username">{{ user.username }}</span>
                 <!-- Hidden stories container -->
@@ -38,6 +46,7 @@
                     {% if post.userID.avatar %}
                     <img src="{{ post.userID.avatar.url }}"
                          style="height: 32px; width: 32px; border-radius: 50%; object-fit: cover" alt="">
+
                     {% else %}
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                          style="width: 32px; height: 32px;">
@@ -45,9 +54,19 @@
                         <circle cx="12" cy="7" r="4"/>
                     </svg>
                     {% endif %}
+
                 </div>
-                <a href="{% url 'profile-another' pk=post.userID.id %}" class="post-username">{{ post.userID.username }}</a>
-                <span class="post-time">• {{ post.since_created }}</span>
+                <div class="post-user">
+                    <a href="{% url 'profile-another' pk=post.userID.id %}" class="post-username">{{ post.userID.username }}</a>
+
+                    <span class="post-time">• {{ post.since_created }}</span>
+                    {% if post.userID.id not in followed_users %}
+                    <button class="modal-follow-btn">
+                        <a href="{% url 'follow-create' pk=post.userID.id %}"
+                           style="text-decoration: none; color: #fff;" id="modalFollowBtn">Follow</a>
+                    </button>
+                    {% endif %}
+                </div>
             </div>
             <div class="post-options">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -65,9 +84,9 @@
                 <button class="action-btn like-btn">
                     <a href="{% url 'like' id=post.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
                         {% if post|is_liked_by_user:request.user %}
-                            <i class="fa-solid fa-heart" style="color: #ff0000;font-size:25px;"></i>
+                        <i class="fa-solid fa-heart" style="color: #ff0000;font-size:25px;"></i>
                         {% else %}
-                            <i class="fa-regular fa-heart" style="color:#fff;font-size:25px"></i>
+                        <i class="fa-regular fa-heart" style="color:#fff;font-size:25px"></i>
                         {% endif %}
                     </a>
                 </button>
@@ -87,10 +106,8 @@
             </div>
             <button class="action-btn save-btn" onclick="toggleSave(this)">
                 <a href="{% url 'saved-create' id=post.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
-                   title="Save" style="height: 100%; width: 100%;">
-                    <i
-                       class="{% is_saved_by_user request.user post %}"></i>
-
+                   title="Save" style="height: 100%; width: 100%;color:white;">
+                    <i class="{% is_saved_by_user request.user post %}"></i>
                 </a>
             </button>
         </div>
@@ -107,7 +124,7 @@
         </div>
 
         <!-- Comments Section -->
-        <div class="comments-section" style="display: none; border-top: 1px solid #262626; padding: 16px;">
+        <div class="comments-section" >
             {% for comment in post.comments.all %}
             <div class="comment-item" style="display: flex; align-items: flex-start; margin-bottom: 12px; gap: 12px;">
                 <div class="comment-avatar"
@@ -136,37 +153,38 @@
                     </div>
 
                     <!-- Reply Input Section -->
-                    <div class="reply-input-section" style="margin-left: 44px; margin-top: 8px; display: none;">
-                        <div class="reply-input-container"
-                             style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                            <div class="reply-avatar"
-                                 style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-                                {% if request.user.avatar %}
-                                <img src="{{ request.user.avatar.url }}"
-                                     style="width: 100%; height: 100%; object-fit: cover;"
-                                     alt="{{ request.user.username }}">
-                                {% else %}
-                                <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">
-                                    {{ request.user.username|upper|first }}
-                                </div>
-                                {% endif %}
-                            </div>
-                            <input type="text" class="reply-input"
-                                   placeholder="Reply to {{ comment.userID.username }}..."
-                                   style="flex: 1; border: none; outline: none; font-size: 14px; color: #fff; background: transparent;">
-                        </div>
-                        <div class="reply-actions" style="display: flex; gap: 12px; margin-left: 32px;">
-                            <button class="reply-post-btn" onclick="postReply(this)"
-                                    style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; color: #0095f6;">
-                                Post
-                            </button>
-                            <button class="reply-cancel-btn" onclick="cancelReply(this)"
-                                    style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; color: #8e8e8e;">
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-
+<form action="{% url 'home' %}" method="POST" class="reply-input-section" style="margin-left: 44px; margin-top: 8px; display: none;">
+    {% csrf_token %}
+    <input type="hidden" name="parent_comment_id" value="{{ comment.id }}">
+    <div class="reply-input-container"
+         style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <div class="reply-avatar"
+             style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+            {% if request.user.avatar %}
+            <img src="{{ request.user.avatar.url }}"
+                 style="width: 100%; height: 100%; object-fit: cover;"
+                 alt="{{ request.user.username }}">
+            {% else %}
+            <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">
+                {{ request.user.username|upper|first }}
+            </div>
+            {% endif %}
+        </div>
+        <input type="text" class="reply-input" name="reply_comment"
+               placeholder="Reply to {{ comment.userID.username }}..."
+               style="flex: 1; border: none; outline: none; font-size: 14px; color: #fff; background: transparent;">
+    </div>
+    <div class="reply-actions" style="display: flex; gap: 12px; margin-left: 32px;">
+        <button type="submit" class="reply-post-btn"
+                style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; color: #0095f6;">
+            Post
+        </button>
+        <button type="button" class="reply-cancel-btn" onclick="cancelReply(this)"
+                style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; color: #8e8e8e;">
+            Cancel
+        </button>
+    </div>
+</form>
                     <!-- Replies -->
                     {% if comment.replies.exists %}
                     <div class="view-replies" onclick="toggleReplies(this)"
@@ -241,7 +259,7 @@
                 </div>
                 {% endif %}
             </div>
-            <input type="hidden" name="post_id" value="{{ post.id }}">
+            <input type="hidden" name="post_id" value="{{ post.pk }}">
             <input type="text" name="comment" class="comment-input" placeholder="Add a comment..."
                    oninput="togglePostButton(this)"
                    style="flex: 1; border: none; outline: none; font-size: 14px; color: #fff; background: transparent;">
@@ -265,7 +283,7 @@
             <div class="story-user-info" style="display: flex; align-items: center; gap: 8px;">
                 <div class="story-user-avatar"
                      style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; overflow: hidden;">
-                    <img id="storyUserAvatar" src="/placeholder.svg"
+                    <img id="storyUserAvatar" src=""
                          style="width: 100%; height: 100%; object-fit: cover;" alt="">
                 </div>
                 <div>
@@ -446,6 +464,17 @@
         replyInput.focus();
     }
 
+    function cancelReply(button) {
+        const replySection = button.closest('.reply-input-section');
+        const replyInput = replySection.querySelector('.reply-input');
+        const commentContent = replySection.closest('.comment-content');
+        const replyButton = commentContent.querySelector('.comment-reply');
+
+        replyInput.value = '';
+        replySection.style.display = 'none';
+        replyButton.style.display = 'inline';
+    }
+
     function postReply(button) {
         const replySection = button.closest('.reply-input-section');
         const replyInput = replySection.querySelector('.reply-input');
@@ -462,16 +491,7 @@
         replyButton.style.display = 'inline';
     }
 
-    function cancelReply(button) {
-        const replySection = button.closest('.reply-input-section');
-        const replyInput = replySection.querySelector('.reply-input');
-        const commentContent = replySection.closest('.comment-content');
-        const replyButton = commentContent.querySelector('.comment-reply');
 
-        replyInput.value = '';
-        replySection.style.display = 'none';
-        replyButton.style.display = 'inline';
-    }
 
     function toggleReplies(button) {
         const repliesContainer = button.nextElementSibling;

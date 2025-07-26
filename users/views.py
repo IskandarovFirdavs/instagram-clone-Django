@@ -1,12 +1,13 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView
 
 from posts.models import PostModel
 from users.forms import RegisterForm, LoginForm, UserUpdateForm
 from django.contrib.auth import authenticate, login, logout
 
-from users.models import UserModel
+from users.models import UserModel, Follow
 
 
 def register_view(request):
@@ -50,6 +51,10 @@ def profile_view(request):
     reels = PostModel.objects.filter(userID=request.user, post_type=PostModel.PostTypeChoice.Reels).order_by(
         '-created_at')
 
+    qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
+
+
+
     if request.method == "POST":
         form = UserUpdateForm(request.POST, request.FILES, instance=request.user)
 
@@ -62,6 +67,7 @@ def profile_view(request):
 
     return render(request, 'profile.html', {
         'user': request.user,
+        "users": qs,
         'posts': posts,
         'reels': reels,
     })
@@ -72,8 +78,23 @@ def another_user_profile_view(request, pk):
     posts = PostModel.objects.filter(userID=user, post_type=PostModel.PostTypeChoice.Post).order_by('-created_at')
     reels = PostModel.objects.filter(userID=user, post_type=PostModel.PostTypeChoice.Reels).order_by('-created_at')
 
-    return render(request, 'profile.html', {
+    return render(request, 'another_profile.html', {
         'user': user,
         'posts': posts,
         'reels': reels,
     })
+
+
+@login_required
+def follow_view(request, pk):
+    following_to = get_object_or_404(UserModel, pk=pk)
+    user = request.user
+
+    followers = Follow.objects.filter(follower=user, following=following_to)
+
+    if followers:
+        followers.delete()
+    else:
+        Follow.objects.create(follower=user, following=following_to)
+
+    return redirect(request.GET.get('next', '/'))

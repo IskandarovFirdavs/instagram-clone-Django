@@ -857,8 +857,8 @@
             <h1>{{ user.username }}</h1>
             <div class="profile-stats">
                 <div class="profile-stat"><strong>{{ posts.count|default:"0" }}</strong> posts</div>
-                <div class="profile-stat"><strong>1,234</strong> followers</div>
-                <div class="profile-stat"><strong>567</strong> following</div>
+                <div class="profile-stat"><strong>{{ user.followers_count }}</strong> followers</div>
+                <div class="profile-stat"><strong>{{ user.following_count }}</strong> following</div>
             </div>
             <div class="profile-bio">
                 <strong>{{ user.get_full_name|default:user.username }}</strong>
@@ -1148,7 +1148,7 @@
             <button class="close-modal">&times;</button>
         </div>
         <div class="edit-modal-body">
-            <form id="edit-profile-form" method="POST" enctype="multipart/form-data">
+            <form action="profile" id="edit-profile-form" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="form-group">
                     <label>Avatar</label>

@@ -265,22 +265,7 @@
         margin-right: 12px;
     }
 
-    .modal-follow-btn {
-        background: none;
-        border: 1px solid #0095f6;
-        color: #0095f6;
-        padding: 6px 16px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
 
-    .modal-follow-btn:hover {
-        background-color: #0095f6;
-        color: #fff;
-    }
 
     .modal-body {
         flex: 1;
@@ -683,6 +668,8 @@
              data-likedByUser="{% if post|is_liked_by_user:request.user %}True{% else %}False{% endif %}"
              data-saved-by-user="{% is_saved_by_user request.user post %}"
              data-saved-count="{{ post.saved.count }}"
+             data-user-id="{{ post.userID.id }}"
+             data-is-followed-by-viewer="{% if request.user.is_authenticated and request.user|is_following:post.userID %}True{% else %}False{% endif %}"
         >
             <img src="{{ post.contentUrl.url }}" alt="Post" loading="lazy">
             {% if post.is_carousel %}
@@ -726,6 +713,8 @@
              data-likedByUser="{% if reel|is_liked_by_user:request.user %}True{% else %}False{% endif %}"
              data-saved-by-user="{% is_saved_by_user request.user reel %}"
              data-saved-count="{{ reel.saved.count }}"
+             data-user-id="{{ reel.userID.id }}"
+             data-is-followed-by-viewer="{% if request.user.is_authenticated and request.user|is_following:reel.userID %}True{% else %}False{% endif %}"
         >
             <video autoplay muted loop playsinline preload="metadata">
                 <source src="{{ reel.contentUrl.url }}" type="video/mp4">
@@ -786,8 +775,10 @@
                 <div class="modal-header">
                     <div class="modal-user-info">
                         <div class="modal-avatar" id="modalAvatar"></div>
-                        <span class="modal-username" id="modalUsername"></span>
-                        <button class="modal-follow-btn">Follow</button>
+                        <a id="modalNamePath" href="#" >
+                            <span class="modal-username" id="modalUsername"></span>
+                        </a>
+                        <a href="#" class="modal-follow-btn" id="modalFollowBtn">Follow</a>
                     </div>
                 </div>
                 <div class="modal-body">
@@ -801,13 +792,14 @@
                     <div class="modal-stats" id="modalStats"></div>
                     <div class="modal-time"></div>
                     <div class="modal-comments" id="modalComments">
-                        </div>
+                    </div>
                 </div>
                 <div class="modal-actions">
                     <div class="modal-actions-left">
                         <button class="modal-action-btn like-btn" id="modalLikeBtn">
                             <a href="#" id="modalLikeLink">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.5">
                                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                                 </svg>
                             </a>
@@ -825,10 +817,8 @@
                         </button>
                     </div>
                     <button class="modal-action-btn save-btn" id="modalSaveBtn">
-                        <a href="#" id="modalSaveLink" title="Save">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-                            </svg>
+                        <a style="" href="#" id="modalSaveLink" title="Save">
+                            <i id="modalSaveIcon" class="fa-regular fa-bookmark"></i>
                         </a>
                     </button>
                 </div>
@@ -842,7 +832,8 @@
                         {% endif %}
                     </div>
                     <input type="hidden" name="post_id" id="modalPostIdInput" value="">
-                    <input type="text" name="comment" class="comment-input" placeholder="Add a comment..." oninput="toggleModalPostButton(this)" id="modalCommentInput">
+                    <input type="text" name="comment" class="comment-input" placeholder="Add a comment..."
+                           oninput="toggleModalPostButton(this)" id="modalCommentInput">
                     <button type="submit" class="comment-post-btn" id="modalCommentSubmit">Post</button>
                 </form>
             </div>
@@ -866,9 +857,13 @@
     const modalLikeLink = document.getElementById('modalLikeLink');
     const modalSaveLink = document.getElementById('modalSaveLink');
     const modalLikeBtn = document.getElementById('modalLikeBtn');
+    const modalNamePath = document.getElementById('modalNamePath');
     const modalSaveBtn = document.getElementById('modalSaveBtn');
+    const modalSaveIcon = document.getElementById('modalSaveIcon');
     const modalComments = document.getElementById('modalComments');
     const modalCommentInput = document.getElementById('modalCommentInput');
+    const modalFollowBtn = document.getElementById('modalFollowBtn'); // Get the follow button
+
 
     // Store all posts and reels data with their comments
     const postsData = {
@@ -928,6 +923,17 @@
         }{% if not forloop.last %},{% endif %}
         {% endfor %}
     };
+
+    // Function to update the follow button's state (text and class)
+    function updateFollowButtonState(isFollowing) {
+        if (isFollowing) {
+            modalFollowBtn.textContent = 'Unfollow';
+            modalFollowBtn.classList.add('unfollow');
+        } else {
+            modalFollowBtn.textContent = 'Follow';
+            modalFollowBtn.classList.remove('unfollow');
+        }
+    }
 
     function renderComments(comments) {
         modalComments.innerHTML = ''; // Clear existing comments
@@ -1004,6 +1010,8 @@
 
     function openModal(postData) {
         // Reset media display
+
+
         modalImage.style.display = 'none';
         modalVideo.style.display = 'none';
         modalVideo.pause();
@@ -1059,15 +1067,27 @@
             modalLikeBtn.classList.remove('liked');
         }
 
-        if (postData.saved_by_user === 'True') {
+        if (postData.saved_by_user !== 'False') {
             modalSaveBtn.classList.add('saved');
-        } else {
-            modalSaveBtn.classList.remove('saved');
+            modalSaveIcon.classList.replace('fa-regular', postData.saved_by_user);
         }
+
 
         // Update like and save links
         modalLikeLink.href = `/like/${postData.id}/?next=${encodeURIComponent(window.location.pathname)}`;
         modalSaveLink.href = `/saved/${postData.id}/?next=${encodeURIComponent(window.location.pathname)}`;
+        modalNamePath.href = `/profile/${postData.id}/?next=${encodeURIComponent(window.location.pathname)}`;
+
+        const currentUserId = "{{ request.user.id }}";
+
+        if (postData.userId === currentUserId) {
+            modalFollowBtn.style.display = 'none';
+        } else {
+            modalFollowBtn.style.display = 'inline-block';
+            modalFollowBtn.href = `/follow-create/${postData.userId}/?next=${encodeURIComponent(window.location.pathname)}`;
+            updateFollowButtonState(postData.isFollowedByViewer === 'True');
+        }
+
 
         // Populate comments
         let commentsForPost;
@@ -1136,10 +1156,12 @@
                 const dataLikes = item.dataset.likes;
                 const dataComments = item.dataset.comments;
                 const dataLocation = item.dataset.location;
-                const dataViews = item.dataset.views; // Only for reels
+                const dataViews = item.dataset.views;
                 const isLikedByUser = item.dataset.likedbyuser;
                 const isSavedByUser = item.dataset.savedByUser;
                 const savedCount = item.dataset.savedCount;
+                const userId = item.dataset.userId;
+                const isFollowedByViewer = item.dataset.isFollowedByViewer;
 
 
                 const postData = {
@@ -1155,7 +1177,9 @@
                     views: dataViews,
                     likedByUser: isLikedByUser,
                     saved_by_user: isSavedByUser,
-                    saved_count: savedCount
+                    saved_count: savedCount,
+                    userId: userId, // Pass user ID
+                    isFollowedByViewer: isFollowedByViewer
                 };
                 openModal(postData);
             });

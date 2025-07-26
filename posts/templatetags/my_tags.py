@@ -32,7 +32,7 @@ def is_reels_liked_by_user(post, user):
 def is_saved_by_user(user, content_object):
     if not user.is_authenticated:
         return 'False'
-    return "fa-solid fa-bookmark" if user in content_object.saved.all() else "fa-regular fa-bookmark"
+    return "fa-solid" if user in content_object.saved.all() else "fa-regular"
 
 
 @register.filter
@@ -40,3 +40,10 @@ def is_comment_liked_by_user(comment, user):
     if not user.is_authenticated:
         return False
     return CommentLikeModel.objects.filter(commentID=comment, userID=user).exists()
+
+
+
+@register.filter
+def is_following(follower_user, following_user):
+    if not follower_user.is_authenticated:
+        return False

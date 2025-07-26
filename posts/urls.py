@@ -15,4 +15,6 @@ urlpatterns = [
     path('saved/', views.SavedListView.as_view(), name="saved"),
     path("saved/<int:id>/", views.create_saved_video, name="saved-create"),
     path('search/', views.UserListView.as_view(), name='search'),
+
+
 ]

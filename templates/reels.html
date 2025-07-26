@@ -620,7 +620,7 @@
             <!-- Like button -->
             <button class="action-button">
                 <a href="{% url 'like' id=reel.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
-                    <i style="color:white;height: 50px; width: 50px; font-size: 30px;"
+                    <i style="color:red;height: 50px; width: 50px; font-size: 30px;"
                        class="{% is_reels_liked_by_user reel request.user %}"></i>
                 </a>
                 <span class="action-count">{{ reel.likes_count|default:"0" }}</span>
@@ -649,7 +649,7 @@
                 <a href="{% url 'saved-create' id=reel.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
                    title="Save" style="height: 100%; width: 100%;">
                     <i style="color:white;height: 50px; width: 50px; font-size: 30px;"
-                       class="{% is_saved_by_user request.user reel %}"></i>
+                       class="{% is_saved_by_user request.user reel %} fa-bookmark"></i>
                     <span style="color: white;">{{ reel.saved.count }}</span>
                 </a>
             </button>
@@ -668,9 +668,17 @@
         <!-- Bottom user info -->
         <div class="reel-info">
             <div class="user-row">
+                {% if reel.userID.avatar %}
+                <img style="height:30px; border-radius:50%;margin-right:15px" src="{{ reel.userID.avatar.url }}" />
+                {% else %}
                 <div class="user-avatar">{{ reel.userID.username|upper|first}}</div>
-                <span class="username">{{ reel.userID.username}}</span>
-                <button class="follow-button">Follow</button>
+                {% endif %}
+                <span class="username">
+                    <a href="{% url 'profile-another' pk=reel.userID.id %}" class="post-username">{{ reel.userID.username }}</a></span>
+                <button class="modal-follow-btn">
+                    <a href="{% url 'follow-create' pk=reel.userID.id %}"
+                       style="text-decoration: none; color: #fff;">Follow</a>
+                </button>
             </div>
 
             <div class="caption-text">
@@ -744,7 +752,6 @@
 
                     <!--Replies -->
                     {% if comment.reply_comments %}
-                    <!--                    {% with reply_count=comment.replies.count %}-->
                     <div class="view-replies" onclick="toggleReplies(this)">
                         View all {{ reply_count }} repl{% if reply_count == 1 %}y{% else %}ies{% endif %}
                     </div>
@@ -774,29 +781,18 @@
                             </div>
                             <button class="comment-heart">
                                 <a href="{% url 'reply-comment-like' id=reply.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
-                                    {% reply_comment_like_icon reply user as reply_liked %}
-                                    {% if reply_liked %}
-                                    <i class="fa-solid fa-heart" style="color: #ff0000;"></i>
-                                    {% else %}
-                                    <i class="fa-regular fa-heart"></i>
-                                    {% endif %}
+                                    <i style="color:red;" class="{% reply_comment_like_icon reply user %}"></i>
                                 </a>
                                 <h1 class="comment-likes">{{ reply.reply_comment_likes_count }}</h1>
                             </button>
                         </div>
                         {% endfor %}
                     </div>
-                    {% endwith %}
                     {% endif %}
                 </div>
                 <button class="comment-heart">
                     <a href="{% url 'comment-like' id=comment.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
-                        {% comment_like_icon comment user as liked %}
-                        {% if liked %}
-                        <i class="fa-solid fa-heart" style="color: #ff0000;"></i>
-                        {% else %}
-                        <i class="fa-regular fa-heart"></i>
-                        {% endif %}
+                        <i style="color:red" class="{% comment_like_icon comment user%}"></i>
                     </a>
                     <h1 class="comment-likes">{{ comment.comment_likes_count }}</h1>
                 </button>

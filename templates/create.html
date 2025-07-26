@@ -90,7 +90,7 @@
             <div class="post-details">
                 <div class="user-info">
                     {% if user.avatar %}
-                        <img class="user-avatar-img" src="{{ user.avatar.url }}" alt="User Avatar">
+                        <img style="height:50px; border-radius:50%; margin-right:15px" class="user-avatar-img" src="{{ user.avatar.url }}" alt="User Avatar">
                     {% else %}
                         <div class="user-avatar"></div>
                     {% endif %}

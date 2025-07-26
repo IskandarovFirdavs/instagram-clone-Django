@@ -1,3 +1,6 @@
+from django.utils import timezone
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -8,40 +11,50 @@ from posts.models import PostModel, PostLikeModel, CommentModel, CommentLikeMode
     ReplyCommentLikeModel
 from collections import defaultdict
 
-from users.models import UserModel
+from users.models import UserModel, Follow
 
 
+@login_required(login_url='login')
 def home_view(request):
-    posts = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Post).order_by('-created_at')
-    histories = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.History).order_by('-created_at')
-    qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
-    q = request.GET.get('q')
+    followed_users = request.user.following_set.all()
+    followed_ids = [followed.following.id for followed in followed_users]
 
-    if q:
-        qs = qs.filter(username__icontains=q)
+    one_month_ago = timezone.now() - timedelta(days=3)
+    one_day_ago = timezone.now() - timedelta(days=1)
+
+    base_post_filters = {
+        'post_type': PostModel.PostTypeChoice.Post,
+        'created_at__gte': one_month_ago
+    }
+
+    base_history_filters = {
+        'post_type': PostModel.PostTypeChoice.History,
+        'created_at__gte': one_day_ago
+    }
+
+    if len(followed_ids) > 3:
+        base_post_filters['userID__in'] = followed_users
+        base_history_filters['userID__in'] = followed_users
+
+        posts = PostModel.objects.filter(
+            **base_post_filters
+        ).order_by('-created_at').exclude(userID=request.user)
+
+        histories = PostModel.objects.filter(
+            **base_history_filters
+        ).order_by('-created_at')
+    else:
+        posts = PostModel.objects.filter(**base_post_filters).order_by('-created_at').exclude(userID=request.user)
+
+        histories = PostModel.objects.filter(**base_history_filters).order_by('-created_at')
+
+    qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
+
 
     if request.method == 'POST':
-        post_id = request.POST.get('post_id')
-
-        try:
-            post = PostModel.objects.get(id=post_id)
-        except (PostModel.DoesNotExist, ValueError, TypeError):
-            messages.error(request, 'Post not found or invalid ID.')
-            return redirect('home')
-
-        # Comment
-        comment_text = request.POST.get('comment')
-        if comment_text:
-            CommentModel.objects.create(
-                postID=post,
-                userID=request.user,
-                comment=comment_text
-            )
-            return redirect('home')
-
-        # Reply
         reply_text = request.POST.get("reply_comment")
         comment_id = request.POST.get('parent_comment_id')
+
         if reply_text and comment_id:
             try:
                 parent_comment = CommentModel.objects.get(id=comment_id)
@@ -51,11 +64,30 @@ def home_view(request):
                     commentID=parent_comment,
                     userID=request.user,
                 )
+                messages.success(request, 'Javob muvaffaqiyatli qoʻshildi!')
             except CommentModel.DoesNotExist:
-                messages.error(request, 'Parent comment not found.')
+                messages.error(request, 'Javob beriladigan izoh topilmadi.')
+            except (ValueError, TypeError):
+                messages.error(request, 'Notoʻgʻri izoh IDsi.')
             return redirect('home')
 
-        messages.error(request, 'Comment or reply text cannot be empty')
+        comment_text = request.POST.get('comment')
+        post_id = request.POST.get('post_id')
+
+        if comment_text and post_id:
+            try:
+                post = PostModel.objects.get(id=post_id)
+                CommentModel.objects.create(
+                    postID=post,
+                    userID=request.user,
+                    comment=comment_text
+                )
+                messages.success(request, 'Izoh muvaffaqiyatli qoʻshildi!')
+            except (PostModel.DoesNotExist, ValueError, TypeError):
+                messages.error(request, 'Izoh qoʻshishda xato: Post topilmadi yoki ID notoʻgʻri.')
+            return redirect('home')
+
+        messages.error(request, 'Izoh yoki javob matni boʻsh boʻlishi mumkin emas.')
         return redirect('home')
 
     grouped_histories = defaultdict(list)
@@ -65,7 +97,8 @@ def home_view(request):
     context = {
         'users': qs,
         'posts': posts,
-        'grouped_histories': grouped_histories.items()
+        'grouped_histories': grouped_histories.items(),
+        'followed_users': followed_ids
     }
 
     return render(request, 'home.html', context)
@@ -74,10 +107,6 @@ def home_view(request):
 @login_required
 def post_create(request):
     qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
-    q = request.GET.get('q')
-
-    if q:
-        qs = qs.filter(username__icontains=q)
 
     if request.method == "POST":
         form = PostModelForm(request.POST, request.FILES)
@@ -108,11 +137,6 @@ def explore_view(request):
     posts = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Post).order_by('-created_at')
     reels = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Reels).order_by('-created_at')
     qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
-
-    q = request.GET.get('q')
-
-    if q:
-        qs = qs.filter(username__icontains=q)
 
     if request.method == 'POST':
         post_id = request.POST.get('post_id')
@@ -166,7 +190,7 @@ class UserListView(ListView):
     context_object_name = 'users'
 
     def get_queryset(self):
-        qs = UserModel.objects.exclude(id=self.request.user.id).order_by('username')
+        qs = UserModel.objects.exclude(id=self.request.user.id)
         q = self.request.GET.get('q')
 
         if q:
@@ -206,12 +230,8 @@ class NotificationsView(ListView):
 
 
 def reels_view(request):
-    reels = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Reels).order_by('-created_at')
+    reels = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Reels).exclude(userID=request.user).order_by('-created_at')
     qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
-    q = request.GET.get('q')
-
-    if q:
-        qs = qs.filter(username__icontains=q)
 
     if request.method == 'POST':
         reel_id = request.POST.get('reel_id')

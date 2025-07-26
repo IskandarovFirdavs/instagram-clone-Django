@@ -22,7 +22,7 @@ class UserModel(AbstractUser):
 
     @property
     def followers_count(self):
-        return self.followers_set.count()
+        return self.follower_set.count()
 
     @property
     def following_count(self):
@@ -32,7 +32,7 @@ class UserModel(AbstractUser):
         return self.following_set.filter(following=user).exists()
 
     def is_follower(self, user):
-        return self.followers_set.fitler(follower=user).exists()
+        return self.follower_set.fitler(follower=user).exists()
 
 
 class Follow(models.Model):
