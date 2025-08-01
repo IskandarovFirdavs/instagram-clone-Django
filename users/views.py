@@ -53,8 +53,6 @@ def profile_view(request):
 
     qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
 
-
-
     if request.method == "POST":
         form = UserUpdateForm(request.POST, request.FILES, instance=request.user)
 
@@ -65,11 +63,16 @@ def profile_view(request):
     else:
         form = UserUpdateForm(instance=request.user)
 
+    print("FILES:", request.FILES)
+    print("POST:", request.POST)
+    print("Is multipart?", request.content_type.startswith('multipart'))
+
     return render(request, 'profile.html', {
         'user': request.user,
         "users": qs,
         'posts': posts,
         'reels': reels,
+        "form": form,
     })
 
 

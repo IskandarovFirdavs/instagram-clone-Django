@@ -10,11 +10,11 @@ urlpatterns = [
     path('notifications/', views.NotificationsView.as_view(), name='notifications'),
     path('reels/', views.reels_view, name='reels'),
     path('like/<int:id>/', views.like_create, name='like'),
-    path('comment/<int:id>/', views.like_comment, name='comment-like'),
+    path('comment/<int:comment_id>/', views.like_comment, name='comment-like'),
     path('reply_comment/<int:id>/', views.like_reply_comment, name='reply-comment-like'),
     path('saved/', views.SavedListView.as_view(), name="saved"),
     path("saved/<int:id>/", views.create_saved_video, name="saved-create"),
     path('search/', views.UserListView.as_view(), name='search'),
-
-
+    path('followers/', views.followers_list_view, name='followers'),
+    path('followings/', views.followings_list_view, name='followings'),
 ]

@@ -299,7 +299,6 @@ body {
         #bc1888 100%
     );
     transition: transform 0.2s;
-    padding-left:15px
 }
 
 .story-avatar:hover {
@@ -310,7 +309,6 @@ body {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 2px solid #000;
   object-fit: cover;
 }
 
@@ -467,7 +465,7 @@ body {
   font-size: 14px;
   color: #8e8e8e;
   cursor: pointer;
-
+    margin-bottom: 20px;
 }
 
 .post-comments:hover {

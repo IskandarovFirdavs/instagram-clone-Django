@@ -775,7 +775,7 @@
                 <div class="modal-header">
                     <div class="modal-user-info">
                         <div class="modal-avatar" id="modalAvatar"></div>
-                        <a id="modalNamePath" href="#" >
+                        <a id="modalNamePath" href="#">
                             <span class="modal-username" id="modalUsername"></span>
                         </a>
                         <a href="#" class="modal-follow-btn" id="modalFollowBtn">Follow</a>
@@ -862,82 +862,126 @@
     const modalSaveIcon = document.getElementById('modalSaveIcon');
     const modalComments = document.getElementById('modalComments');
     const modalCommentInput = document.getElementById('modalCommentInput');
-    const modalFollowBtn = document.getElementById('modalFollowBtn'); // Get the follow button
 
+    modalComments.addEventListener('click', function(e) {
+        const heartBtn = e.target.closest('.comment-heart');
+        if (!heartBtn) return;
+
+        const commentItem = heartBtn.closest('.comment-item');
+        const replyItem = heartBtn.closest('.reply-item');
+        let item, id, isComment;
+
+        if (commentItem) {
+            item = commentItem;
+            id = item.dataset.commentId;
+            isComment = true;
+        } else if (replyItem) {
+            item = replyItem;
+            id = item.dataset.replyId;
+            isComment = false;
+        } else {
+            return;
+        }
+
+        const likesSpan = item.querySelector('.comment-likes');
+        let currentLikes = parseInt(likesSpan.textContent) || 0;
+        const isLiked = heartBtn.classList.contains('liked');
+
+        // Check if user is authenticated
+        const isAuthenticated = "{{ request.user.is_authenticated|lower }}";
+        if (isAuthenticated !== 'true') {
+            alert('Please log in to like comments');
+            window.location.href = `/login/?next=${encodeURIComponent(window.location.pathname)}`;
+            return;
+        }
+
+        // Optimistically update UI before redirect
+        if (isLiked) {
+            heartBtn.classList.remove('liked');
+            likesSpan.textContent = `${currentLikes - 1} likes`;
+        } else {
+            heartBtn.classList.add('liked');
+            likesSpan.textContent = `${currentLikes + 1} likes`;
+        }
+
+        // Construct and log the URL for debugging
+        const action = isLiked ? 'unlike' : 'like';
+        const url = isComment
+            ? `/comment/${id}/?action=${action}&next=${encodeURIComponent(window.location.pathname)}&post_id=${modalPostIdInput.value}`
+            : `/reply_comment/${id}/?action=${action}&next=${encodeURIComponent(window.location.pathname)}&post_id=${modalPostIdInput.value}`;
+        console.log(`Navigating to: ${url}`); // Debug log
+        window.location.href = url;
+    });
 
     // Store all posts and reels data with their comments
     const postsData = {
-        {% for post in posts %}
-        '{{ post.id }}': {
-            comments: [
-                {% for comment in post.comments.all %}
-                {
-                    id: {{ comment.id }},
-                    username: '{{ comment.userID.username }}',
-                    userAvatar: '{% if comment.userID.avatar %}{{ comment.userID.avatar.url }}{% else %}None{% endif %}',
-                    text: '{{ comment.comment|escapejs }}',
-                    timeAgo: '{{ comment.since_created }}',
-                    replies: [
-                        {% for reply in comment.reply_comments.all %}
-                        {
-                            id: {{ reply.id }},
-                            username: '{{ reply.userID.username }}',
-                            userAvatar: '{% if reply.userID.avatar %}{{ reply.userID.avatar.url }}{% else %}None{% endif %}',
-                            text: '{{ reply.reply_comment|escapejs }}',
-                            timeAgo: '{{ reply.since_created }}'
-                        }{% if not forloop.last %},{% endif %}
-                        {% endfor %}
-                    ]
-                }{% if not forloop.last %},{% endif %}
-                {% endfor %}
-            ]
-        }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    };
+    {% for post in posts %}
+    '{{ post.id }}': {
+        comments: [
+            {% for comment in post.comments.all %}
+            {
+                id: {{ comment.id }},
+                username: '{{ comment.userID.username }}',
+                userAvatar: '{% if comment.userID.avatar %}{{ comment.userID.avatar.url }}{% else %}None{% endif %}',
+                text: '{{ comment.comment|escapejs }}',
+                timeAgo: '{{ comment.since_created }}',
+                likes_count: {{ comment.likes_count }},
+                likedByUser: '{% if comment|is_comment_liked_by_user:request.user %}True{% else %}False{% endif %}',
+                replies: [
+                    {% for reply in comment.reply_comments.all %}
+                    {
+                        id: {{ reply.id }},
+                        username: '{{ reply.userID.username }}',
+                        userAvatar: '{% if reply.userID.avatar %}{{ reply.userID.avatar.url }}{% else %}None{% endif %}',
+                        text: '{{ reply.reply_comment|escapejs }}',
+                        timeAgo: '{{ reply.since_created }}',
+                        likes_count: {{ reply.likes_count }},
+                        likedByUser: '{% if reply|is_reply_liked_by_user:request.user %}True{% else %}False{% endif %}'
+                    }{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
 
-    const reelsData = {
-        {% for reel in reels %}
-        '{{ reel.id }}': {
-            comments: [
-                {% for comment in reel.comments.all %}
-                {
-                    id: {{ comment.id }},
-                    username: '{{ comment.userID.username }}',
-                    userAvatar: '{% if comment.userID.avatar %}{{ comment.userID.avatar.url }}{% else %}None{% endif %}',
-                    text: '{{ comment.comment|escapejs }}',
-                    timeAgo: '{{ comment.since_created }}',
-                    replies: [
-                        {% for reply in comment.reply_comments.all %}
-                        {
-                            id: {{ reply.id }},
-                            username: '{{ reply.userID.username }}',
-                            userAvatar: '{% if reply.userID.avatar %}{{ reply.userID.avatar.url }}{% else %}None{% endif %}',
-                            text: '{{ reply.reply_comment|escapejs }}',
-                            timeAgo: '{{ reply.since_created }}'
-                        }{% if not forloop.last %},{% endif %}
-                        {% endfor %}
-                    ]
-                }{% if not forloop.last %},{% endif %}
-                {% endfor %}
-            ]
-        }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    };
-
-    // Function to update the follow button's state (text and class)
-    function updateFollowButtonState(isFollowing) {
-        if (isFollowing) {
-            modalFollowBtn.textContent = 'Unfollow';
-            modalFollowBtn.classList.add('unfollow');
-        } else {
-            modalFollowBtn.textContent = 'Follow';
-            modalFollowBtn.classList.remove('unfollow');
-        }
-    }
+const reelsData = {
+    {% for reel in reels %}
+    '{{ reel.id }}': {
+        comments: [
+            {% for comment in reel.comments.all %}
+            {
+                id: {{ comment.id }},
+                username: '{{ comment.userID.username }}',
+                userAvatar: '{% if comment.userID.avatar %}{{ comment.userID.avatar.url }}{% else %}None{% endif %}',
+                text: '{{ comment.comment|escapejs }}',
+                timeAgo: '{{ comment.since_created }}',
+                likes_count: {{ comment.likes_count|default:0 }},
+                likedByUser: '{% if comment|is_comment_liked_by_user:request.user %}True{% else %}False{% endif %}',
+                replies: [
+                    {% for reply in comment.reply_comments.all %}
+                    {
+                        id: {{ reply.id }},
+                        username: '{{ reply.userID.username }}',
+                        userAvatar: '{% if reply.userID.avatar %}{{ reply.userID.avatar.url }}{% else %}None{% endif %}',
+                        text: '{{ reply.reply_comment|escapejs }}',
+                        timeAgo: '{{ reply.since_created }}',
+                        likes_count: {{ reply.likes_count|default:0 }},
+                        likedByUser: '{% if reply|is_reply_liked_by_user:request.user %}True{% else %}False{% endif %}'
+                    }{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
 
     function renderComments(comments) {
-        modalComments.innerHTML = ''; // Clear existing comments
-
+        modalComments.innerHTML = '';
         if (comments.length === 0) {
             modalComments.innerHTML = '<div class="no-comments">No comments yet.</div>';
             return;
@@ -946,7 +990,7 @@
         comments.forEach(comment => {
             const commentItem = document.createElement('div');
             commentItem.className = 'comment-item';
-            commentItem.dataset.commentId = comment.id; // Add data attribute for comment ID
+            commentItem.dataset.commentId = comment.id;
 
             const avatarHtml = comment.userAvatar && comment.userAvatar !== 'None' ?
                 `<img src="${comment.userAvatar}" alt="${comment.username}">` :
@@ -963,23 +1007,26 @@
                     <div class="comment-actions">
                         <span class="comment-time">${comment.timeAgo}</span>
                         <button class="comment-reply" onclick="startReplyToComment(${comment.id}, '${comment.username}')">Reply</button>
-                        <span class="comment-likes">0 likes</span> <button class="comment-heart">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                            </svg>
-                        </button>
+                        <span class="comment-likes">${comment.likes_count} likes</span>
+                        <a href="/comment/${comment.id}/?action=${comment.likedByUser === 'True' ? 'unlike' : 'like'}&next=${encodeURIComponent(window.location.pathname)}&post_id=${modalPostIdInput.value}" class="comment-heart ${comment.likedByUser === 'True' ? 'liked' : ''}">
+                            <button class="comment-heart">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                </svg>
+                            </button>
+                        </a>
                     </div>
                     <div class="replies-container" id="replies-for-comment-${comment.id}">
-                        </div>
+                    </div>
                 </div>
             `;
             modalComments.appendChild(commentItem);
 
-            // Render replies for each comment
             const repliesContainer = document.getElementById(`replies-for-comment-${comment.id}`);
             comment.replies.forEach(reply => {
                 const replyItem = document.createElement('div');
                 replyItem.className = 'reply-item';
+                replyItem.dataset.replyId = reply.id;
                 const replyAvatarHtml = reply.userAvatar && reply.userAvatar !== 'None' ?
                     `<img src="${reply.userAvatar}" alt="${reply.username}">` :
                     reply.username.toUpperCase().charAt(0);
@@ -994,12 +1041,14 @@
                         </div>
                         <div class="comment-actions">
                             <span class="comment-time">${reply.timeAgo}</span>
-                            <span class="comment-likes">0 likes</span>
-                            <button class="comment-heart">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                                </svg>
-                            </button>
+                            <span class="comment-likes">${reply.likes_count} likes</span>
+                            <a href="/reply_comment/${reply.id}/?action=${reply.likedByUser === 'True' ? 'unlike' : 'like'}&next=${encodeURIComponent(window.location.pathname)}&post_id=${modalPostIdInput.value}" class="comment-heart ${reply.likedByUser === 'True' ? 'liked' : ''}">
+                                <button class="comment-heart">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                    </svg>
+                                </button>
+                            </a>
                         </div>
                     </div>
                 `;
@@ -1009,14 +1058,10 @@
     }
 
     function openModal(postData) {
-        // Reset media display
-
-
         modalImage.style.display = 'none';
         modalVideo.style.display = 'none';
         modalVideo.pause();
 
-        // Set media content
         if (postData.type === 'post') {
             modalImage.src = postData.url;
             modalImage.style.display = 'block';
@@ -1027,25 +1072,21 @@
             modalVideo.play();
         }
 
-        // Set user info
         modalUsername.textContent = postData.username;
         modalPostIdInput.value = postData.id;
 
-        // Set user avatar
         if (postData.userAvatar && postData.userAvatar !== 'None') {
             modalAvatar.innerHTML = `<img src="${postData.userAvatar}" alt="${postData.username}">`;
         } else {
             modalAvatar.textContent = postData.username.toUpperCase().charAt(0);
         }
 
-        // Set caption
         if (postData.caption && postData.caption !== 'None') {
             modalCaption.innerHTML = `<span class="caption-username">${postData.username}</span>${postData.caption}`;
         } else {
             modalCaption.innerHTML = `<span class="caption-username">${postData.username}</span>`;
         }
 
-        // Set location
         if (postData.location && postData.location !== 'None') {
             modalLocationText.textContent = postData.location;
             modalLocation.style.display = 'flex';
@@ -1053,14 +1094,12 @@
             modalLocation.style.display = 'none';
         }
 
-        // Set stats
         let statsText = `${postData.likes} likes`;
         if (postData.type === 'reels') {
             statsText += ` • ${postData.views} views`;
         }
         modalStats.textContent = statsText;
 
-        // Set like and save states
         if (postData.likedByUser === 'True') {
             modalLikeBtn.classList.add('liked');
         } else {
@@ -1072,24 +1111,10 @@
             modalSaveIcon.classList.replace('fa-regular', postData.saved_by_user);
         }
 
-
-        // Update like and save links
         modalLikeLink.href = `/like/${postData.id}/?next=${encodeURIComponent(window.location.pathname)}`;
         modalSaveLink.href = `/saved/${postData.id}/?next=${encodeURIComponent(window.location.pathname)}`;
-        modalNamePath.href = `/profile/${postData.id}/?next=${encodeURIComponent(window.location.pathname)}`;
+        modalNamePath.href = `/profile/${postData.userId}/?next=${encodeURIComponent(window.location.pathname)}`;
 
-        const currentUserId = "{{ request.user.id }}";
-
-        if (postData.userId === currentUserId) {
-            modalFollowBtn.style.display = 'none';
-        } else {
-            modalFollowBtn.style.display = 'inline-block';
-            modalFollowBtn.href = `/follow-create/${postData.userId}/?next=${encodeURIComponent(window.location.pathname)}`;
-            updateFollowButtonState(postData.isFollowedByViewer === 'True');
-        }
-
-
-        // Populate comments
         let commentsForPost;
         if (postData.type === 'post') {
             commentsForPost = postsData[postData.id].comments;
@@ -1098,14 +1123,13 @@
         }
         renderComments(commentsForPost);
 
-
         globalPostModal.classList.add('active');
     }
 
     function closeModal() {
         globalPostModal.classList.remove('active');
         modalVideo.pause();
-        modalVideo.currentTime = 0; // Reset video to start
+        modalVideo.currentTime = 0;
     }
 
     function toggleModalPostButton(input) {
@@ -1125,7 +1149,6 @@
         modalCommentInput.value = `@${username} `;
         modalCommentInput.focus();
 
-        // Add a hidden input for parent_comment_id to the form for replies
         let parentCommentIdInput = document.getElementById('parentCommentIdInput');
         if (!parentCommentIdInput) {
             parentCommentIdInput = document.createElement('input');
@@ -1136,10 +1159,7 @@
         }
         parentCommentIdInput.value = commentId;
 
-        // Change the name of the main comment input if it's a reply
         modalCommentInput.name = 'reply_comment';
-
-        // Ensure the post button is active
         toggleModalPostButton(modalCommentInput);
     }
 
@@ -1148,7 +1168,7 @@
         exploreItems.forEach(item => {
             item.addEventListener('click', () => {
                 const dataType = item.dataset.type;
-                const dataId = item.dataset.id;
+                const dataId = item.dataset.id.toString();
                 const dataUrl = item.dataset.url;
                 const dataUsername = item.dataset.username;
                 const dataUserAvatar = item.dataset.userAvatar;
@@ -1161,8 +1181,6 @@
                 const isSavedByUser = item.dataset.savedByUser;
                 const savedCount = item.dataset.savedCount;
                 const userId = item.dataset.userId;
-                const isFollowedByViewer = item.dataset.isFollowedByViewer;
-
 
                 const postData = {
                     type: dataType,
@@ -1178,14 +1196,35 @@
                     likedByUser: isLikedByUser,
                     saved_by_user: isSavedByUser,
                     saved_count: savedCount,
-                    userId: userId, // Pass user ID
-                    isFollowedByViewer: isFollowedByViewer
+                    userId: userId
                 };
                 openModal(postData);
             });
         });
 
-        // Event listener for modal close on escape key
+        {% if open_post_id %}
+        const item = document.querySelector(`.explore-item[data-id="{{ open_post_id }}"]`);
+        if (item) {
+            const postData = {
+                type: item.dataset.type,
+                id: item.dataset.id.toString(),
+                url: item.dataset.url,
+                username: item.dataset.username,
+                userAvatar: item.dataset.userAvatar,
+                caption: item.dataset.caption,
+                likes: item.dataset.likes,
+                comments: item.dataset.comments,
+                location: item.dataset.location,
+                views: item.dataset.views,
+                likedByUser: item.dataset.likedbyuser,
+                saved_by_user: item.dataset.savedByUser,
+                saved_count: item.dataset.savedCount,
+                userId: item.dataset.userId
+            };
+            openModal(postData);
+        }
+        {% endif %}
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && globalPostModal.classList.contains('active')) {
                 closeModal();

@@ -856,8 +856,12 @@
             <h1>{{ user.username }}</h1>
             <div class="profile-stats">
                 <div class="profile-stat"><strong>{{ posts.count|default:"0" }}</strong> posts</div>
-                <div class="profile-stat"><strong>{{ user.followers_count }}</strong> followers</div>
-                <div class="profile-stat"><strong>{{ user.following_count }}</strong> following</div>
+           <a style="text-decoration:none" href="{% url 'followers' %}">
+                    <div class="profile-stat"><strong>{{ user.followers_count }}</strong> followers</div>
+                </a>
+                <a style="text-decoration:none" href="{% url 'followings' %}">
+                    <div class="profile-stat"><strong>{{ user.following_count }}</strong> following</div>
+                </a>
             </div>
             <div class="profile-bio">
                 <strong>{{ user.get_full_name|default:user.username }}</strong>

@@ -3,29 +3,31 @@
 {% load my_tags %}
 
 {% block title %}Instagram{% endblock %}
-
 {% block home_active %}active{% endblock %}
 
 {% block content %}
-<div class="home-page">
+<div class="home-page" style="display: flex; flex-direction: column; align-items: center;">
     <!-- Stories Section -->
-    <div class="stories-container">
-        <div class="stories-list">
+    <div class="stories-container" style="width: 100%; max-width: 600px; margin-bottom: 24px;">
+        <div class="stories-list" style="display: flex; gap: 12px; overflow-x: auto; padding: 8px;">
             {% for user, user_histories in grouped_histories %}
-            <div class="story-item" onclick="openStoryViewer('{{ user.username }}', {{ user_histories|length }})">
-                <div class="story-avatar">
+            <div class="story-item" onclick="openStoryViewer('{{ user.username }}', {{ user_histories|length }})"
+                 style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+                <div class="story-avatar"
+                     style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; border: 2px solid #ff0000;">
                     {% if user.avatar %}
-                    <img src="{{ user.avatar.url }}" alt="{{ user.username }}">
+                    <img src="{{ user.avatar.url }}" alt="{{ user.username }}"
+                         style="width: 100%; height: 100%; object-fit: cover;">
                     {% else %}
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                         style="width: 32px; height: 32px; ">
+                         style="width: 32px; height: 32px; color: #fff;">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
                     </svg>
                     {% endif %}
                 </div>
-                <span class="story-username">{{ user.username }}</span>
-                <!-- Hidden stories container -->
+                <span class="story-username"
+                      style="font-size: 12px; color: #fff; margin-top: 4px;">{{ user.username }}</span>
                 <div class="hidden-stories" id="stories-{{ user.username }}" style="display: none;">
                     {% for story in user_histories %}
                     <img src="{{ story.contentUrl.url }}" alt="story" data-username="{{ user.username }}"
@@ -39,37 +41,38 @@
 
     <!-- Posts Feed -->
     {% for post in posts %}
-    <article class="post" data-post-id="{{ post.id }}">
-        <div class="post-header">
-            <div class="post-user-info">
-                <div class="post-avatar">
+    <article class="post" data-post-id="{{ post.id }}"
+             style="width: 100%; max-width: 600px; background: #000; border: 1px solid #262626; border-radius: 8px; margin-bottom: 24px;">
+        <div class="post-header"
+             style="display: flex; justify-content: space-between; align-items: center; padding: 12px;">
+            <div class="post-user-info" style="display: flex; align-items: center; gap: 12px;">
+                <div class="post-avatar" style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden;">
                     {% if post.userID.avatar %}
-                    <img src="{{ post.userID.avatar.url }}"
-                         style="height: 32px; width: 32px; border-radius: 50%; object-fit: cover" alt="">
-
+                    <img src="{{ post.userID.avatar.url }}" alt=""
+                         style="width: 100%; height: 100%; object-fit: cover;">
                     {% else %}
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                         style="width: 32px; height: 32px;">
+                         style="width: 32px; height: 32px; color: #fff;">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
                     </svg>
                     {% endif %}
-
                 </div>
-                <div class="post-user">
-                    <a href="{% url 'profile-another' pk=post.userID.id %}" class="post-username">{{ post.userID.username }}</a>
-
-                    <span class="post-time">• {{ post.since_created }}</span>
+                <div class="post-user" style="display: flex; align-items: center; gap: 8px;">
+                    <a href="{% url 'profile-another' pk=post.userID.id %}" class="post-username"
+                       style="color: #fff; font-weight: 600; text-decoration: none;">{{ post.userID.username }}</a>
+                    <span class="post-time" style="color: #8e8e8e; font-size: 12px;">• {{ post.since_created }}</span>
                     {% if post.userID.id not in followed_users %}
-                    <button class="modal-follow-btn">
+                    <button class="modal-follow-btn" style="background: none; border: none; cursor: pointer;">
                         <a href="{% url 'follow-create' pk=post.userID.id %}"
-                           style="text-decoration: none; color: #fff;" id="modalFollowBtn">Follow</a>
+                           style="text-decoration: none; color: #0095f6; font-weight: 600;">Follow</a>
                     </button>
                     {% endif %}
                 </div>
             </div>
-            <div class="post-options">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="post-options" style="cursor: pointer;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     style="color: #fff;">
                     <circle cx="12" cy="12" r="1"/>
                     <circle cx="12" cy="5" r="1"/>
                     <circle cx="12" cy="19" r="1"/>
@@ -77,54 +80,64 @@
             </div>
         </div>
 
-        <img src="{{ post.contentUrl.url }}" alt="Post image" class="post-image">
+        <img src="{{ post.contentUrl.url }}" alt="Post image" class="post-image"
+             style="width: 100%; height: auto; object-fit: cover;">
 
-        <div class="post-actions">
-            <div class="post-actions-left">
-                <button class="action-btn like-btn">
-                    <a href="{% url 'like' id=post.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
+        <div class="post-actions" style="display: flex; justify-content: space-between; padding: 12px;">
+            <div class="post-actions-left" style="display: flex; gap: 16px;">
+                <button class="action-btn like-btn" style="background: none; border: none; cursor: pointer;">
+                    <a href="{% url 'like' id=post.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
+                       style="text-decoration: none;">
                         {% if post|is_liked_by_user:request.user %}
-                        <i class="fa-solid fa-heart" style="color: #ff0000;font-size:25px;"></i>
+                        <i class="fa-solid fa-heart" style="color: #ff0000; font-size: 25px;"></i>
                         {% else %}
-                        <i class="fa-regular fa-heart" style="color:#fff;font-size:25px"></i>
+                        <i class="fa-regular fa-heart" style="color: #fff; font-size: 25px;"></i>
                         {% endif %}
                     </a>
                 </button>
-                <button class="action-btn comment-btn" onclick="toggleComments(this)">
+                <button class="action-btn comment-btn" onclick="toggleComments(this)"
+                        style="background: none; border: none; cursor: pointer;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                         style="width: 24px; height: 24px;">
+                         style="width: 24px; height: 24px; color: #fff;">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                     </svg>
                 </button>
-                <button class="action-btn share-btn">
+                <button class="action-btn share-btn" style="background: none; border: none; cursor: pointer;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                         style="width: 24px; height: 24px;">
+                         style="width: 24px; height: 24px; color: #fff;">
                         <line x1="22" y1="2" x2="11" y2="13"/>
                         <polygon points="22,2 15,22 11,13 2,9 22,2"/>
                     </svg>
                 </button>
             </div>
-            <button class="action-btn save-btn" onclick="toggleSave(this)">
+            <button class="action-btn save-btn" onclick="toggleSave(this)"
+                    style="background: none; border: none; cursor: pointer;">
                 <a href="{% url 'saved-create' id=post.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
-                   title="Save" style="height: 100%; width: 100%;color:white;">
+                   title="Save" style="color: #fff;">
                     <i class="{% is_saved_by_user request.user post %}"></i>
                 </a>
             </button>
         </div>
 
-        <div class="post-likes">{{ post.likes_count|default:"0" }} likes</div>
-        <div class="post-likes">{{ post.saved.count }} saved</div>
-
-        <div class="post-caption">
-            <strong>{{ post.userID.username }}</strong> {{ post.caption }}
+        <div class="post-likes" style="padding: 0 12px; color: #fff; font-size: 14px;">
+            {{ post.likes_count|default:"0" }} likes
+        </div>
+        <div class="post-likes" style="padding: 0 12px; color: #fff; font-size: 14px;">{{ post.saved.count }} saved
         </div>
 
-        <div class="post-comments" onclick="toggleComments(this)">
+        <div class="post-caption" style="padding: 0 12px; color: #fff; font-size: 14px; margin: 8px 0;">
+            <strong style="font-weight: 600;">{{ post.userID.username }}</strong> {{ post.caption }}
+        </div>
+
+        {% if post.comments.count != 0 %}
+        <div class="post-comments" onclick="toggleComments(this)"
+             style="padding: 0 12px; color: #8e8e8e; font-size: 14px; cursor: pointer;">
             View all {{ post.comments_count|default:"0" }} comments
         </div>
+        {% endif %}
 
         <!-- Comments Section -->
-        <div class="comments-section" >
+        <div class="comments-section" style="display: none; padding: 12px;">
             {% for comment in post.comments.all %}
             <div class="comment-item" style="display: flex; align-items: flex-start; margin-bottom: 12px; gap: 12px;">
                 <div class="comment-avatar"
@@ -133,7 +146,7 @@
                     <img src="{{ comment.userID.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;"
                          alt="{{ comment.userID.username }}">
                     {% else %}
-                    <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px;">
+                    <div style="width: 100%; height: 100%; background: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px;">
                         {{ comment.userID.username|upper|first }}
                     </div>
                     {% endif %}
@@ -141,7 +154,8 @@
                 <div class="comment-content" style="flex: 1;">
                     <div class="comment-text"
                          style="font-size: 14px; color: #fff; line-height: 1.4; margin-bottom: 4px;">
-                        <strong style="font-weight: 600; margin-right: 8px;">{{ comment.userID.username }}</strong>{{ comment.comment }}
+                        <strong style="font-weight: 600; margin-right: 8px;">{{ comment.userID.username }}</strong>
+                        {{ comment.comment }}
                     </div>
                     <div class="comment-actions"
                          style="display: flex; align-items: center; gap: 16px; font-size: 12px; color: #8e8e8e;">
@@ -153,49 +167,53 @@
                     </div>
 
                     <!-- Reply Input Section -->
-<form action="{% url 'home' %}" method="POST" class="reply-input-section" style="margin-left: 44px; margin-top: 8px; display: none;">
-    {% csrf_token %}
-    <input type="hidden" name="parent_comment_id" value="{{ comment.id }}">
-    <div class="reply-input-container"
-         style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-        <div class="reply-avatar"
-             style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-            {% if request.user.avatar %}
-            <img src="{{ request.user.avatar.url }}"
-                 style="width: 100%; height: 100%; object-fit: cover;"
-                 alt="{{ request.user.username }}">
-            {% else %}
-            <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">
-                {{ request.user.username|upper|first }}
-            </div>
-            {% endif %}
-        </div>
-        <input type="text" class="reply-input" name="reply_comment"
-               placeholder="Reply to {{ comment.userID.username }}..."
-               style="flex: 1; border: none; outline: none; font-size: 14px; color: #fff; background: transparent;">
-    </div>
-    <div class="reply-actions" style="display: flex; gap: 12px; margin-left: 32px;">
-        <button type="submit" class="reply-post-btn"
-                style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; color: #0095f6;">
-            Post
-        </button>
-        <button type="button" class="reply-cancel-btn" onclick="cancelReply(this)"
-                style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; color: #8e8e8e;">
-            Cancel
-        </button>
-    </div>
-</form>
+                    <form action="{% url 'home' %}" method="POST" class="reply-input-section"
+                          style="margin-left: 44px; margin-top: 8px; display: none;">
+                        {% csrf_token %}
+                        <input type="hidden" name="parent_comment_id" value="{{ comment.id }}">
+                        <div class="reply-input-container"
+                             style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <div class="reply-avatar"
+                                 style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+                                {% if request.user.avatar %}
+                                <img src="{{ request.user.avatar.url }}"
+                                     style="width: 100%; height: 100%; object-fit: cover;"
+                                     alt="{{ request.user.username }}">
+                                {% else %}
+                                <div style="width: 100%; height: 100%; background: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">
+                                    {{ request.user.username|upper|first }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <input type="text" class="reply-input" name="reply_comment"
+                                   placeholder="Reply to {{ comment.userID.username }}..."
+                                   style="flex: 1; border: none; outline: none; font-size: 14px; color: #fff; background: transparent;">
+                        </div>
+                        <div class="reply-actions" style="display: flex; gap: 12px; margin-left: 32px;">
+                            <button type="submit" class="reply-post-btn"
+                                    style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; color: #0095f6;">
+                                Post
+                            </button>
+                            <button type="button" class="reply-cancel-btn" onclick="cancelReply(this)"
+                                    style="background: none; border: none; font-size: 12px; font-weight: 600; cursor: pointer; color: #8e8e8e;">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+
                     <!-- Replies -->
-                    {% if comment.replies.exists %}
+                    {% if comment.reply_comments.count != 0 %}
                     <div class="view-replies" onclick="toggleReplies(this)"
-                         style="margin-left: 44px; font-size: 12px; color: #8e8e8e; cursor: pointer; margin-bottom: 8px; display: flex; align-items: center; gap: 16px;">
-                        <span style="width: 24px; height: 1px; background: #262626;"></span>
-                        View replies ({{ comment.replies.count }})
+                         style="margin-left: 44px; font-size: 12px; color: #8e8e8e; cursor: pointer; margin: 8px 0; display: flex; align-items: center; gap: 8px;">
+                        <span class="view-replies-line" style="width: 24px; height: 1px; background: #262626;"></span>View
+                        all {{ comment.reply_comments.count }} repl{% if comment.reply_comments.count == 1 %}y{% else
+                        %}ies{% endif %}
                     </div>
-                    <div class="replies-container" style="display: none; margin-left: 44px; margin-top: 8px;">
-                        {% for reply in comment.replies.all %}
+                    <div class="replies-container"
+                         style="display: none; margin-left: 44px; margin-top: 8px; flex-direction: column;">
+                        {% for reply in comment.reply_comments.all %}
                         <div class="reply-item"
-                             style="display: flex; align-items: flex-start; margin-bottom: 8px; gap: 8px;">
+                             style="display: flex; align-items: flex-start; margin-bottom: 12px; gap: 8px;">
                             <div class="reply-avatar"
                                  style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                                 {% if reply.userID.avatar %}
@@ -203,43 +221,50 @@
                                      style="width: 100%; height: 100%; object-fit: cover;"
                                      alt="{{ reply.userID.username }}">
                                 {% else %}
-                                <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">
+                                <div style="width: 100%; height: 100%; background: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;">
                                     {{ reply.userID.username|upper|first }}
                                 </div>
                                 {% endif %}
                             </div>
-                            <div class="comment-content" style="flex: 1;">
-                                <div class="comment-text"
+                            <div class="reply-content" style="flex: 1;">
+                                <div class="reply-text"
                                      style="font-size: 14px; color: #fff; line-height: 1.4; margin-bottom: 4px;">
-                                    <strong style="font-weight: 600; margin-right: 8px;">{{ reply.userID.username
-                                        }}</strong>{{ reply.comment }}
+                                    <strong style="font-weight: 600; margin-right: 8px;">
+                                        {{ reply.userID.username }}</strong>{{ reply.reply_comment }}
                                 </div>
-                                <div class="comment-actions"
+                                <div class="reply-actions"
                                      style="display: flex; align-items: center; gap: 16px; font-size: 12px; color: #8e8e8e;">
                                     <span class="comment-time">{{ reply.since_created }}</span>
-                                    <span class="comment-likes" style="font-weight: 600;">{{ reply.comment_likes_count }} likes</span>
                                     <span class="comment-reply" style="cursor: pointer; font-weight: 600;"
                                           onclick="showReplyInput(this)">Reply</span>
                                 </div>
                             </div>
-                            <button class="comment-heart" onclick="toggleCommentLike(this)"
-                                    style="background: none; border: none; cursor: pointer; padding: 0; margin-left: auto;">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="#8e8e8e" stroke-width="1.5"
-                                     style="width: 12px; height: 12px;">
-                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                                </svg>
+
+                            <button class="comment-heart" style="background: none; border: none; cursor: pointer;">
+                                <a href="{% url 'reply-comment-like' id=reply.id %}?next={{ request.path }}"
+                                   class="reply-like-link"
+                                   style="text-decoration: none; display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer;">
+                                    <i class="{% reply_comment_like_icon reply user %}"
+                                       style="font-size: 20px; color: {% if reply|is_reply_liked_by_user:request.user %}#ff0000{% else %}#fff{% endif %};"></i>
+                                    <span class="reply-comment-likes-count"
+                                          style="font-size: 12px; color: #8e8e8e; margin: 0;">{{ reply.reply_comment_likes_count }}</span>
+                                </a>
                             </button>
                         </div>
                         {% endfor %}
                     </div>
                     {% endif %}
                 </div>
-                <button class="comment-heart" onclick="toggleCommentLike(this)"
-                        style="background: none; border: none; cursor: pointer; padding: 0; margin-left: auto;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#8e8e8e" stroke-width="1.5"
-                         style="width: 12px; height: 12px;">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                    </svg>
+                <button class="comment-heart" style="background: none; border: none; cursor: pointer;">
+                    {% if comment.comment_id %}
+                    <a href="{% url 'comment-like' id=comment.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
+                       class="comment-like-link"
+                       style="text-decoration: none; display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer;">
+                        <i class="{% comment_like_icon comment user %}"
+                           style="font-size: 20px; color: {% if comment|is_liked_by_user:request.user %}#ff0000{% else %}#fff{% endif %};"></i>
+                        <span class="comment-likes-count" style="font-size: 12px; color: #8e8e8e; margin: 0;">{{ comment.comment_likes_count }}</span>
+                    </a>
+                    {% endif %}
                 </button>
             </div>
             {% endfor %}
@@ -254,7 +279,7 @@
                 <img src="{{ request.user.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;"
                      alt="{{ request.user.username }}">
                 {% else %}
-                <div style="width: 100%; height: 100%; background-color: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px;">
+                <div style="width: 100%; height: 100%; background: #262626; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px;">
                     {{ request.user.username|upper|first }}
                 </div>
                 {% endif %}
@@ -274,7 +299,7 @@
 
 <!-- Story Viewer Modal -->
 <div id="storyViewer"
-     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index:1000;">
+     style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 1000;">
     <div class="story-content" style="position: relative; max-width: 400px; max-height: 90vh;">
         <div class="story-progress" id="storyProgress"
              style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 4px; z-index: 10;"></div>
@@ -283,8 +308,7 @@
             <div class="story-user-info" style="display: flex; align-items: center; gap: 8px;">
                 <div class="story-user-avatar"
                      style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; overflow: hidden;">
-                    <img id="storyUserAvatar" src=""
-                         style="width: 100%; height: 100%; object-fit: cover;" alt="">
+                    <img id="storyUserAvatar" src="{{ user.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="">
                 </div>
                 <div>
                     <div class="story-username-text" id="storyUsername"
@@ -332,9 +356,7 @@
         const container = document.getElementById(`stories-${username}`);
         currentStories = Array.from(container.querySelectorAll('img'));
         currentStoryIndex = 0;
-
         if (currentStories.length === 0) return;
-
         setupStoryViewer(username, totalStories);
         document.getElementById('storyViewer').style.display = 'flex';
         showStory();
@@ -343,18 +365,13 @@
     function setupStoryViewer(username, totalStories) {
         const progressContainer = document.getElementById('storyProgress');
         progressContainer.innerHTML = '';
-
         for (let i = 0; i < totalStories; i++) {
             const progressBar = document.createElement('div');
             progressBar.style.cssText = 'flex: 1; height: 2px; background: rgba(255, 255, 255, 0.3); border-radius: 1px; overflow: hidden;';
             progressBar.innerHTML = '<div class="progress-fill" style="height: 100%; background: #fff; width: 0%; transition: width 0.1s linear;"></div>';
             progressContainer.appendChild(progressBar);
         }
-
         document.getElementById('storyUsername').textContent = username;
-        document.getElementById('storyUserAvatar').src = currentStories[0].src;
-
-        // Show/hide navigation buttons
         document.getElementById('storyPrev').style.display = totalStories > 1 ? 'flex' : 'none';
         document.getElementById('storyNext').style.display = totalStories > 1 ? 'flex' : 'none';
     }
@@ -364,29 +381,16 @@
             closeStoryViewer();
             return;
         }
-
         const story = currentStories[currentStoryIndex];
         document.getElementById('storyImage').src = story.src;
         document.getElementById('storyTime').textContent = story.dataset.time;
-
-        // Update progress bars
         const progressBars = document.querySelectorAll('.progress-fill');
         progressBars.forEach((bar, index) => {
-            if (index < currentStoryIndex) {
-                bar.style.width = '100%';
-            } else if (index === currentStoryIndex) {
-                bar.style.width = '0%';
-                setTimeout(() => bar.style.width = '100%', 100);
-            } else {
-                bar.style.width = '0%';
-            }
+            bar.style.width = index < currentStoryIndex ? '100%' : index === currentStoryIndex ? '0%' : '0%';
+            if (index === currentStoryIndex) setTimeout(() => bar.style.width = '100%', 100);
         });
-
-        // Auto advance after 5 seconds
         clearTimeout(storyTimer);
-        storyTimer = setTimeout(() => {
-            nextStory();
-        }, 5000);
+        storyTimer = setTimeout(nextStory, 5000);
     }
 
     function nextStory() {
@@ -410,28 +414,25 @@
         document.getElementById('storyViewer').style.display = 'none';
     }
 
-    // Post interactions
     function togglePostLike(button) {
-        const svg = button.querySelector('svg');
+        const svg = button.querySelector('i');
         if (button.classList.contains('liked')) {
             button.classList.remove('liked');
-            svg.style.fill = 'none';
-            svg.style.stroke = '#fff';
+            svg.style.color = '#fff';
         } else {
             button.classList.add('liked');
-            svg.style.fill = '#ed4956';
-            svg.style.stroke = '#ed4956';
+            svg.style.color = '#ed4956';
         }
     }
 
     function toggleSave(button) {
-        const svg = button.querySelector('svg');
+        const icon = button.querySelector('i');
         if (button.classList.contains('saved')) {
             button.classList.remove('saved');
-            svg.style.fill = 'none';
+            icon.style.color = '#fff';
         } else {
             button.classList.add('saved');
-            svg.style.fill = '#fff';
+            icon.style.color = '#fff';
         }
     }
 
@@ -458,7 +459,6 @@
         const commentContent = replyButton.closest('.comment-content');
         const replySection = commentContent.querySelector('.reply-input-section');
         const replyInput = replySection.querySelector('.reply-input');
-
         replyButton.style.display = 'none';
         replySection.style.display = 'block';
         replyInput.focus();
@@ -469,38 +469,18 @@
         const replyInput = replySection.querySelector('.reply-input');
         const commentContent = replySection.closest('.comment-content');
         const replyButton = commentContent.querySelector('.comment-reply');
-
         replyInput.value = '';
         replySection.style.display = 'none';
         replyButton.style.display = 'inline';
     }
 
-    function postReply(button) {
-        const replySection = button.closest('.reply-input-section');
-        const replyInput = replySection.querySelector('.reply-input');
-        const commentContent = replySection.closest('.comment-content');
-        const replyButton = commentContent.querySelector('.comment-reply');
-
-        const replyText = replyInput.value.trim();
-        if (replyText) {
-            console.log('Reply posted:', replyText);
-            replyInput.value = '';
-        }
-
-        replySection.style.display = 'none';
-        replyButton.style.display = 'inline';
-    }
-
-
-
     function toggleReplies(button) {
         const repliesContainer = button.nextElementSibling;
         const isVisible = repliesContainer.style.display !== 'none';
-
-        repliesContainer.style.display = isVisible ? 'none' : 'block';
         const replyCount = repliesContainer.children.length;
+        repliesContainer.style.display = isVisible ? 'none' : 'block';
         button.innerHTML = isVisible ?
-            `<span style="width: 24px; height: 1px; background: #262626;"></span>View replies (${replyCount})` :
+            `<span style="width: 24px; height: 1px; background: #262626;"></span>View all ${replyCount} repl${replyCount === 1 ? 'y' : 'ies'}` :
             `<span style="width: 24px; height: 1px; background: #262626;"></span>Hide replies`;
     }
 
@@ -515,14 +495,10 @@
         }
     }
 
-    // Close story viewer when clicking outside
     document.getElementById('storyViewer').addEventListener('click', (e) => {
-        if (e.target.id === 'storyViewer') {
-            closeStoryViewer();
-        }
+        if (e.target.id === 'storyViewer') closeStoryViewer();
     });
 
-    // Keyboard navigation for stories
     document.addEventListener('keydown', (e) => {
         if (document.getElementById('storyViewer').style.display === 'flex') {
             if (e.key === 'ArrowRight') nextStory();
@@ -531,30 +507,14 @@
         }
     });
 
-    // Make reply input placeholder color work
     document.addEventListener('DOMContentLoaded', function() {
-        const style = document.createElement('style');
-        style.textContent = `
-            .reply-input::placeholder, .comment-input::placeholder {
-                color: #8e8e8e;
-            }
-            .reply-post-btn:hover {
-                color: #1877f2;
-            }
-            .reply-cancel-btn:hover {
-                color: #fff;
-            }
-            .comment-post-btn:hover {
-                color: #1877f2;
-            }
-            .comment-reply:hover {
-                color: #fff;
-            }
-            .view-replies:hover {
-                color: #fff;
-            }
-        `;
-        document.head.appendChild(style);
+        const inputs = document.querySelectorAll('.reply-input, .comment-input');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                this.nextElementSibling.style.opacity = this.value.trim() ? '1' : '0.3';
+                this.nextElementSibling.style.pointerEvents = this.value.trim() ? 'auto' : 'none';
+            });
+        });
     });
 </script>
 {% endblock %}

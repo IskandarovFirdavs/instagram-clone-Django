@@ -1,10 +1,13 @@
+import json
+from django.db.models import Count, Prefetch
 from django.utils import timezone
 from datetime import timedelta
-
+from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render, get_object_or_404
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic import TemplateView, ListView
 from posts.forms import PostModelForm
 from posts.models import PostModel, PostLikeModel, CommentModel, CommentLikeModel, ReplyCommentModel, \
@@ -18,9 +21,8 @@ from users.models import UserModel, Follow
 def home_view(request):
     followed_users = request.user.following_set.all()
     followed_ids = [followed.following.id for followed in followed_users]
-
     one_month_ago = timezone.now() - timedelta(days=3)
-    one_day_ago = timezone.now() - timedelta(days=1)
+    one_day_ago = timezone.now() - timedelta(days=77)
 
     base_post_filters = {
         'post_type': PostModel.PostTypeChoice.Post,
@@ -33,27 +35,59 @@ def home_view(request):
     }
 
     if len(followed_ids) > 3:
-        base_post_filters['userID__in'] = followed_users
-        base_history_filters['userID__in'] = followed_users
+        base_post_filters['userID__in'] = followed_ids
+        base_history_filters['userID__in'] = followed_ids
 
-        posts = PostModel.objects.filter(
-            **base_post_filters
-        ).order_by('-created_at').exclude(userID=request.user)
+    posts = PostModel.objects.filter(
+        **base_post_filters
+    ).prefetch_related(
+        Prefetch(
+            'comments',
+            queryset=CommentModel.objects.annotate(
+                likes_count=Count('comment_likes')
+            ).prefetch_related(
+                Prefetch(
+                    'reply_comments',
+                    queryset=ReplyCommentModel.objects.annotate(
+                        likes_count=Count('reply_comment_likes')
+                    )
+                )
+            )
+        ),
+        'likes',
+        'saved'
+    ).order_by('-created_at').exclude(userID=request.user)
 
-        histories = PostModel.objects.filter(
-            **base_history_filters
-        ).order_by('-created_at')
-    else:
-        posts = PostModel.objects.filter(**base_post_filters).order_by('-created_at').exclude(userID=request.user)
+    histories = PostModel.objects.filter(
+        **base_history_filters
+    ).prefetch_related(
+        'likes',
+        'saved'
+    ).order_by('-created_at')
 
-        histories = PostModel.objects.filter(**base_history_filters).order_by('-created_at')
-
-    qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
-
+    grouped_histories = defaultdict(list)
+    for history in histories:
+        grouped_histories[history.userID].append(history)
 
     if request.method == 'POST':
-        reply_text = request.POST.get("reply_comment")
+        post_id = request.POST.get('post_id')
+        comment_text = request.POST.get('comment')
+        reply_text = request.POST.get('reply_comment')
         comment_id = request.POST.get('parent_comment_id')
+
+        if comment_text and post_id:
+            try:
+                post = PostModel.objects.get(id=post_id)
+                CommentModel.objects.create(
+                    postID=post,
+                    userID=request.user,
+                    comment=comment_text
+                )
+                messages.success(request, 'Comment added successfully!')
+                return redirect(f"{request.path}?show_comments={post_id}#post-{post_id}")
+            except PostModel.DoesNotExist:
+                messages.error(request, 'Post not found.')
+                return redirect(request.path)
 
         if reply_text and comment_id:
             try:
@@ -64,43 +98,22 @@ def home_view(request):
                     commentID=parent_comment,
                     userID=request.user,
                 )
-                messages.success(request, 'Javob muvaffaqiyatli qoʻshildi!')
+                messages.success(request, 'Reply added successfully!')
+                return redirect(f"{request.path}?show_comments={parent_comment.postID.id}&show_replies={comment_id}#post-{parent_comment.postID.id}")
             except CommentModel.DoesNotExist:
-                messages.error(request, 'Javob beriladigan izoh topilmadi.')
-            except (ValueError, TypeError):
-                messages.error(request, 'Notoʻgʻri izoh IDsi.')
-            return redirect('home')
+                messages.error(request, 'Comment not found.')
+                return redirect(request.path)
 
-        comment_text = request.POST.get('comment')
-        post_id = request.POST.get('post_id')
-
-        if comment_text and post_id:
-            try:
-                post = PostModel.objects.get(id=post_id)
-                CommentModel.objects.create(
-                    postID=post,
-                    userID=request.user,
-                    comment=comment_text
-                )
-                messages.success(request, 'Izoh muvaffaqiyatli qoʻshildi!')
-            except (PostModel.DoesNotExist, ValueError, TypeError):
-                messages.error(request, 'Izoh qoʻshishda xato: Post topilmadi yoki ID notoʻgʻri.')
-            return redirect('home')
-
-        messages.error(request, 'Izoh yoki javob matni boʻsh boʻlishi mumkin emas.')
-        return redirect('home')
-
-    grouped_histories = defaultdict(list)
-    for history in histories:
-        grouped_histories[history.userID].append(history)
-
+        messages.error(request, 'Comment or reply text cannot be empty.')
+        return redirect(request.path)
     context = {
-        'users': qs,
         'posts': posts,
         'grouped_histories': grouped_histories.items(),
-        'followed_users': followed_ids
+        'followed_users': followed_ids,
+        'show_comments': request.GET.get('show_comments'),
+        'show_replies': request.GET.get('show_replies'),
+        'reply_to': request.GET.get('reply_to')
     }
-
     return render(request, 'home.html', context)
 
 
@@ -133,9 +146,49 @@ class DirectView(TemplateView):
     template_name = 'direct.html'
 
 
+
+@login_required(login_url='login')
 def explore_view(request):
-    posts = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Post).order_by('-created_at')
-    reels = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Reels).order_by('-created_at')
+    posts = PostModel.objects.filter(
+        post_type=PostModel.PostTypeChoice.Post
+    ).prefetch_related(
+        Prefetch(
+            'comments',
+            queryset=CommentModel.objects.annotate(
+                likes_count=Count('comment_likes')
+            ).prefetch_related(
+                Prefetch(
+                    'reply_comments',
+                    queryset=ReplyCommentModel.objects.annotate(
+                        likes_count=Count('reply_comment_likes')
+                    )
+                )
+            )
+        ),
+        'likes',
+        'saved',
+    ).order_by('-created_at')
+
+    reels = PostModel.objects.filter(
+        post_type=PostModel.PostTypeChoice.Reels
+    ).prefetch_related(
+        Prefetch(
+            'comments',
+            queryset=CommentModel.objects.annotate(
+                likes_count=Count('comment_likes')
+            ).prefetch_related(
+                Prefetch(
+                    'reply_comments',
+                    queryset=ReplyCommentModel.objects.annotate(
+                        likes_count=Count('reply_comment_likes')
+                    )
+                )
+            )
+        ),
+        'likes',
+        'saved',
+    ).order_by('-created_at')
+
     qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
 
     if request.method == 'POST':
@@ -147,7 +200,6 @@ def explore_view(request):
             messages.error(request, 'Post not found or invalid ID.')
             return redirect('explore')
 
-        # Comment
         comment_text = request.POST.get('comment')
         if comment_text:
             CommentModel.objects.create(
@@ -157,8 +209,7 @@ def explore_view(request):
             )
             return redirect('explore')
 
-        # Reply
-        reply_text = request.POST.get("reply_comment")
+        reply_text = request.POST.get('reply_comment')
         comment_id = request.POST.get('parent_comment_id')
         if reply_text and comment_id:
             try:
@@ -179,10 +230,28 @@ def explore_view(request):
     context = {
         'users': qs,
         'posts': posts,
-        'reels': reels
+        'reels': reels,
+        'open_post_id': request.GET.get('post_id')
     }
-
     return render(request, 'explore.html', context)
+
+
+@login_required
+def like_comment(request, comment_id):
+    comment = get_object_or_404(CommentModel, id=comment_id)
+    action = request.GET.get('action')
+    next_url = request.GET.get('next', '/explore/')
+    post_id = request.GET.get('post_id')
+
+    like_qs = CommentLikeModel.objects.filter(commentID=comment, userID=request.user)
+    if action == 'like' and not like_qs.exists():
+        CommentLikeModel.objects.create(commentID=comment, userID=request.user)
+    elif action == 'unlike' and like_qs.exists():
+        like_qs.delete()
+
+    if post_id:
+        next_url += f'?post_id={post_id}'
+    return redirect(next_url)
 
 
 class UserListView(ListView):
@@ -197,6 +266,17 @@ class UserListView(ListView):
             qs = qs.filter(username__icontains=q)
 
         return qs
+
+
+def followers_list_view(request):
+    users = UserModel.objects.filter(request.user.following_set)
+
+    return
+
+
+def followings_list_view(request):
+    users = UserModel.objects.filter(request.user.following_set)
+    return
 
 
 class MessagesView(ListView):
@@ -230,7 +310,8 @@ class NotificationsView(ListView):
 
 
 def reels_view(request):
-    reels = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Reels).exclude(userID=request.user).order_by('-created_at')
+    reels = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Reels).exclude(userID=request.user).order_by(
+        '-created_at')
     qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
 
     if request.method == 'POST':
@@ -278,49 +359,6 @@ def reels_view(request):
     return render(request, 'reels.html', context)
 
 
-def like_create(request, id):
-    post = get_object_or_404(PostModel, id=id)
-
-    like = PostLikeModel.objects.filter(postID=post, userID=request.user).first()
-
-    if like:
-        like.delete()
-    else:
-        PostLikeModel.objects.create(postID=post, userID=request.user)
-
-    return redirect(request.GET.get('next', '/'))
-
-
-@login_required
-def like_comment(request, id):
-    comment = get_object_or_404(CommentModel, id=id)
-
-    like = CommentLikeModel.objects.filter(commentID=comment, userID=request.user).first()
-
-    if like:
-        like.delete()
-
-    else:
-        CommentLikeModel.objects.create(commentID=comment, userID=request.user)
-
-    return redirect(request.GET.get('next', '/'))
-
-
-@login_required
-def like_reply_comment(request, id):
-    comment = get_object_or_404(ReplyCommentModel, id=id)
-
-    like = ReplyCommentLikeModel.objects.filter(reply_commentID=comment, userID=request.user).first()
-
-    if like:
-        like.delete()
-
-    else:
-        ReplyCommentLikeModel.objects.create(reply_commentID=comment, userID=request.user)
-
-    return redirect(request.GET.get('next', '/'))
-
-
 class SavedListView(LoginRequiredMixin, ListView):
     template_name = 'saved.html'
     context_object_name = 'users'
@@ -357,3 +395,103 @@ def create_saved_video(request, id):
     post.save()
 
     return redirect(request.GET.get('next', '/'))
+
+
+@login_required
+def like_create(request, id):
+    post = get_object_or_404(PostModel, id=id)
+    like = PostLikeModel.objects.filter(postID=post, userID=request.user).first()
+
+    if like:
+        like.delete()
+        liked = False
+    else:
+        PostLikeModel.objects.create(postID=post, userID=request.user)
+        liked = True
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'liked': liked,
+            'likes_count': post.likes_count()
+        })
+    return redirect(request.GET.get('next', '/'))
+
+
+@login_required
+def like_comment(request, comment_id):
+    comment = get_object_or_404(CommentModel, id=comment_id)
+    action = request.GET.get('action')
+    next_url = request.GET.get('next', '/explore/')
+
+    like_qs = CommentLikeModel.objects.filter(commentID=comment, userID=request.user)
+
+    if action == 'like' and not like_qs.exists():
+        CommentLikeModel.objects.create(commentID=comment, userID=request.user)
+    elif action == 'unlike' and like_qs.exists():
+        like_qs.delete()
+
+    return redirect(next_url)
+
+
+@login_required
+def like_reply_comment(request, id):
+    reply = get_object_or_404(ReplyCommentModel, id=id)
+    action = request.GET.get('action')
+    next_url = request.GET.get('next', '/explore/')
+    post_id = request.GET.get('post_id')
+
+    like_qs = ReplyCommentLikeModel.objects.filter(reply_commentID=reply, userID=request.user)
+
+    if action == 'like' and not like_qs.exists():
+        ReplyCommentLikeModel.objects.create(reply_commentID=reply, userID=request.user)
+    elif action == 'unlike' and like_qs.exists():
+        like_qs.delete()
+
+    if post_id:
+        next_url += f'?post_id={post_id}'
+    return redirect(next_url)
+
+
+def comment_like_view(request, id):
+    comment = get_object_or_404(CommentModel, id=id)
+    user = request.user
+    if user.is_authenticated:
+        if user in comment.likes.all():
+            comment.likes.remove(user)
+        else:
+            comment.likes.add(user)
+    next_url = request.GET.get('next', 'home')
+    return redirect(next_url)
+
+def reply_comment_like_view(request, id):
+    reply = get_object_or_404(ReplyCommentModel, id=id)
+    user = request.user
+    if user.is_authenticated:
+        if user in reply.likes.all():
+            reply.likes.remove(user)
+        else:
+            reply.likes.add(user)
+    next_url = request.GET.get('next', 'home')
+    return redirect(next_url)
+
+def create_comment(request, post_id):
+    if request.method == 'POST':
+        post = get_object_or_404(PostModel, id=post_id)
+        comment_text = request.POST.get('comment')
+        if comment_text and request.user.is_authenticated:
+            CommentModel.objects.create(userID=request.user, postID=post, comment=comment_text)
+        next_url = request.POST.get('next', 'home')
+        return redirect(next_url)
+    return redirect('home')
+
+
+def create_reply_comment(request, parent_comment_id):
+    if request.method == 'POST':
+        parent_comment = get_object_or_404(CommentModel, id=parent_comment_id)
+        reply_text = request.POST.get('reply_comment')
+        if reply_text and request.user.is_authenticated:
+            ReplyCommentModel.objects.create(userID=request.user, commentID=parent_comment, reply_comment=reply_text)
+        next_url = request.POST.get('next', 'home')
+        return redirect(next_url)
+    return redirect('home')

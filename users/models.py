@@ -32,7 +32,7 @@ class UserModel(AbstractUser):
         return self.following_set.filter(following=user).exists()
 
     def is_follower(self, user):
-        return self.follower_set.fitler(follower=user).exists()
+        return self.follower_set.filter(follower=user).exists()
 
 
 class Follow(models.Model):

@@ -8,11 +8,23 @@ def comment_like_icon(comment, user):
     return "fa-solid fa-heart" if CommentLikeModel.objects.filter(commentID=comment,
                                                                   userID=user).exists() else "fa-regular fa-heart"
 
+@register.filter
+def is_comment_liked_by_user(comment, user):
+    if not user.is_authenticated:
+        return False
+    return CommentLikeModel.objects.filter(commentID=comment, userID=user).exists()
+
 
 @register.simple_tag
 def reply_comment_like_icon(reply, user):
-    return "fa-solid fa-heart" if ReplyCommentLikeModel.objects.filter(reply_commentID=reply,
-                                                                       userID=user).exists() else "fa-regular fa-heart"
+    return "fa-solid fa-heart" if ReplyCommentLikeModel.objects.filter(reply_commentID=reply, userID=user).exists() else "fa-regular fa-heart"
+
+
+@register.filter
+def is_reply_liked_by_user(reply, user):
+    if not user.is_authenticated:
+        return False
+    return ReplyCommentLikeModel.objects.filter(reply_commentID=reply, userID=user).exists()
 
 
 @register.filter

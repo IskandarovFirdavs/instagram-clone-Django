@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}Search • Instagram{% endblock %}
+
+{% block search_active %}active{% endblock %}
+
+{% block content %}
+<div class="search-container">
+
+    <!-- Suggested Users (when no search) -->
+    <div class="suggested-users" id="suggested-users">
+        <div class="section-header">
+            <h3>Followings</h3>
+        </div>
+        <div class="users-list">
+            {% for user in users %}
+            <div class="user-profile-section">
+                <div class="user-info">
+                    {% if user.avatar %}
+                    <img style="height: 30px; width: 30px; border-radius: 50%; object-fit: fit; margin-right: 15px;"
+                         src="{{ user.avatar.url }}">
+                    {% else %}
+                    <svg class="icon"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         style="height: 30px; width: 30px; border-radius: 50%; margin-right: 15px;">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    {% endif %}
+                    <div class="user-details">
+
+                        <a href="{% url 'profile-another' pk=user.pk %}">
+                            <h3>{{ user.username }}</h3>
+                        </a>
+                        <p>{{ user.first_name }} {{ user.last_name }} </p>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .search-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 0 20px;
+        background-color: #000;
+        min-height: 100vh;
+        color: #fff;
+    }
+
+    .search-header {
+        padding: 16px 0;
+        border-bottom: 1px solid #262626;
+        margin-bottom: 24px;
+        position: sticky;
+        top: 0;
+        background-color: #000;
+        z-index: 10;
+    }
+
+    .search-bar {
+        position: relative;
+        width: 100%;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #8e8e8e;
+        z-index: 1;
+    }
+
+    .search-input {
+        width: 100%;
+        background-color: #262626;
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+        font-size: 16px;
+        padding: 12px 40px 12px 40px;
+        outline: none;
+        transition: background-color 0.2s;
+    }
+
+    .search-input:focus {
+        background-color: #363636;
+    }
+
+    .search-input::placeholder {
+        color: #8e8e8e;
+    }
+
+    .clear-search {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #8e8e8e;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+
+    .clear-search:hover {
+        background-color: #363636;
+    }
+
+    /* Section Headers */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .section-header h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+        color: #fff;
+    }
+
+    .clear-all-btn {
+        background: none;
+        border: none;
+        color: #0095f6;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .clear-all-btn:hover {
+        color: #1877f2;
+    }
+
+    /* User Items */
+    .user-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 0;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 4px;
+    }
+
+    .user-item:hover {
+        background-color: #1a1a1a;
+    }
+
+    .user-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    .user-avatar img,
+    .user-avatar .default-avatar {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .default-avatar {
+        background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+    }
+
+    .user-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .user-username {
+        font-weight: 600;
+        font-size: 14px;
+        color: #fff;
+        margin-bottom: 2px;
+    }
+
+    .user-fullname {
+        font-size: 14px;
+        color: #8e8e8e;
+        margin-bottom: 2px;
+    }
+
+    .user-followers {
+        font-size: 12px;
+        color: #8e8e8e;
+    }
+
+    .follow-btn {
+        background-color: #0095f6;
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 6px 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .follow-btn:hover {
+        background-color: #1877f2;
+    }
+
+    .follow-btn.following {
+        background-color: #262626;
+        color: #fff;
+    }
+
+    .follow-btn.following:hover {
+        background-color: #ed4956;
+        color: #fff;
+    }
+
+    /* Recent Searches */
+    .recent-searches {
+        margin-bottom: 32px;
+    }
+
+    .recent-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .recent-item:hover {
+        background-color: #1a1a1a;
+    }
+
+    .recent-user-info {
+        display: flex;
+        align-items: center;
+        flex: 1;
+    }
+
+    .remove-recent {
+        background: none;
+        border: none;
+        color: #8e8e8e;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+
+    .remove-recent:hover {
+        background-color: #363636;
+    }
+
+    /* Search Results */
+    .search-results {
+        margin-bottom: 32px;
+    }
+
+    .results-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    /* No Results */
+    .no-results {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 300px;
+        text-align: center;
+    }
+
+    .no-results-icon {
+        color: #8e8e8e;
+        margin-bottom: 24px;
+    }
+
+    .no-results h3 {
+        color: #fff;
+        font-size: 22px;
+        font-weight: 300;
+        margin-bottom: 8px;
+    }
+
+    .no-results p {
+        color: #8e8e8e;
+        font-size: 14px;
+    }
+
+    /* Suggested Users */
+    .suggested-users {
+        margin-bottom: 32px;
+    }
+
+    .users-list {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .search-container {
+            padding: 0 16px;
+        }
+
+        .search-header {
+            padding: 12px 0;
+        }
+
+        .search-input {
+            font-size: 16px; /* Prevent zoom on iOS */
+        }
+    }
+</style>
+
+{% endblock %}
