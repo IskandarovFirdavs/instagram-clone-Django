@@ -205,9 +205,8 @@
                     {% if comment.reply_comments.count != 0 %}
                     <div class="view-replies" onclick="toggleReplies(this)"
                          style="margin-left: 44px; font-size: 12px; color: #8e8e8e; cursor: pointer; margin: 8px 0; display: flex; align-items: center; gap: 8px;">
-                        <span class="view-replies-line" style="width: 24px; height: 1px; background: #262626;"></span>View
-                        all {{ comment.reply_comments.count }} repl{% if comment.reply_comments.count == 1 %}y{% else
-                        %}ies{% endif %}
+                        <span class="view-replies-line" style="width: 24px; height: 1px; background: #262626;">
+                        </span>View all {{ comment.reply_comments.count }} replies
                     </div>
                     <div class="replies-container"
                          style="display: none; margin-left: 44px; margin-top: 8px; flex-direction: column;">
@@ -245,7 +244,13 @@
                                    class="reply-like-link"
                                    style="text-decoration: none; display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer;">
                                     <i class="{% reply_comment_like_icon reply user %}"
-                                       style="font-size: 20px; color: {% if reply|is_reply_liked_by_user:request.user %}#ff0000{% else %}#fff{% endif %};"></i>
+                                       style="font-size: 20px; color:
+                                       {% if reply|is_reply_liked_by_user:request.user %}
+                                       #ff0000
+                                       {% else %}
+                                       #fff
+                                       {% endif %}
+                                       ;"></i>
                                     <span class="reply-comment-likes-count"
                                           style="font-size: 12px; color: #8e8e8e; margin: 0;">{{ reply.reply_comment_likes_count }}</span>
                                 </a>
@@ -365,10 +370,61 @@
 
 {% block scripts %}
 <script>
+    // --- Functions to handle comments and replies ---
+    function toggleComments(element) {
+        const post = element.closest('.post');
+        const commentsSection = post.querySelector('.comments-section');
+        if (commentsSection) {
+            commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
+    function toggleReplies(element) {
+        const parentComment = element.closest('.comment-item');
+        const repliesContainer = parentComment.querySelector('.replies-container');
+        if (repliesContainer) {
+            repliesContainer.style.display = repliesContainer.style.display === 'none' ? 'flex' : 'none';
+        }
+    }
+
+    function showReplyInput(element) {
+        const parentComment = element.closest('.comment-item');
+        const replyInputSection = parentComment.querySelector('.reply-input-section');
+        if (replyInputSection) {
+            replyInputSection.style.display = 'block';
+        }
+    }
+
+    function cancelReply(element) {
+        const replyInputSection = element.closest('.reply-input-section');
+        if (replyInputSection) {
+            replyInputSection.style.display = 'none';
+        }
+    }
+
+    function togglePostButton(input) {
+        const postButton = input.parentNode.querySelector('.comment-post-btn');
+        if (input.value.trim() !== '') {
+            postButton.style.opacity = '1';
+            postButton.style.pointerEvents = 'auto';
+        } else {
+            postButton.style.opacity = '0.3';
+            postButton.style.pointerEvents = 'none';
+        }
+    }
+
+    function toggleSave(element) {
+        // You can add your save logic here. For now, this function is a placeholder to prevent errors.
+        console.log("Toggle save button clicked.");
+    }
+    // --- End of new functions ---
+
+    // --- Story Viewer Functions ---
     let groupedUserStories = [];
     let currentUserIndex = 0;
     let currentStoryIndex = 0;
     let storyTimer;
+    let currentStories = [];
 
     function openStoryViewer(username) {
         groupedUserStories = [];
@@ -409,7 +465,6 @@
         document.getElementById('storyPrev').style.display = user.stories.length > 1 ? 'flex' : 'none';
         document.getElementById('storyNext').style.display = user.stories.length > 1 ? 'flex' : 'none';
 
-        // Show user arrows
         document.getElementById('prevUserBtn').style.display = currentUserIndex > 0 ? 'block' : 'none';
         document.getElementById('nextUserBtn').style.display = currentUserIndex < groupedUserStories.length - 1 ? 'block' : 'none';
 
@@ -485,12 +540,10 @@
         document.getElementById('storyViewer').style.display = 'none';
     }
 
-    // Dismiss on click outside
     document.getElementById('storyViewer').addEventListener('click', (e) => {
         if (e.target.id === 'storyViewer') closeStoryViewer();
     });
 
-    // Keyboard navigation
     document.addEventListener('keydown', (e) => {
         if (document.getElementById('storyViewer').style.display === 'flex') {
             if (e.key === 'ArrowRight') nextStory();
