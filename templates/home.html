@@ -114,7 +114,7 @@
                     style="background: none; border: none; cursor: pointer;">
                 <a href="{% url 'saved-create' id=post.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
                    title="Save" style="color: #fff;">
-                    <i class="{% is_saved_by_user request.user post %}"></i>
+                    <i class="{% is_saved_by_user request.user post %} fa-bookmark"></i>
                 </a>
             </button>
         </div>
@@ -343,37 +343,77 @@
             </svg>
         </button>
     </div>
+    <!-- Flip to Previous User -->
+<button id="prevUserBtn" onclick="previousUserStory()"
+    style="position: fixed; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.4); border: none; cursor: pointer; z-index: 2000; display: none; padding: 10px; border-radius: 50%;">
+    <svg viewBox="0 0 24 24" width="32" height="32" stroke="white" stroke-width="2" fill="none">
+        <polyline points="15,18 9,12 15,6"/>
+    </svg>
+</button>
+
+<!-- Flip to Next User -->
+<button id="nextUserBtn" onclick="nextUserStory()"
+    style="position: fixed; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.4); border: none; cursor: pointer; z-index: 2000; display: none; padding: 10px; border-radius: 50%;">
+    <svg viewBox="0 0 24 24" width="32" height="32" stroke="white" stroke-width="2" fill="none">
+        <polyline points="9,18 15,12 9,6"/>
+    </svg>
+</button>
+
+
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+    let groupedUserStories = [];
+    let currentUserIndex = 0;
     let currentStoryIndex = 0;
-    let currentStories = [];
     let storyTimer;
 
-    function openStoryViewer(username, totalStories) {
-        const container = document.getElementById(`stories-${username}`);
-        currentStories = Array.from(container.querySelectorAll('img'));
+    function openStoryViewer(username) {
+        groupedUserStories = [];
+        const allUsers = document.querySelectorAll('.story-item');
+
+        allUsers.forEach(item => {
+            const uname = item.querySelector('.story-username').textContent.trim();
+            const storyImgs = Array.from(document.getElementById(`stories-${uname}`).querySelectorAll('img'));
+            if (storyImgs.length > 0) {
+                groupedUserStories.push({ username: uname, stories: storyImgs });
+            }
+        });
+
+        currentUserIndex = groupedUserStories.findIndex(u => u.username === username);
         currentStoryIndex = 0;
-        if (currentStories.length === 0) return;
-        setupStoryViewer(username, totalStories);
+
+        if (currentUserIndex === -1 || groupedUserStories.length === 0) return;
+
         document.getElementById('storyViewer').style.display = 'flex';
+        setupStoryViewer();
         showStory();
     }
 
-    function setupStoryViewer(username, totalStories) {
+    function setupStoryViewer() {
+        const user = groupedUserStories[currentUserIndex];
+
         const progressContainer = document.getElementById('storyProgress');
         progressContainer.innerHTML = '';
-        for (let i = 0; i < totalStories; i++) {
-            const progressBar = document.createElement('div');
-            progressBar.style.cssText = 'flex: 1; height: 2px; background: rgba(255, 255, 255, 0.3); border-radius: 1px; overflow: hidden;';
-            progressBar.innerHTML = '<div class="progress-fill" style="height: 100%; background: #fff; width: 0%; transition: width 0.1s linear;"></div>';
-            progressContainer.appendChild(progressBar);
-        }
-        document.getElementById('storyUsername').textContent = username;
-        document.getElementById('storyPrev').style.display = totalStories > 1 ? 'flex' : 'none';
-        document.getElementById('storyNext').style.display = totalStories > 1 ? 'flex' : 'none';
+
+        user.stories.forEach(() => {
+            const bar = document.createElement('div');
+            bar.style.cssText = 'flex: 1; height: 2px; background: rgba(255, 255, 255, 0.3); border-radius: 1px; overflow: hidden;';
+            bar.innerHTML = '<div class="progress-fill" style="height: 100%; background: #fff; width: 0%; transition: width 0.1s linear;"></div>';
+            progressContainer.appendChild(bar);
+        });
+
+        document.getElementById('storyUsername').textContent = user.username;
+        document.getElementById('storyPrev').style.display = user.stories.length > 1 ? 'flex' : 'none';
+        document.getElementById('storyNext').style.display = user.stories.length > 1 ? 'flex' : 'none';
+
+        // Show user arrows
+        document.getElementById('prevUserBtn').style.display = currentUserIndex > 0 ? 'block' : 'none';
+        document.getElementById('nextUserBtn').style.display = currentUserIndex < groupedUserStories.length - 1 ? 'block' : 'none';
+
+        currentStories = user.stories;
     }
 
     function showStory() {
@@ -381,30 +421,61 @@
             closeStoryViewer();
             return;
         }
+
         const story = currentStories[currentStoryIndex];
         document.getElementById('storyImage').src = story.src;
-        document.getElementById('storyTime').textContent = story.dataset.time;
+        document.getElementById('storyTime').textContent = story.dataset.time || '';
+
         const progressBars = document.querySelectorAll('.progress-fill');
         progressBars.forEach((bar, index) => {
             bar.style.width = index < currentStoryIndex ? '100%' : index === currentStoryIndex ? '0%' : '0%';
             if (index === currentStoryIndex) setTimeout(() => bar.style.width = '100%', 100);
         });
+
         clearTimeout(storyTimer);
         storyTimer = setTimeout(nextStory, 5000);
     }
 
     function nextStory() {
-        currentStoryIndex++;
-        if (currentStoryIndex >= currentStories.length) {
-            closeStoryViewer();
-        } else {
+        if (currentStoryIndex < currentStories.length - 1) {
+            currentStoryIndex++;
             showStory();
+        } else if (currentUserIndex < groupedUserStories.length - 1) {
+            currentUserIndex++;
+            currentStoryIndex = 0;
+            setupStoryViewer();
+            showStory();
+        } else {
+            closeStoryViewer();
         }
     }
 
     function previousStory() {
         if (currentStoryIndex > 0) {
             currentStoryIndex--;
+            showStory();
+        } else if (currentUserIndex > 0) {
+            currentUserIndex--;
+            currentStoryIndex = groupedUserStories[currentUserIndex].stories.length - 1;
+            setupStoryViewer();
+            showStory();
+        }
+    }
+
+    function nextUserStory() {
+        if (currentUserIndex < groupedUserStories.length - 1) {
+            currentUserIndex++;
+            currentStoryIndex = 0;
+            setupStoryViewer();
+            showStory();
+        }
+    }
+
+    function previousUserStory() {
+        if (currentUserIndex > 0) {
+            currentUserIndex--;
+            currentStoryIndex = 0;
+            setupStoryViewer();
             showStory();
         }
     }
@@ -414,107 +485,18 @@
         document.getElementById('storyViewer').style.display = 'none';
     }
 
-    function togglePostLike(button) {
-        const svg = button.querySelector('i');
-        if (button.classList.contains('liked')) {
-            button.classList.remove('liked');
-            svg.style.color = '#fff';
-        } else {
-            button.classList.add('liked');
-            svg.style.color = '#ed4956';
-        }
-    }
-
-    function toggleSave(button) {
-        const icon = button.querySelector('i');
-        if (button.classList.contains('saved')) {
-            button.classList.remove('saved');
-            icon.style.color = '#fff';
-        } else {
-            button.classList.add('saved');
-            icon.style.color = '#fff';
-        }
-    }
-
-    function toggleComments(element) {
-        const post = element.closest('.post');
-        const commentsSection = post.querySelector('.comments-section');
-        commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function toggleCommentLike(button) {
-        const svg = button.querySelector('svg');
-        if (button.classList.contains('liked')) {
-            button.classList.remove('liked');
-            svg.style.fill = 'none';
-            svg.style.stroke = '#8e8e8e';
-        } else {
-            button.classList.add('liked');
-            svg.style.fill = '#ed4956';
-            svg.style.stroke = '#ed4956';
-        }
-    }
-
-    function showReplyInput(replyButton) {
-        const commentContent = replyButton.closest('.comment-content');
-        const replySection = commentContent.querySelector('.reply-input-section');
-        const replyInput = replySection.querySelector('.reply-input');
-        replyButton.style.display = 'none';
-        replySection.style.display = 'block';
-        replyInput.focus();
-    }
-
-    function cancelReply(button) {
-        const replySection = button.closest('.reply-input-section');
-        const replyInput = replySection.querySelector('.reply-input');
-        const commentContent = replySection.closest('.comment-content');
-        const replyButton = commentContent.querySelector('.comment-reply');
-        replyInput.value = '';
-        replySection.style.display = 'none';
-        replyButton.style.display = 'inline';
-    }
-
-    function toggleReplies(button) {
-        const repliesContainer = button.nextElementSibling;
-        const isVisible = repliesContainer.style.display !== 'none';
-        const replyCount = repliesContainer.children.length;
-        repliesContainer.style.display = isVisible ? 'none' : 'block';
-        button.innerHTML = isVisible ?
-            `<span style="width: 24px; height: 1px; background: #262626;"></span>View all ${replyCount} repl${replyCount === 1 ? 'y' : 'ies'}` :
-            `<span style="width: 24px; height: 1px; background: #262626;"></span>Hide replies`;
-    }
-
-    function togglePostButton(input) {
-        const postButton = input.nextElementSibling;
-        if (input.value.trim()) {
-            postButton.style.opacity = '1';
-            postButton.style.pointerEvents = 'auto';
-        } else {
-            postButton.style.opacity = '0.3';
-            postButton.style.pointerEvents = 'none';
-        }
-    }
-
+    // Dismiss on click outside
     document.getElementById('storyViewer').addEventListener('click', (e) => {
         if (e.target.id === 'storyViewer') closeStoryViewer();
     });
 
+    // Keyboard navigation
     document.addEventListener('keydown', (e) => {
         if (document.getElementById('storyViewer').style.display === 'flex') {
             if (e.key === 'ArrowRight') nextStory();
             if (e.key === 'ArrowLeft') previousStory();
             if (e.key === 'Escape') closeStoryViewer();
         }
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const inputs = document.querySelectorAll('.reply-input, .comment-input');
-        inputs.forEach(input => {
-            input.addEventListener('input', function() {
-                this.nextElementSibling.style.opacity = this.value.trim() ? '1' : '0.3';
-                this.nextElementSibling.style.pointerEvents = this.value.trim() ? 'auto' : 'none';
-            });
-        });
     });
 </script>
 {% endblock %}

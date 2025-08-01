@@ -23,6 +23,7 @@ def home_view(request):
     followed_ids = [followed.following.id for followed in followed_users]
     one_month_ago = timezone.now() - timedelta(days=3)
     one_day_ago = timezone.now() - timedelta(days=77)
+    qs = UserModel.objects.exclude(id=request.user.id)
 
     base_post_filters = {
         'post_type': PostModel.PostTypeChoice.Post,
@@ -108,6 +109,7 @@ def home_view(request):
         return redirect(request.path)
     context = {
         'posts': posts,
+        'users': qs,
         'grouped_histories': grouped_histories.items(),
         'followed_users': followed_ids,
         'show_comments': request.GET.get('show_comments'),

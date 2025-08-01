@@ -38,52 +38,34 @@
         </div>
         
         <div class="messages-list">
-            <div class="message-item">
-                <div class="message-avatar"></div>
-                <div class="message-info">
-                    <h4>john_doe</h4>
-                    <p class="message-preview">Hey, how are you doing?</p>
+            {% for user in users %}
+            <a style="text-decoration:none; color:white" href="{% url 'profile-another' pk=user.pk %}">
+                <div class="message-item">
+                    {% if user.avatar %}
+                    <img class="message-avatar" src="{{ user.avatar.url }}">
+                    {% else %}
+                    <div style="display:flex;justify-content:center;align-items:center;font-size:larger;font-weight:bold"
+                         class="message-avatar">{{ user.username|upper|first }}</div>
+                    {% endif %}
+                    <div class="message-info">
+                        <h4>{{ user.username }}</h4>
+                        <p class="message-preview">Hey, how are you doing?</p>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="message-item">
-                <div class="message-avatar"></div>
-                <div class="message-info">
-                    <h4>sarah_wilson</h4>
-                    <p class="message-preview">Thanks for the photo!</p>
-                </div>
-            </div>
-            
-            <div class="message-item">
-                <div class="message-avatar"></div>
-                <div class="message-info">
-                    <h4>mike_johnson</h4>
-                    <p class="message-preview">See you tomorrow</p>
-                </div>
-            </div>
-            
-            <div class="message-item">
-                <div class="message-avatar"></div>
-                <div class="message-info">
-                    <h4>emma_davis</h4>
-                    <p class="message-preview">Great post!</p>
-                </div>
-            </div>
-            
-            <div class="message-item">
-                <div class="message-avatar"></div>
-                <div class="message-info">
-                    <h4>alex_brown</h4>
-                    <p class="message-preview">Let's catch up soon</p>
-                </div>
-            </div>
+            </a>
+            {% endfor %}
         </div>
     </div>
     
     <div class="chat-area">
         <div class="chat-header">
-            <div class="message-avatar" style="margin-right: 12px;"></div>
-            <h3>john_doe</h3>
+            {% if request.user.avatar %}
+            <img class="message-avatar" src="{{ user.avatar.url }}">
+            {% else %}
+            <div style="display:flex;justify-content:center;align-items:center;font-size:larger;font-weight:bold"
+                 class="message-avatar">{{ request.user.username|upper|first }}</div>
+            {% endif %}
+            <h3>{{ request.user.username }}</h3>
         </div>
         
         <div class="chat-messages">

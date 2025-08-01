@@ -45,25 +45,12 @@
         overflow: hidden;
         background-color: #262626;
         transition: transform 0.1s ease;
+        aspect-ratio: 1; /* Ensures all items are square */
     }
 
     .explore-item:hover {
         transform: scale(1.02);
         z-index: 10;
-    }
-
-    /* Different sizes for masonry effect */
-    .explore-item.large {
-        grid-row: span 2;
-        grid-column: span 2;
-    }
-
-    .explore-item.wide {
-        grid-column: span 2;
-    }
-
-    .explore-item.tall {
-        grid-row: span 2;
     }
 
     .explore-item img,
@@ -140,23 +127,6 @@
         height: 20px;
         fill: #fff;
         filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
-    }
-
-    /* Aspect ratios for different item types */
-    .explore-item {
-        aspect-ratio: 1;
-    }
-
-    .explore-item.large {
-        aspect-ratio: 1;
-    }
-
-    .explore-item.wide {
-        aspect-ratio: 2/1;
-    }
-
-    .explore-item.tall {
-        aspect-ratio: 1/2;
     }
 
     /* Video specific styles */
@@ -587,23 +557,8 @@
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .explore-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr); /* You might want to keep this at 3 or change to 2 */
             gap: 2px;
-        }
-
-        .explore-item.large {
-            grid-row: span 1;
-            grid-column: span 1;
-        }
-
-        .explore-item.wide {
-            grid-column: span 1;
-            aspect-ratio: 1;
-        }
-
-        .explore-item.tall {
-            grid-row: span 1;
-            aspect-ratio: 1;
         }
 
         .explore-title {
@@ -775,8 +730,8 @@
                 <div class="modal-header">
                     <div class="modal-user-info">
                         <div class="modal-avatar" id="modalAvatar"></div>
-                        <a id="modalNamePath" href="#">
-                            <span class="modal-username" id="modalUsername"></span>
+                        <a style="text-decoration: none" id="modalNamePath" href="#">
+                            <span  class="modal-username" id="modalUsername"></span>
                         </a>
                         <a href="#" class="modal-follow-btn" id="modalFollowBtn">Follow</a>
                     </div>
@@ -797,7 +752,7 @@
                 <div class="modal-actions">
                     <div class="modal-actions-left">
                         <button class="modal-action-btn like-btn" id="modalLikeBtn">
-                            <a href="#" id="modalLikeLink">
+                            <a style="color:white" href="#" id="modalLikeLink">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                      stroke-width="1.5">
                                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -817,14 +772,14 @@
                         </button>
                     </div>
                     <button class="modal-action-btn save-btn" id="modalSaveBtn">
-                        <a style="" href="#" id="modalSaveLink" title="Save">
+                        <a style="color: white" href="#" id="modalSaveLink" title="Save">
                             <i id="modalSaveIcon" class="fa-regular fa-bookmark"></i>
                         </a>
                     </button>
                 </div>
                 <form class="comment-input-section" method="POST" action="{% url 'explore' %}">
                     {% csrf_token %}
-                    <div class="comment-avatar">
+                    <div class="comment-avatar" >
                         {% if request.user.avatar %}
                         <img src="{{ request.user.avatar.url }}" alt="{{ request.user.username }}">
                         {% else %}

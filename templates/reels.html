@@ -791,7 +791,7 @@
                     {% endif %}
                 </div>
                 <button class="comment-heart">
-                    <a href="{% url 'comment-like' id=comment.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
+                    <a href="{% url 'comment-like' comment_id=comment.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
                         <i style="color:red" class="{% comment_like_icon comment user%}"></i>
                     </a>
                     <h1 class="comment-likes">{{ comment.comment_likes_count }}</h1>
