@@ -1,8 +1,10 @@
 import json
+
+from django.db import IntegrityError
 from django.db.models import Count, Prefetch
 from django.utils import timezone
 from datetime import timedelta
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,7 +13,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic import TemplateView, ListView
 from posts.forms import PostModelForm
 from posts.models import PostModel, PostLikeModel, CommentModel, CommentLikeModel, ReplyCommentModel, \
-    ReplyCommentLikeModel
+    ReplyCommentLikeModel, NotificationModel
 from collections import defaultdict
 
 from users.models import UserModel, Follow
@@ -100,7 +102,8 @@ def home_view(request):
                     userID=request.user,
                 )
                 messages.success(request, 'Reply added successfully!')
-                return redirect(f"{request.path}?show_comments={parent_comment.postID.id}&show_replies={comment_id}#post-{parent_comment.postID.id}")
+                return redirect(
+                    f"{request.path}?show_comments={parent_comment.postID.id}&show_replies={comment_id}#post-{parent_comment.postID.id}")
             except CommentModel.DoesNotExist:
                 messages.error(request, 'Comment not found.')
                 return redirect(request.path)
@@ -146,7 +149,6 @@ def post_create(request):
 
 class DirectView(TemplateView):
     template_name = 'direct.html'
-
 
 
 @login_required(login_url='login')
@@ -256,6 +258,63 @@ def like_comment(request, comment_id):
     return redirect(next_url)
 
 
+from django.db import IntegrityError
+
+from django.db import IntegrityError
+from django.http import HttpResponseBadRequest
+
+@login_required
+def home_comment_like(request, comment_id):
+    comment = get_object_or_404(CommentModel, id=comment_id)
+    user = request.user
+    like = CommentLikeModel.objects.filter(commentID=comment, userID=user).first()
+
+    comment_owner = comment.userID
+    is_self_like = (comment_owner == user)
+
+    if like:
+        like.delete()
+        if not is_self_like:
+            NotificationModel.objects.filter(
+                comment_like=comment,
+                liked_by=user
+            ).delete()
+    else:
+        CommentLikeModel.objects.create(commentID=comment, userID=request.user)
+        if not is_self_like:
+            if comment_owner and comment_owner.pk:
+                try:
+                    obj, created = NotificationModel.objects.get_or_create(
+                        comment_like=comment,
+                        liked_by=user,
+                        owner=comment_owner,
+                        post_like=None,
+                        reply_comment_like=None
+                    )
+                    print("Notification created:", created)
+                except IntegrityError as e:
+                    print("❌ Notification creation failed:", str(e))
+            else:
+                print("⚠️ Skipped: Comment owner is invalid")
+
+    return redirect(request.GET.get('next', '/'))
+
+
+
+@login_required
+def home_reply_comment_like(request, id):
+    reply_comment = get_object_or_404(ReplyCommentModel, id=id)
+
+
+    like = ReplyCommentLikeModel.objects.filter(reply_commentID=reply_comment, userID=request.user).first()
+    if like:
+        like.delete()
+    else:
+        ReplyCommentLikeModel.objects.create(reply_commentID=reply_comment, userID=request.user)
+
+    return redirect(request.GET.get('next', '/'))
+
+
 class UserListView(ListView):
     template_name = 'search.html'
     context_object_name = 'users'
@@ -283,21 +342,6 @@ def followings_list_view(request):
 
 class MessagesView(ListView):
     template_name = 'messages.html'
-
-    context_object_name = 'users'
-
-    def get_queryset(self):
-        qs = UserModel.objects.exclude(id=self.request.user.id).order_by('username')
-        q = self.request.GET.get('q')
-
-        if q:
-            qs = qs.filter(username__icontains=q)
-
-        return qs
-
-
-class NotificationsView(ListView):
-    template_name = 'notifications.html'
 
     context_object_name = 'users'
 
@@ -455,17 +499,6 @@ def like_reply_comment(request, id):
     return redirect(next_url)
 
 
-def comment_like_view(request, id):
-    comment = get_object_or_404(CommentModel, id=id)
-    user = request.user
-    if user.is_authenticated:
-        if user in comment.likes.all():
-            comment.likes.remove(user)
-        else:
-            comment.likes.add(user)
-    next_url = request.GET.get('next', 'home')
-    return redirect(next_url)
-
 def reply_comment_like_view(request, id):
     reply = get_object_or_404(ReplyCommentModel, id=id)
     user = request.user
@@ -476,6 +509,7 @@ def reply_comment_like_view(request, id):
             reply.likes.add(user)
     next_url = request.GET.get('next', 'home')
     return redirect(next_url)
+
 
 def create_comment(request, post_id):
     if request.method == 'POST':
@@ -493,7 +527,24 @@ def create_reply_comment(request, parent_comment_id):
         parent_comment = get_object_or_404(CommentModel, id=parent_comment_id)
         reply_text = request.POST.get('reply_comment')
         if reply_text and request.user.is_authenticated:
-            ReplyCommentModel.objects.create(userID=request.user, commentID=parent_comment, reply_comment=reply_text)
+            ReplyCommentModel.objects.create(
+                userID=request.user,
+                commentID=parent_comment,
+                reply_comment=reply_text
+            )
+
         next_url = request.POST.get('next', 'home')
         return redirect(next_url)
     return redirect('home')
+
+
+@login_required
+def notification_view(request):
+    notifications = NotificationModel.objects.filter(owner=request.user).exclude(liked_by=request.user).order_by(
+        '-created_at')
+
+    context = {
+        'notifications': notifications
+    }
+
+    return render(request, 'notifications.html', context)

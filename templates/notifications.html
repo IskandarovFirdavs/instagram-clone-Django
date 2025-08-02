@@ -10,6 +10,7 @@
 {% block content %}
 
 <div class="search-container">
+    {% for noti in notifications %}
     <h2 style="padding: 24px; font-size: 24px; font-weight: 600; margin-bottom: 0;">Notifications</h2>
     <div style="padding: 0 24px;">
         <div class="suggestion-item" style="margin-bottom: 16px; padding: 16px; border: 1px solid #262626; border-radius: 8px;">
@@ -41,6 +42,23 @@
                 </div>
             </div>
         </div>
+        <div class="suggestion-item" style="margin-bottom: 16px; padding: 16px; border: 1px solid #262626; border-radius: 8px;">
+            <div class="suggestion-info" style="display: flex; align-items: center; gap: 12px;">
+                {% if noti.liked_by.avatar.url %}
+                <img  src="{{noti.liked_by.avatar.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 100px;">
+                {% else %}
+                <div class="suggestion-avatar" style="display:flex;align-items:center;justify-content:center">{{noti.liked_by.username|upper|first }}</div>
+                {% endif %}
+                <div class="suggestion-details">
+                    {% if noti.comment_like %}
+                    <h5>{{ noti.liked_by.username }} liked your comment {{ noti.comment_like.comment }}</h5>
+                    <p>{{ noti.created_at }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <img src="{{noti.comment_like.postID.contentUrl.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;">
+        </div>
+    {% endfor %}
     </div>
 </div>
 {% endblock %}

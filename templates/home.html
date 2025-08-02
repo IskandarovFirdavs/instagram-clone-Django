@@ -240,7 +240,7 @@
                             </div>
 
                             <button class="comment-heart" style="background: none; border: none; cursor: pointer;">
-                                <a href="{% url 'reply-comment-like' id=reply.id %}?next={{ request.path }}"
+                                <a href="{% url 'home-reply-comment-like' id=reply.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
                                    class="reply-like-link"
                                    style="text-decoration: none; display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer;">
                                     <i class="{% reply_comment_like_icon reply user %}"
@@ -261,15 +261,15 @@
                     {% endif %}
                 </div>
                 <button class="comment-heart" style="background: none; border: none; cursor: pointer;">
-                    {% if comment.comment_id %}
-                    <a href="{% url 'comment-like' id=comment.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
+                    <a href="{% url 'home-comment-like' comment_id=comment.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
                        class="comment-like-link"
                        style="text-decoration: none; display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer;">
                         <i class="{% comment_like_icon comment user %}"
-                           style="font-size: 20px; color: {% if comment|is_liked_by_user:request.user %}#ff0000{% else %}#fff{% endif %};"></i>
+                           style="font-size: 20px;
+                           {% if comment|is_comment_liked_by_user:request.user %}color: red{% else %}color: white{%endif %};"></i>
+
                         <span class="comment-likes-count" style="font-size: 12px; color: #8e8e8e; margin: 0;">{{ comment.comment_likes_count }}</span>
                     </a>
-                    {% endif %}
                 </button>
             </div>
             {% endfor %}
@@ -414,12 +414,9 @@
     }
 
     function toggleSave(element) {
-        // You can add your save logic here. For now, this function is a placeholder to prevent errors.
         console.log("Toggle save button clicked.");
     }
-    // --- End of new functions ---
 
-    // --- Story Viewer Functions ---
     let groupedUserStories = [];
     let currentUserIndex = 0;
     let currentStoryIndex = 0;

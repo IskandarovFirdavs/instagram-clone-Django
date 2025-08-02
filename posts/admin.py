@@ -1,6 +1,6 @@
 from django.contrib import admin
 from posts.models import PostModel, MusicModel, SingerModel, HashtagModel, PostLikeModel, CommentModel, \
-    ReplyCommentModel
+    ReplyCommentModel, NotificationModel
 
 
 class CommentInline(admin.TabularInline):
@@ -47,3 +47,5 @@ class MusicModelAdmin(admin.ModelAdmin):
     list_display = ('music_name', 'singer')
     search_fields = ('music_name', 'singer__full_name')
     list_filter = ('singer',)
+
+admin.site.register(NotificationModel)

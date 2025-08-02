@@ -164,3 +164,17 @@ class ReplyCommentLikeModel(models.Model):
     reply_commentID = models.ForeignKey(ReplyCommentModel, on_delete=models.CASCADE, related_name='reply_comment_likes')
     userID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='reply_comment_likes')
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class NotificationModel(models.Model):
+    owner = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='notifications_owner')
+    post_like = models.ForeignKey(PostModel, on_delete=models.CASCADE, related_name='notifications', null=True,
+                                  blank=True, default=None)
+    comment_like = models.ForeignKey(CommentModel, on_delete=models.CASCADE, related_name='notifications', null=True,
+                                     blank=True, default=None)
+    reply_comment_like = models.ForeignKey(ReplyCommentModel, on_delete=models.CASCADE, related_name='notifications',
+                                           null=True, blank=True, default=None)
+    liked_by = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='notifications_liked_by')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
