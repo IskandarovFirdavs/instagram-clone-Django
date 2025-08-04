@@ -164,6 +164,8 @@
                             </svg>
                         </div>
                     </div>
+                    <div id="location-map" style="height: 200px; width: 100%; border-radius: 8px; margin-top: 12px;"></div>
+
 
                     <!-- Advanced Settings -->
                     <div class="advanced-settings">
@@ -1112,4 +1114,36 @@ uploadArea.addEventListener('drop', function(e) {
     }
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // 1. Mapni yaratamiz
+    const map = L.map('location-map').setView([41.3111, 69.2797], 13); // Toshkent default
+
+    // 2. OpenStreetMap tile qo‘shamiz
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 3. Markerni yaratamiz
+    let marker = null;
+
+    // 4. Xaritada click bo‘lsa:
+    map.on('click', function (e) {
+        const lat = e.latlng.lat.toFixed(6);
+        const lng = e.latlng.lng.toFixed(6);
+
+        // Eski marker bo‘lsa, olib tashlaymiz
+        if (marker) {
+            map.removeLayer(marker);
+        }
+
+        // Yangi marker qo‘yamiz
+        marker = L.marker([lat, lng]).addTo(map);
+
+        // Inputga joylaymiz
+        document.querySelector('.location-input').value = `${lat},${lng}`;
+    });
+});
+</script>
+
 {% endblock %}
