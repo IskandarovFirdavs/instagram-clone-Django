@@ -178,3 +178,24 @@ class NotificationModel(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def since_created(self):
+        now = timezone.now()
+        diff = now - self.created_at
+
+        days = diff.days
+        seconds = diff.seconds
+
+        if days > 7:
+            weeks = days // 7
+            return f"{weeks} week{'s' if weeks > 2 else ''} ago"
+        elif days > 0:
+            return f"{days} day{'s' if days > 1 else ''} ago"
+        elif seconds >= 3600:
+            hours = seconds // 3600
+            return f"{hours} hour{'s' if hours > 1 else ''} ago"
+        elif seconds >= 60:
+            minutes = seconds // 60
+            return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+        else:
+            return "Just now"
+

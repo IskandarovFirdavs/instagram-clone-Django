@@ -1,64 +1,44 @@
 {% extends "base.html" %}
-
 {% load static %}
-
-
 {% block title %}Reels • Instagram{% endblock %}
-
 {% block reels_active %}active{% endblock %}
-
 {% block content %}
-
 <div class="search-container">
-    {% for noti in notifications %}
     <h2 style="padding: 24px; font-size: 24px; font-weight: 600; margin-bottom: 0;">Notifications</h2>
     <div style="padding: 0 24px;">
-        <div class="suggestion-item" style="margin-bottom: 16px; padding: 16px; border: 1px solid #262626; border-radius: 8px;">
-            <div class="suggestion-info">
-                <div class="suggestion-avatar"></div>
-                <div class="suggestion-details">
-                    <h5>john_doe liked your photo</h5>
-                    <p>2 hours ago</p>
-                </div>
-            </div>
-            <div style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;"></div>
-        </div>
-        <div class="suggestion-item" style="margin-bottom: 16px; padding: 16px; border: 1px solid #262626; border-radius: 8px;">
-            <div class="suggestion-info">
-                <div class="suggestion-avatar"></div>
-                <div class="suggestion-details">
-                    <h5>sarah_wilson started following you</h5>
-                    <p>5 hours ago</p>
-                </div>
-            </div>
-            <button style="background-color: #0095f6; border: none; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 600; padding: 8px 16px; cursor: pointer;">Follow</button>
-        </div>
-        <div class="suggestion-item" style="margin-bottom: 16px; padding: 16px; border: 1px solid #262626; border-radius: 8px;">
-            <div class="suggestion-info">
-                <div class="suggestion-avatar"></div>
-                <div class="suggestion-details">
-                    <h5>emma_davis liked your story</h5>
-                    <p>2 days ago</p>
-                </div>
-            </div>
-        </div>
-        <div class="suggestion-item" style="margin-bottom: 16px; padding: 16px; border: 1px solid #262626; border-radius: 8px;">
-            <div class="suggestion-info" style="display: flex; align-items: center; gap: 12px;">
-                {% if noti.liked_by.avatar.url %}
-                <img  src="{{noti.liked_by.avatar.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 100px;">
-                {% else %}
-                <div class="suggestion-avatar" style="display:flex;align-items:center;justify-content:center">{{noti.liked_by.username|upper|first }}</div>
-                {% endif %}
-                <div class="suggestion-details">
-                    {% if noti.comment_like %}
-                    <h5>{{ noti.liked_by.username }} liked your comment {{ noti.comment_like.comment }}</h5>
-                    <p>{{ noti.created_at }}</p>
+        {% if notifications %}
+            {% for noti in notifications %}
+                <div class="suggestion-item" style="margin-bottom: 16px; padding: 16px; border: 1px solid #262626; border-radius: 8px;">
+                    <div class="suggestion-info" style="display: flex; align-items: center; gap: 12px;">
+                        {% if noti.liked_by.avatar.url %}
+                        <img  src="{{noti.liked_by.avatar.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 100px;">
+                        {% else %}
+                        <div class="suggestion-avatar" style="display:flex;align-items:center;justify-content:center">{{noti.liked_by.username|upper|first }}</div>
+                        {% endif %}
+                        <div class="suggestion-details">
+                            {% if noti.comment_like %}
+                            <h5><span style="font-weight:900">{{ noti.liked_by.username }}</span> liked your comment "<span style="font-weight:900">{{ noti.comment_like.comment }}</span>" </h5>
+                            <p>{{ noti.since_created }}</p>
+                            {% elif noti.reply_comment_like %}
+                            <h5>
+                                <span style="font-weight:900">{{ noti.liked_by.username }}</span>
+                                liked your reply comment "
+                                <span style="font-weight:900">{{ noti.reply_comment_like.reply_comment }}</span>"
+                            </h5>
+                            <p>{{ noti.since_created }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if noti.comment_like.postID.contentUrl %}
+                    <img src="{{noti.comment_like.postID.contentUrl.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;">
+                    {% else %}
+                    <div></div>
                     {% endif %}
                 </div>
-            </div>
-            <img src="{{noti.comment_like.postID.contentUrl.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;">
-        </div>
-    {% endfor %}
+            {% endfor %}
+        {% else %}
+        <h1>Here are not notifications yet . . .</h1>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

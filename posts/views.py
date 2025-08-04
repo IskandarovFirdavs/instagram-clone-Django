@@ -247,21 +247,43 @@ def like_comment(request, comment_id):
     next_url = request.GET.get('next', '/explore/')
     post_id = request.GET.get('post_id')
 
+
+    user = request.user
+    comment_owner = comment.userID
+    is_self_like = (comment_owner == user)
+
     like_qs = CommentLikeModel.objects.filter(commentID=comment, userID=request.user)
     if action == 'like' and not like_qs.exists():
         CommentLikeModel.objects.create(commentID=comment, userID=request.user)
+        if not is_self_like:
+            if comment_owner and comment_owner.pk:
+                try:
+                    obj, created = NotificationModel.objects.get_or_create(
+                        comment_like=comment,
+                        liked_by=user,
+                        owner=comment_owner,
+                        post_like=None,
+                        reply_comment_like=None
+                    )
+                    print("Notification created:", created)
+                except IntegrityError as e:
+                    print("❌ Notification creation failed:", str(e))
+            else:
+                print("⚠️ Skipped: Comment owner is invalid")
+
     elif action == 'unlike' and like_qs.exists():
         like_qs.delete()
+        if not is_self_like:
+            NotificationModel.objects.filter(
+                comment_like=comment,
+                liked_by=user
+            ).delete()
 
     if post_id:
         next_url += f'?post_id={post_id}'
     return redirect(next_url)
 
 
-from django.db import IntegrityError
-
-from django.db import IntegrityError
-from django.http import HttpResponseBadRequest
 
 @login_required
 def home_comment_like(request, comment_id):
@@ -279,6 +301,7 @@ def home_comment_like(request, comment_id):
                 comment_like=comment,
                 liked_by=user
             ).delete()
+
     else:
         CommentLikeModel.objects.create(commentID=comment, userID=request.user)
         if not is_self_like:
@@ -305,12 +328,38 @@ def home_comment_like(request, comment_id):
 def home_reply_comment_like(request, id):
     reply_comment = get_object_or_404(ReplyCommentModel, id=id)
 
+    user = request.user
+    comment_owner = reply_comment.userID
+    is_self_like = (comment_owner == user)
 
     like = ReplyCommentLikeModel.objects.filter(reply_commentID=reply_comment, userID=request.user).first()
     if like:
         like.delete()
+        if not is_self_like:
+            NotificationModel.objects.filter(
+                reply_comment_like=reply_comment,
+                liked_by=user
+            ).delete()
+
     else:
         ReplyCommentLikeModel.objects.create(reply_commentID=reply_comment, userID=request.user)
+        if not is_self_like:
+            if comment_owner and comment_owner.pk:
+                try:
+                    obj, created = NotificationModel.objects.get_or_create(
+                        comment_like=None,
+                        liked_by=user,
+                        owner=comment_owner,
+                        post_like=None,
+                        reply_comment_like=None
+                    )
+                    print("Notification created:", created)
+                except IntegrityError as e:
+                    print("❌ Notification creation failed:", str(e))
+            else:
+                print("⚠️ Skipped: Comment owner is invalid")
+
+
 
     return redirect(request.GET.get('next', '/'))
 
@@ -332,12 +381,13 @@ class UserListView(ListView):
 def followers_list_view(request):
     users = UserModel.objects.filter(request.user.following_set)
 
-    return
+    return render(request, 'followers.html', {'users': users})
 
 
 def followings_list_view(request):
     users = UserModel.objects.filter(request.user.following_set)
-    return
+
+    return render(request, 'followings.html', {'users': users})
 
 
 class MessagesView(ListView):
@@ -464,20 +514,6 @@ def like_create(request, id):
     return redirect(request.GET.get('next', '/'))
 
 
-@login_required
-def like_comment(request, comment_id):
-    comment = get_object_or_404(CommentModel, id=comment_id)
-    action = request.GET.get('action')
-    next_url = request.GET.get('next', '/explore/')
-
-    like_qs = CommentLikeModel.objects.filter(commentID=comment, userID=request.user)
-
-    if action == 'like' and not like_qs.exists():
-        CommentLikeModel.objects.create(commentID=comment, userID=request.user)
-    elif action == 'unlike' and like_qs.exists():
-        like_qs.delete()
-
-    return redirect(next_url)
 
 
 @login_required
@@ -486,27 +522,69 @@ def like_reply_comment(request, id):
     action = request.GET.get('action')
     next_url = request.GET.get('next', '/explore/')
     post_id = request.GET.get('post_id')
-
+    user = request.user
+    comment_owner = reply.userID
+    is_self_like = (comment_owner == user)
     like_qs = ReplyCommentLikeModel.objects.filter(reply_commentID=reply, userID=request.user)
 
     if action == 'like' and not like_qs.exists():
         ReplyCommentLikeModel.objects.create(reply_commentID=reply, userID=request.user)
+        if not is_self_like:
+            if comment_owner and comment_owner.pk:
+                try:
+                    obj, created = NotificationModel.objects.get_or_create(
+                        reply_comment_like=reply,
+                        liked_by=user,
+                        owner=comment_owner,
+                        post_like=None,
+                        comment_like=None
+                    )
+                except IntegrityError as e:
+                    print("❌ Notification creation failed:", str(e))
     elif action == 'unlike' and like_qs.exists():
         like_qs.delete()
+        if not is_self_like:
+            NotificationModel.objects.filter(
+                reply_comment_like=reply,
+                liked_by=user
+            ).delete()
 
-    if post_id:
-        next_url += f'?post_id={post_id}'
     return redirect(next_url)
+
 
 
 def reply_comment_like_view(request, id):
     reply = get_object_or_404(ReplyCommentModel, id=id)
     user = request.user
+    comment_owner = reply.userID
+    is_self_like = (comment_owner == user)
+
     if user.is_authenticated:
         if user in reply.likes.all():
             reply.likes.remove(user)
+            if not is_self_like:
+                NotificationModel.objects.filter(
+                    reply_comment_like=reply,
+                    liked_by=user
+                ).delete()
         else:
             reply.likes.add(user)
+            if not is_self_like:
+                if comment_owner and comment_owner.pk:
+                    try:
+                        obj, created = NotificationModel.objects.get_or_create(
+                            comment_like=None,
+                            liked_by=user,
+                            owner=comment_owner,
+                            post_like=None,
+                            reply_comment_like=None
+                        )
+                        print("Notification created:", created)
+                    except IntegrityError as e:
+                        print("❌ Notification creation failed:", str(e))
+                else:
+                    print("⚠️ Skipped: Comment owner is invalid")
+
     next_url = request.GET.get('next', 'home')
     return redirect(next_url)
 
@@ -540,11 +618,14 @@ def create_reply_comment(request, parent_comment_id):
 
 @login_required
 def notification_view(request):
+    qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
+
     notifications = NotificationModel.objects.filter(owner=request.user).exclude(liked_by=request.user).order_by(
         '-created_at')
 
     context = {
-        'notifications': notifications
+        'notifications': notifications,
+        'users': qs
     }
 
     return render(request, 'notifications.html', context)
