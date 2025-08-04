@@ -496,12 +496,37 @@ def like_create(request, id):
     post = get_object_or_404(PostModel, id=id)
     like = PostLikeModel.objects.filter(postID=post, userID=request.user).first()
 
+    user = request.user
+    post_owner = post.userID
+    is_self_like = ( post_owner==user)
+
     if like:
         like.delete()
         liked = False
+        if not is_self_like:
+            NotificationModel.objects.filter(
+                post_like=post,
+                liked_by=user
+            ).delete()
     else:
         PostLikeModel.objects.create(postID=post, userID=request.user)
         liked = True
+        if not is_self_like:
+            if post_owner and post_owner.pk:
+                try:
+                    obj, created = NotificationModel.objects.get_or_create(
+                        comment_like=None,
+                        liked_by=user,
+                        owner=post_owner,
+                        post_like=post,
+                        reply_comment_like=None
+                    )
+                    print("Notification created:", created)
+                except IntegrityError as e:
+                    print("❌ Notification creation failed:", str(e))
+            else:
+                print("⚠️ Skipped: Post owner is invalid")
+
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
@@ -510,8 +535,6 @@ def like_create(request, id):
             'likes_count': post.likes_count()
         })
     return redirect(request.GET.get('next', '/'))
-
-
 
 
 @login_required
