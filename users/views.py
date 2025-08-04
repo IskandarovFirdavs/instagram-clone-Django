@@ -1,9 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db import IntegrityError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView
 
-from posts.models import PostModel
+from posts.models import PostModel, NotificationModel
 from users.forms import RegisterForm, LoginForm, UserUpdateForm
 from django.contrib.auth import authenticate, login, logout
 
@@ -90,14 +91,35 @@ def another_user_profile_view(request, pk):
 
 @login_required
 def follow_view(request, pk):
-    following_to = get_object_or_404(UserModel, pk=pk)
+    following_to = get_object_or_404(UserModel, pk=pk) # human who is following
     user = request.user
-
     followers = Follow.objects.filter(follower=user, following=following_to)
+
+    is_self_like = (following_to == user)
 
     if followers:
         followers.delete()
+        if not is_self_like:
+            NotificationModel.objects.filter(
+                liked_by=user
+            ).delete()
     else:
         Follow.objects.create(follower=user, following=following_to)
+        if not is_self_like:
+            if following_to and following_to.pk:
+                try:
+                    obj, created = NotificationModel.objects.get_or_create(
+                        comment_like=None,
+                        liked_by=user,
+                        owner=following_to,
+                        post_like=None,
+                        reply_comment_like=None
+                    )
+                    print("Notification created:", created)
+                except IntegrityError as e:
+                    print("❌ Notification creation failed:", str(e))
+            else:
+                print("⚠️ Skipped: Post owner is invalid")
+
 
     return redirect(request.GET.get('next', '/'))

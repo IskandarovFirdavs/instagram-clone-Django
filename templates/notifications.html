@@ -29,6 +29,9 @@
                             {% elif noti.post_like %}
                             <h5><span style="font-weight:900">{{ noti.liked_by.username }}</span> liked your post "<span style="font-weight:900">{{ noti.post_like.caption }}</span>" </h5>
                             <p>{{ noti.since_created }}</p>
+                            {% elif noti.liked_by %}
+                            <h5><span style="font-weight:900">{{ noti.liked_by.username }}</span> followed you (<span style="font-weight:900">{{ noti.owner.username }}</span>) </h5>
+                            <p>{{ noti.since_created }}</p>
                             {% endif %}
                         </div>
                     </div>
@@ -38,14 +41,20 @@
                         {% else %}
                             <video src="{{ noti.comment_like.postID.contentUrl.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;"></video>
                         {% endif %}
+                    {% elif noti.post_like %}
+                        <img src="{{ noti.post_like.contentUrl.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;">
+                     {% elif noti.owner %}
+                        {% if noti.owner.avatar %}
+                            <img src="{{ noti.owner.avatar.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;">
+                        {% else %}
+                            <div></div>
+                        {% endif %}
                     {% elif noti.reply_comment_like.postID %}
                         {% if noti.reply_comment_like.postID.post_type != 'REELS' %}
                             <img src="{{ noti.reply_comment_like.postID.contentUrl.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;">
                         {% else %}
                             <video src="{{ noti.reply_comment_like.postID.contentUrl.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;"></video>
                         {% endif %}
-                    {% elif noti.post_like %}
-                        <img src="{{ noti.post_like.contentUrl.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;">
                     {% else %}
                         <div></div>
                     {% endif %}

@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.core.validators import MinLengthValidator
 from django.db import models
 
-from users.models import UserModel
+from users.models import UserModel, Follow
 
 
 class PostModel(models.Model):

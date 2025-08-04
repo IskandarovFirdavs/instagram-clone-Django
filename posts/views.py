@@ -378,13 +378,13 @@ class UserListView(ListView):
 def followers_list_view(request):
     users = UserModel.objects.filter(request.user.following_set)
 
-    return render(request, 'followers.html', {'users': users})
+    return
 
 
 def followings_list_view(request):
     users = UserModel.objects.filter(request.user.following_set)
 
-    return render(request, 'followings.html', {'users': users})
+    return
 
 
 class MessagesView(ListView):
@@ -571,7 +571,6 @@ def like_reply_comment(request, id):
             ).delete()
 
     return redirect(next_url)
-
 
 
 def reply_comment_like_view(request, id):
