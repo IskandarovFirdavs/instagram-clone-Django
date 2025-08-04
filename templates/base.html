@@ -11,6 +11,8 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     /></head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
 <style>
 {% block extra_css %}{% endblock %}
 </style>
@@ -30,8 +32,10 @@
         {% include 'footer.html' %}
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     {% block scripts %}
     <!-- Page specific scripts go here -->
     {% endblock %}
 </body>
+
 </html>

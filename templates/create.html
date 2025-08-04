@@ -848,12 +848,22 @@ let selectedMusic = null;
 let currentPreviewAudio = null;
 let mainMusicAudio = null;
 
-// Handle drag & drop file upload
 document.getElementById('file-input').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
         selectedFile = file;
         handleFileUpload(file);
+
+        // Form ichidagi inputga faylni o‘tkazish:
+        const formFileInput = document.getElementById('form-file-input');
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        formFileInput.files = dataTransfer.files;
+
+        // Fayl nomini ham yangilash
+        const fileName = document.getElementById('file-name');
+        fileName.textContent = file.name;
+        fileName.classList.add('has-file');
     }
 });
 
