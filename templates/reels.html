@@ -8,6 +8,39 @@
 
 {% block extra_css %}
 <style>
+    .comment-like-btn {
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content:center;
+    text-decoration: none;
+    margin-left: auto;
+    color: #fff;
+    transition: all 0.2s ease;
+}
+
+
+
+.comment-like-btn.liked {
+    color: #ff3040;
+        text-decoration: none;
+
+}
+
+.comment-like-btn i {
+    font-size: 12px;
+    color:red;
+        text-decoration: none;
+
+}
+
+.comment-like-btn h1 {
+    font-size: 10px;
+    font-weight: 500;
+    color:white;
+}
+
     .reels-container {
         background-color: #000;
         min-height: 100vh;
@@ -779,23 +812,26 @@
                                     <span class="comment-reply" onclick="showReplyInput(this)">Reply</span>
                                 </div>
                             </div>
-                            <button class="comment-heart">
-                                <a href="{% url 'reply-comment-like' id=reply.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
-                                    <i style="color:red;" class="{% reply_comment_like_icon reply user %}"></i>
-                                </a>
-                                <h1 class="comment-likes">{{ reply.reply_comment_likes_count }}</h1>
-                            </button>
+                            <a href="{% url 'home-reply-comment-like' id=reply.id %}?action={% if user in reply.reply_comment_likes.all %}unlike{% else %}like{% endif %}&next={{ request.path }}"
+                               class="comment-like-btn {% if user in reply.reply_comment_likes.all %}liked{% endif %}" style="text-decoration:none;">
+                                <i class="{% reply_comment_like_icon reply user %}"></i>
+                                <h1>{{ reply.reply_comment_likes_count }}</h1>
+                            </a>
+
+
                         </div>
                         {% endfor %}
                     </div>
                     {% endif %}
                 </div>
-                <button class="comment-heart">
-                    <a href="{% url 'comment-like' comment_id=comment.id %}?next={{ request.path }}&{{ request.GET.urlencode }}">
-                        <i style="color:red" class="{% comment_like_icon comment user%}"></i>
-                    </a>
-                    <h1 class="comment-likes">{{ comment.comment_likes_count }}</h1>
-                </button>
+                <a href="{% url 'home-comment-like' comment_id=comment.id %}?action={% if user in comment.comment_likes.all %}unlike{% else %}like{% endif %}&next={{ request.path }}"
+                   class="comment-like-btn {% if user in comment.comment_likes.all %}liked{% endif %}" style="text-decoration:none;">
+                    <i class="{% comment_like_icon comment user %}"></i>
+                    <h1>{{ comment.comment_likes_count }}</h1>
+                </a>
+
+
+
             </div>
             {% endfor %}
         </div>

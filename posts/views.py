@@ -327,12 +327,11 @@ def home_comment_like(request, comment_id):
 @login_required
 def home_reply_comment_like(request, id):
     reply_comment = get_object_or_404(ReplyCommentModel, id=id)
-
     user = request.user
     comment_owner = reply_comment.userID
     is_self_like = (comment_owner == user)
 
-    like = ReplyCommentLikeModel.objects.filter(reply_commentID=reply_comment, userID=request.user).first()
+    like = ReplyCommentLikeModel.objects.filter(reply_commentID=reply_comment, userID=user).first()
     if like:
         like.delete()
         if not is_self_like:
@@ -340,26 +339,24 @@ def home_reply_comment_like(request, id):
                 reply_comment_like=reply_comment,
                 liked_by=user
             ).delete()
-
     else:
-        ReplyCommentLikeModel.objects.create(reply_commentID=reply_comment, userID=request.user)
+        # Save new like
+        new_like = ReplyCommentLikeModel.objects.create(reply_commentID=reply_comment, userID=user)
+
         if not is_self_like:
             if comment_owner and comment_owner.pk:
                 try:
-                    obj, created = NotificationModel.objects.get_or_create(
-                        comment_like=None,
+                    NotificationModel.objects.get_or_create(
+                        reply_comment_like=reply_comment,
                         liked_by=user,
                         owner=comment_owner,
                         post_like=None,
-                        reply_comment_like=None
+                        comment_like=None,
                     )
-                    print("Notification created:", created)
                 except IntegrityError as e:
                     print("❌ Notification creation failed:", str(e))
             else:
                 print("⚠️ Skipped: Comment owner is invalid")
-
-
 
     return redirect(request.GET.get('next', '/'))
 
@@ -405,6 +402,7 @@ class MessagesView(ListView):
         return qs
 
 
+@login_required(login_url='login')
 def reels_view(request):
     reels = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Reels).exclude(userID=request.user).order_by(
         '-created_at')

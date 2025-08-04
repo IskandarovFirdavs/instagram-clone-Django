@@ -29,15 +29,20 @@
                             {% endif %}
                         </div>
                     </div>
-                    {% if noti.comment_like.postID.contentUrl %}
-                    <img src="{{noti.comment_like.postID.contentUrl.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;">
+                    {% if noti.comment_like.postID %}
+                        {% if noti.comment_like.postID.post_type != 'REELS' %}
+                            <img src="{{ noti.comment_like.postID.contentUrl.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;">
+                        {% else %}
+                            <video src="{{ noti.comment_like.postID.contentUrl.url }}" style="width: 44px; height: 44px; background-color: #262626; border-radius: 4px;"></video>
+                        {% endif %}
                     {% else %}
-                    <div></div>
+                        <div></div>
                     {% endif %}
+
                 </div>
             {% endfor %}
         {% else %}
-        <h1>Here are not notifications yet . . .</h1>
+        <h5 style="color:grey;">Here are not notifications yet . . .</h5>
         {% endif %}
     </div>
 </div>
