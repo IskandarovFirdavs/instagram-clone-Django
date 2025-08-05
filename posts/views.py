@@ -361,31 +361,6 @@ def home_reply_comment_like(request, id):
     return redirect(request.GET.get('next', '/'))
 
 
-class UserListView(ListView):
-    template_name = 'search.html'
-    context_object_name = 'users'
-
-    def get_queryset(self):
-        qs = UserModel.objects.exclude(id=self.request.user.id)
-        q = self.request.GET.get('q')
-
-        if q:
-            qs = qs.filter(username__icontains=q)
-
-        return qs
-
-
-def followers_list_view(request):
-    users = UserModel.objects.filter(request.user.following_set)
-
-    return
-
-
-def followings_list_view(request):
-    users = UserModel.objects.filter(request.user.following_set)
-
-    return
-
 
 class MessagesView(ListView):
     template_name = 'messages.html'

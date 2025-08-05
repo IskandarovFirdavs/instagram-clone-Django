@@ -624,7 +624,7 @@
              data-saved-by-user="{% is_saved_by_user request.user post %}"
              data-saved-count="{{ post.saved.count }}"
              data-user-id="{{ post.userID.id }}"
-             data-is-followed-by-viewer="{% if request.user.is_authenticated and request.user|is_following:post.userID %}True{% else %}False{% endif %}"
+             data-is-followed-by-viewer="{% if request.user|is_following:post.userID %}True{% else %}False{% endif %}"
         >
             <img src="{{ post.contentUrl.url }}" alt="Post" loading="lazy">
             {% if post.is_carousel %}

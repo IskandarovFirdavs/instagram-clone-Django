@@ -13,14 +13,15 @@
     <div class="suggested-users" id="suggested-users">
         <div class="section-header">
             <h3>Followings</h3>
+            <a style="text-decoration:none;color:blue" href="{% url 'followers' pk=usr.pk  %}" >Followers</a>
         </div>
         <div class="users-list">
-            {% for user in users %}
+            {% for user in followings %}
             <div class="user-profile-section">
                 <div class="user-info">
-                    {% if user.avatar %}
+                    {% if user.following.avatar %}
                     <img style="height: 30px; width: 30px; border-radius: 50%; object-fit: fit; margin-right: 15px;"
-                         src="{{ user.avatar.url }}">
+                         src="{{ user.following.avatar.url }}">
                     {% else %}
                     <svg class="icon"
                          viewBox="0 0 24 24"
@@ -33,12 +34,10 @@
                     </svg>
                     {% endif %}
                     <div class="user-details">
-
-                        <a href="{% url 'profile-another' pk=user.pk %}">
-                            <h3>{{ user.username }}</h3>
+                        <a style="text-decoration:none" href="{% url 'profile-another' pk=user.following.pk %}">
+                            <h3>{{ user.following.username }}</h3>
+                            <p>{{ user.following.first_name }} {{ user.following.last_name }} </p>
                         </a>
-                        <p>{{ user.first_name }} {{ user.last_name }} </p>
-
                     </div>
                 </div>
             </div>

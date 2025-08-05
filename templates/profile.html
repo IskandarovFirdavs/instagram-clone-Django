@@ -857,10 +857,10 @@
             <h1>{{ user.username }}</h1>
             <div class="profile-stats">
                 <div class="profile-stat"><strong>{{ posts.count|default:"0" }}</strong> posts</div>
-                <a style="text-decoration:none" href="{% url 'followers' %}">
+                <a style="text-decoration:none" href="{% url 'followers' pk=user.pk %}">
                     <div class="profile-stat"><strong>{{ user.followers_count }}</strong> followers</div>
                 </a>
-                <a style="text-decoration:none" href="{% url 'followings' %}">
+                <a style="text-decoration:none" href="{% url 'followings' pk=user.pk %}">
                     <div class="profile-stat"><strong>{{ user.following_count }}</strong> following</div>
                 </a>
             </div>

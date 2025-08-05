@@ -702,7 +702,7 @@
         <div class="reel-info">
             <div class="user-row">
                 {% if reel.userID.avatar %}
-                <img style="height:30px; border-radius:50%;margin-right:15px" src="{{ reel.userID.avatar.url }}" />
+                <img style="height:30px; border-radius:50%;margin-right:15px" src="{{ reel.userID.avatar.url }}"/>
                 {% else %}
                 <div class="user-avatar">{{ reel.userID.username|upper|first}}</div>
                 {% endif %}
@@ -710,7 +710,13 @@
                     <a href="{% url 'profile-another' pk=reel.userID.id %}" class="post-username">{{ reel.userID.username }}</a></span>
                 <button class="modal-follow-btn">
                     <a href="{% url 'follow-create' pk=reel.userID.id %}"
-                       style="text-decoration: none; color: #fff;">Follow</a>
+                       style="text-decoration: none; color: #fff;">
+                        {% if request|is_following:reel.userID %}
+                        Unfollow
+                        {% else %}
+                        Follow
+                        {% endif %}
+                    </a>
                 </button>
             </div>
 
@@ -813,7 +819,8 @@
                                 </div>
                             </div>
                             <a href="{% url 'home-reply-comment-like' id=reply.id %}?action={% if user in reply.reply_comment_likes.all %}unlike{% else %}like{% endif %}&next={{ request.path }}"
-                               class="comment-like-btn {% if user in reply.reply_comment_likes.all %}liked{% endif %}" style="text-decoration:none;">
+                               class="comment-like-btn {% if user in reply.reply_comment_likes.all %}liked{% endif %}"
+                               style="text-decoration:none;">
                                 <i class="{% reply_comment_like_icon reply user %}"></i>
                                 <h1>{{ reply.reply_comment_likes_count }}</h1>
                             </a>
@@ -825,11 +832,11 @@
                     {% endif %}
                 </div>
                 <a href="{% url 'home-comment-like' comment_id=comment.id %}?action={% if user in comment.comment_likes.all %}unlike{% else %}like{% endif %}&next={{ request.path }}"
-                   class="comment-like-btn {% if user in comment.comment_likes.all %}liked{% endif %}" style="text-decoration:none;">
+                   class="comment-like-btn {% if user in comment.comment_likes.all %}liked{% endif %}"
+                   style="text-decoration:none;">
                     <i class="{% comment_like_icon comment user %}"></i>
                     <h1>{{ comment.comment_likes_count }}</h1>
                 </a>
-
 
 
             </div>

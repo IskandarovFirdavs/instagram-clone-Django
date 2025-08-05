@@ -78,7 +78,7 @@ def profile_view(request):
 
 
 def another_user_profile_view(request, pk):
-    user = UserModel.objects.get(id=pk)
+    user = UserModel.objects.get(pk=pk)
     posts = PostModel.objects.filter(userID=user, post_type=PostModel.PostTypeChoice.Post).order_by('-created_at')
     reels = PostModel.objects.filter(userID=user, post_type=PostModel.PostTypeChoice.Reels).order_by('-created_at')
 
@@ -91,21 +91,21 @@ def another_user_profile_view(request, pk):
 
 @login_required
 def follow_view(request, pk):
-    following_to = get_object_or_404(UserModel, pk=pk) # human who is following
+    following_to = get_object_or_404(UserModel, pk=pk)
     user = request.user
     followers = Follow.objects.filter(follower=user, following=following_to)
 
     is_self_like = (following_to == user)
 
     if followers:
-        followers.delete()
         if not is_self_like:
+            followers.delete()
             NotificationModel.objects.filter(
                 liked_by=user
             ).delete()
     else:
-        Follow.objects.create(follower=user, following=following_to)
         if not is_self_like:
+            Follow.objects.create(follower=user, following=following_to)
             if following_to and following_to.pk:
                 try:
                     obj, created = NotificationModel.objects.get_or_create(
@@ -123,3 +123,43 @@ def follow_view(request, pk):
 
 
     return redirect(request.GET.get('next', '/'))
+
+
+class UserListView(ListView):
+    template_name = 'search.html'
+    context_object_name = 'users'
+
+    def get_queryset(self):
+        qs = UserModel.objects.exclude(id=self.request.user.id)
+        q = self.request.GET.get('q')
+
+        if q:
+            qs = qs.filter(username__icontains=q)
+
+        return qs
+
+
+def followers_list_view(request, pk):
+    user = get_object_or_404(UserModel, pk=pk)
+    followers = user.follower_set.all()
+    qs = UserModel.objects.exclude(pk=request.user.pk).order_by('username')
+
+    context = {
+        'usr': user,
+        'followers': followers,
+        'users': qs
+    }
+    return render(request, 'followers.html', context)
+
+
+def followings_list_view(request, pk):
+    user = get_object_or_404(UserModel, pk=pk)
+    followings = user.following_set.all()
+    qs = UserModel.objects.exclude(pk=request.user.pk).order_by('username')
+
+    context = {
+        'usr': user,
+        'followings': followings,
+        'users': qs
+    }
+    return render(request, 'followings.html', context)

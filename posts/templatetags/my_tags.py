@@ -1,5 +1,6 @@
 from django import template
 from posts.models import CommentLikeModel, PostLikeModel, ReplyCommentLikeModel
+from users.models import Follow
 
 register = template.Library()
 
@@ -54,8 +55,10 @@ def is_comment_liked_by_user(comment, user):
     return CommentLikeModel.objects.filter(commentID=comment, userID=user).exists()
 
 
-
 @register.filter
-def is_following(follower_user, following_user):
-    if not follower_user.is_authenticated:
+def is_following(request, following_user):
+    if not request.user.is_authenticated:
         return False
+    return Follow.objects.filter(follower=request.user, following=following_user).exists()
+
+

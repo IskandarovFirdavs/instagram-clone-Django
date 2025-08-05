@@ -16,7 +16,4 @@ urlpatterns = [
     path('home_reply_comment/<int:id>/', views.home_reply_comment_like, name='home-reply-comment-like'),
     path('saved/', views.SavedListView.as_view(), name="saved"),
     path("saved/<int:id>/", views.create_saved_video, name="saved-create"),
-    path('search/', views.UserListView.as_view(), name='search'),
-    path('followers/', views.followers_list_view, name='followers'),
-    path('followings/', views.followings_list_view, name='followings'),
 ]
