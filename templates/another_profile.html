@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
+{% load my_tags %}
 
 {% block title %}{{ user.username }}'s Profile • Instagram{% endblock %}
+
 
 {% block home_active %}active{% endblock %}
 
@@ -856,7 +858,7 @@
             <h1>{{ user.username }}</h1>
             <div class="profile-stats">
                 <div class="profile-stat"><strong>{{ posts.count|default:"0" }}</strong> posts</div>
-           <a style="text-decoration:none" href="{% url 'followers' pk=user.pk %}">
+                <a style="text-decoration:none" href="{% url 'followers' pk=user.pk %}">
                     <div class="profile-stat"><strong>{{ user.followers_count }}</strong> followers</div>
                 </a>
                 <a style="text-decoration:none" href="{% url 'followings' pk=user.pk %}">
@@ -869,7 +871,13 @@
             </div>
             <div class="profile-actions">
                 <button class="profile-btn" id="follow-btn" data-user-id="{{ user.id }}">
-                    {% if is_following %}Unfollow{% else %}Follow{% endif %}
+                    <a style="color:white;text-decoration:none;" href="{% url 'follow-create' pk=user.id %}">
+                        {% if request|is_following:user %}
+                        Unfollow
+                        {% else %}
+                        Follow
+                        {% endif %}
+                    </a>
                 </button>
                 <a style="text-decoration:none;" href="{% url 'messages' %}" class="profile-btn">Message</a>
             </div>
@@ -1201,24 +1209,7 @@
             });
         });
 
-        // Follow button functionality
-        const followBtn = document.getElementById('follow-btn');
-        if (followBtn) {
-            followBtn.addEventListener('click', function() {
-                const userId = this.getAttribute('data-user-id');
-                // Implement AJAX call to your Django follow/unfollow view
-                // For demonstration, just toggle text
-                if (this.textContent === 'Follow') {
-                    this.textContent = 'Unfollow';
-                    // You'd send an AJAX request to /follow/userId/
-                    console.log(`Following user ${userId}`);
-                } else {
-                    this.textContent = 'Follow';
-                    // You'd send an AJAX request to /unfollow/userId/
-                    console.log(`Unfollowing user ${userId}`);
-                }
-            });
-        }
+
 
         // Close post modal when clicking outside
         document.getElementById('postModal').addEventListener('click', function(e) {

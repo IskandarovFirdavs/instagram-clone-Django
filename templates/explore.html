@@ -235,7 +235,31 @@
         margin-right: 12px;
     }
 
+    .modal-follow-btn {
+        font-size: 14px;
+        font-weight: 600;
+        color: #0095f6;
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+    }
 
+    .modal-follow-btn.following {
+        color: #fff;
+        background-color: #262626;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .modal-follow-btn:hover {
+        color: #1877f2;
+    }
+
+    .modal-follow-btn.following:hover {
+        color: #fff;
+        background-color: #333;
+    }
 
     .modal-body {
         flex: 1;
@@ -386,7 +410,6 @@
         stroke: #ed4956;
     }
 
-    /* Reply Section */
     .replies-container {
         margin-left: 44px;
         margin-top: 8px;
@@ -465,7 +488,6 @@
         stroke: #fff;
     }
 
-    /* Comment Input */
     .comment-input-section {
         border-top: 1px solid #262626;
         padding: 16px;
@@ -528,7 +550,6 @@
         background: rgba(0, 0, 0, 0.9);
     }
 
-    /* Empty state */
     .empty-state {
         text-align: center;
         padding: 80px 20px;
@@ -554,10 +575,9 @@
         font-size: 14px;
     }
 
-    /* Responsive adjustments */
     @media (max-width: 768px) {
         .explore-grid {
-            grid-template-columns: repeat(3, 1fr); /* You might want to keep this at 3 or change to 2 */
+            grid-template-columns: repeat(3, 1fr);
             gap: 2px;
         }
 
@@ -604,8 +624,6 @@
 
 {% block content %}
 <div class="explore-container">
-
-
     {% if posts or reels %}
     <div class="explore-grid">
         {% for post in posts %}
@@ -624,8 +642,8 @@
              data-saved-by-user="{% is_saved_by_user request.user post %}"
              data-saved-count="{{ post.saved.count }}"
              data-user-id="{{ post.userID.id }}"
-             data-is-followed-by-viewer="{% if request.user|is_following:post.userID %}True{% else %}False{% endif %}"
-        >
+             data-is-followed-by-viewer="{% if request.user.is_authenticated and request|is_following:post.userID %}True{% else %}False{% endif %}"
+             data-is-self="{% if request.user == post.userID %}True{% else %}False{% endif %}">
             <img src="{{ post.contentUrl.url }}" alt="Post" loading="lazy">
             {% if post.is_carousel %}
             <div class="content-indicator">
@@ -669,8 +687,8 @@
              data-saved-by-user="{% is_saved_by_user request.user reel %}"
              data-saved-count="{{ reel.saved.count }}"
              data-user-id="{{ reel.userID.id }}"
-             data-is-followed-by-viewer="{% if request.user.is_authenticated and request.user|is_following:reel.userID %}True{% else %}False{% endif %}"
-        >
+             data-is-followed-by-viewer="{% if request.user.is_authenticated and request|is_following:reel.userID %}True{% else %}False{% endif %}"
+             data-is-self="{% if request.user == reel.userID %}True{% else %}False{% endif %}">
             <video autoplay muted loop playsinline preload="metadata">
                 <source src="{{ reel.contentUrl.url }}" type="video/mp4">
             </video>
@@ -731,9 +749,9 @@
                     <div class="modal-user-info">
                         <div class="modal-avatar" id="modalAvatar"></div>
                         <a style="text-decoration: none" id="modalNamePath" href="#">
-                            <span  class="modal-username" id="modalUsername"></span>
+                            <span class="modal-username" id="modalUsername"></span>
                         </a>
-                        <a href="#" class="modal-follow-btn" id="modalFollowBtn">Follow</a>
+                        <a href="#" class="modal-follow-btn" id="modalFollowBtn"></a>
                     </div>
                 </div>
                 <div class="modal-body">
@@ -746,15 +764,13 @@
                     </div>
                     <div class="modal-stats" id="modalStats"></div>
                     <div class="modal-time"></div>
-                    <div class="modal-comments" id="modalComments">
-                    </div>
+                    <div class="modal-comments" id="modalComments"></div>
                 </div>
                 <div class="modal-actions">
                     <div class="modal-actions-left">
                         <button class="modal-action-btn like-btn" id="modalLikeBtn">
                             <a style="color:white" href="#" id="modalLikeLink">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     stroke-width="1.5">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                                 </svg>
                             </a>
@@ -779,7 +795,7 @@
                 </div>
                 <form class="comment-input-section" method="POST" action="{% url 'explore' %}">
                     {% csrf_token %}
-                    <div class="comment-avatar" >
+                    <div class="comment-avatar">
                         {% if request.user.avatar %}
                         <img src="{{ request.user.avatar.url }}" alt="{{ request.user.username }}">
                         {% else %}
@@ -787,8 +803,7 @@
                         {% endif %}
                     </div>
                     <input type="hidden" name="post_id" id="modalPostIdInput" value="">
-                    <input type="text" name="comment" class="comment-input" placeholder="Add a comment..."
-                           oninput="toggleModalPostButton(this)" id="modalCommentInput">
+                    <input type="text" name="comment" class="comment-input" placeholder="Add a comment..." oninput="toggleModalPostButton(this)" id="modalCommentInput">
                     <button type="submit" class="comment-post-btn" id="modalCommentSubmit">Post</button>
                 </form>
             </div>
@@ -880,7 +895,7 @@
                 userAvatar: '{% if comment.userID.avatar %}{{ comment.userID.avatar.url }}{% else %}None{% endif %}',
                 text: '{{ comment.comment|escapejs }}',
                 timeAgo: '{{ comment.since_created }}',
-                likes_count: {{ comment.likes_count }},
+                likes_count: {{ comment.likes_count|default:0 }},
                 likedByUser: '{% if comment|is_comment_liked_by_user:request.user %}True{% else %}False{% endif %}',
                 replies: [
                     {% for reply in comment.reply_comments.all %}
@@ -890,7 +905,7 @@
                         userAvatar: '{% if reply.userID.avatar %}{{ reply.userID.avatar.url }}{% else %}None{% endif %}',
                         text: '{{ reply.reply_comment|escapejs }}',
                         timeAgo: '{{ reply.since_created }}',
-                        likes_count: {{ reply.likes_count }},
+                        likes_count: {{ reply.likes_count|default:0 }},
                         likedByUser: '{% if reply|is_reply_liked_by_user:request.user %}True{% else %}False{% endif %}'
                     }{% if not forloop.last %},{% endif %}
                     {% endfor %}
@@ -1064,11 +1079,26 @@ const reelsData = {
         if (postData.saved_by_user !== 'False') {
             modalSaveBtn.classList.add('saved');
             modalSaveIcon.classList.replace('fa-regular', postData.saved_by_user);
+        } else {
+            modalSaveBtn.classList.remove('saved');
+            modalSaveIcon.classList.replace(postData.saved_by_user || 'fa-solid', 'fa-regular');
         }
 
         modalLikeLink.href = `/like/${postData.id}/?next=${encodeURIComponent(window.location.pathname)}`;
         modalSaveLink.href = `/saved/${postData.id}/?next=${encodeURIComponent(window.location.pathname)}`;
         modalNamePath.href = `/profile/${postData.userId}/?next=${encodeURIComponent(window.location.pathname)}`;
+
+        const modalFollowBtn = document.getElementById('modalFollowBtn');
+        if (modalFollowBtn) {
+            if (postData.isSelf === 'True') {
+                modalFollowBtn.style.display = 'none';
+            } else {
+                modalFollowBtn.style.display = 'inline-block';
+                modalFollowBtn.href = `/users/follow-create/${postData.userId}/?next=${encodeURIComponent(window.location.pathname)}`;
+                modalFollowBtn.textContent = postData.isFollowedByViewer === 'True' ? 'Unfollow' : 'Follow';
+                modalFollowBtn.classList.toggle('following', postData.isFollowedByViewer === 'True');
+            }
+        }
 
         let commentsForPost;
         if (postData.type === 'post') {
@@ -1080,6 +1110,73 @@ const reelsData = {
 
         globalPostModal.classList.add('active');
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Add click handler for follow button
+        const modalFollowBtn = document.getElementById('modalFollowBtn');
+        if (modalFollowBtn) {
+            modalFollowBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = this.href;
+            });
+        }
+
+        const exploreItems = document.querySelectorAll('.explore-item');
+        exploreItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const postData = {
+                    type: item.dataset.type,
+                    id: item.dataset.id.toString(),
+                    url: item.dataset.url,
+                    username: item.dataset.username,
+                    userAvatar: item.dataset.userAvatar,
+                    caption: item.dataset.caption,
+                    likes: item.dataset.likes,
+                    comments: item.dataset.comments,
+                    location: item.dataset.location,
+                    views: item.dataset.views,
+                    likedByUser: item.dataset.likedbyuser,
+                    saved_by_user: item.dataset.savedByUser,
+                    saved_count: item.dataset.savedCount,
+                    userId: item.dataset.userId,
+                    isFollowedByViewer: item.dataset.isFollowedByViewer,
+                    isSelf: item.dataset.isSelf
+                };
+                openModal(postData);
+            });
+        });
+
+        {% if open_post_id %}
+        const item = document.querySelector(`.explore-item[data-id="{{ open_post_id }}"]`);
+        if (item) {
+            const postData = {
+                type: item.dataset.type,
+                id: item.dataset.id.toString(),
+                url: item.dataset.url,
+                username: item.dataset.username,
+                userAvatar: item.dataset.userAvatar,
+                caption: item.dataset.caption,
+                likes: item.dataset.likes,
+                comments: item.dataset.comments,
+                location: item.dataset.location,
+                views: item.dataset.views,
+                likedByUser: item.dataset.likedbyuser,
+                saved_by_user: item.dataset.savedByUser,
+                saved_count: item.dataset.savedCount,
+                userId: item.dataset.userId,
+                isFollowedByViewer: item.dataset.isFollowedByViewer,
+                isSelf: item.dataset.isSelf
+            };
+            openModal(postData);
+        }
+        {% endif %}
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && globalPostModal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+    });
 
     function closeModal() {
         globalPostModal.classList.remove('active');
@@ -1117,74 +1214,5 @@ const reelsData = {
         modalCommentInput.name = 'reply_comment';
         toggleModalPostButton(modalCommentInput);
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const exploreItems = document.querySelectorAll('.explore-item');
-        exploreItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const dataType = item.dataset.type;
-                const dataId = item.dataset.id.toString();
-                const dataUrl = item.dataset.url;
-                const dataUsername = item.dataset.username;
-                const dataUserAvatar = item.dataset.userAvatar;
-                const dataCaption = item.dataset.caption;
-                const dataLikes = item.dataset.likes;
-                const dataComments = item.dataset.comments;
-                const dataLocation = item.dataset.location;
-                const dataViews = item.dataset.views;
-                const isLikedByUser = item.dataset.likedbyuser;
-                const isSavedByUser = item.dataset.savedByUser;
-                const savedCount = item.dataset.savedCount;
-                const userId = item.dataset.userId;
-
-                const postData = {
-                    type: dataType,
-                    id: dataId,
-                    url: dataUrl,
-                    username: dataUsername,
-                    userAvatar: dataUserAvatar,
-                    caption: dataCaption,
-                    likes: dataLikes,
-                    comments: dataComments,
-                    location: dataLocation,
-                    views: dataViews,
-                    likedByUser: isLikedByUser,
-                    saved_by_user: isSavedByUser,
-                    saved_count: savedCount,
-                    userId: userId
-                };
-                openModal(postData);
-            });
-        });
-
-        {% if open_post_id %}
-        const item = document.querySelector(`.explore-item[data-id="{{ open_post_id }}"]`);
-        if (item) {
-            const postData = {
-                type: item.dataset.type,
-                id: item.dataset.id.toString(),
-                url: item.dataset.url,
-                username: item.dataset.username,
-                userAvatar: item.dataset.userAvatar,
-                caption: item.dataset.caption,
-                likes: item.dataset.likes,
-                comments: item.dataset.comments,
-                location: item.dataset.location,
-                views: item.dataset.views,
-                likedByUser: item.dataset.likedbyuser,
-                saved_by_user: item.dataset.savedByUser,
-                saved_count: item.dataset.savedCount,
-                userId: item.dataset.userId
-            };
-            openModal(postData);
-        }
-        {% endif %}
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && globalPostModal.classList.contains('active')) {
-                closeModal();
-            }
-        });
-    });
 </script>
 {% endblock %}

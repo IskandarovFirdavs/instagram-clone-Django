@@ -81,11 +81,13 @@ def another_user_profile_view(request, pk):
     user = UserModel.objects.get(pk=pk)
     posts = PostModel.objects.filter(userID=user, post_type=PostModel.PostTypeChoice.Post).order_by('-created_at')
     reels = PostModel.objects.filter(userID=user, post_type=PostModel.PostTypeChoice.Reels).order_by('-created_at')
+    qs = UserModel.objects.exclude(pk=request.user.pk).order_by('username')
 
     return render(request, 'another_profile.html', {
         'user': user,
         'posts': posts,
         'reels': reels,
+        'users': qs
     })
 
 
