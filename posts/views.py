@@ -1,5 +1,3 @@
-import json
-
 from django.db import IntegrityError
 from django.db.models import Count, Prefetch
 from django.utils import timezone
@@ -26,6 +24,7 @@ def home_view(request):
     one_month_ago = timezone.now() - timedelta(days=3)
     one_day_ago = timezone.now() - timedelta(days=77)
     qs = UserModel.objects.exclude(id=request.user.id)
+    unread_notifications = NotificationModel.objects.filter(owner=request.user, is_read=False).count()
 
     base_post_filters = {
         'post_type': PostModel.PostTypeChoice.Post,
@@ -113,6 +112,7 @@ def home_view(request):
     context = {
         'posts': posts,
         'users': qs,
+        'unread_notifications': unread_notifications,
         'grouped_histories': grouped_histories.items(),
         'followed_users': followed_ids,
         'show_comments': request.GET.get('show_comments'),
@@ -125,6 +125,7 @@ def home_view(request):
 @login_required
 def post_create(request):
     qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
+    unread_notifications = NotificationModel.objects.filter(owner=request.user, is_read=False).count()
 
     if request.method == "POST":
         form = PostModelForm(request.POST, request.FILES)
@@ -141,6 +142,7 @@ def post_create(request):
 
     context = {
         'users': qs,
+        'unread_notifications': unread_notifications,
         'form': form,
         'user': request.user
     }
@@ -194,6 +196,7 @@ def explore_view(request):
     ).order_by('-created_at')
 
     qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
+    unread_notifications = NotificationModel.objects.filter(owner=request.user, is_read=False).count()
 
     if request.method == 'POST':
         post_id = request.POST.get('post_id')
@@ -233,6 +236,7 @@ def explore_view(request):
 
     context = {
         'users': qs,
+        'unread_notifications': unread_notifications,
         'posts': posts,
         'reels': reels,
         'open_post_id': request.GET.get('post_id')
@@ -376,12 +380,21 @@ class MessagesView(ListView):
 
         return qs
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        unread_notifications = NotificationModel.objects.filter(owner=self.request.user, is_read=False).count()
+        context['unread_notifications'] = unread_notifications
+
+        return context
+
+
 
 @login_required(login_url='login')
 def reels_view(request):
     reels = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Reels).exclude(userID=request.user).order_by(
         '-created_at')
     qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
+    unread_notifications = NotificationModel.objects.filter(owner=request.user, is_read=False).count()
 
     if request.method == 'POST':
         reel_id = request.POST.get('reel_id')
@@ -423,6 +436,7 @@ def reels_view(request):
 
     context = {
         'users': qs,
+        'unread_notifications': unread_notifications,
         'reels': reels,
     }
     return render(request, 'reels.html', context)
@@ -439,11 +453,13 @@ class SavedListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         qs_users = UserModel.objects.exclude(id=self.request.user.id).order_by('username')
         q = self.request.GET.get('q')
+        unread_notifications = NotificationModel.objects.filter(owner=self.request.user, is_read=False).count()
 
         if q:
             qs_users = qs_users.filter(username__icontains=q)
 
         context['users'] = qs_users
+        context['unread_notifications'] = unread_notifications
         context['reels'] = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Reels,
                                                     saved=self.request.user).order_by('-created_at')
         context['posts'] = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Post,
@@ -615,10 +631,16 @@ def create_reply_comment(request, parent_comment_id):
 def notification_view(request):
     qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
 
-    notifications = NotificationModel.objects.filter(owner=request.user).exclude(liked_by=request.user).order_by(
-        '-created_at')
+    notifications = NotificationModel.objects.filter(owner=request.user).order_by('-created_at')
+    unread = notifications.filter(is_read=False)
+    unread_count = unread.count()
+
+    for noti in unread:
+        noti.is_read = True
+        noti.save()
 
     context = {
+        'unread_notifications': unread_count,
         'notifications': notifications,
         'users': qs
     }

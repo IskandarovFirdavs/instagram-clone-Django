@@ -175,6 +175,7 @@ class NotificationModel(models.Model):
     reply_comment_like = models.ForeignKey(ReplyCommentModel, on_delete=models.CASCADE, related_name='notifications',
                                            null=True, blank=True, default=None)
     liked_by = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='notifications_liked_by')
+    is_read = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -198,4 +199,3 @@ class NotificationModel(models.Model):
             return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
         else:
             return "Just now"
-
