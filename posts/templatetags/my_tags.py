@@ -29,10 +29,8 @@ def is_reply_liked_by_user(reply, user):
 
 
 @register.filter
-def is_liked_by_user(content_object, user):
-    if not user.is_authenticated:
-        return False
-    return PostLikeModel.objects.filter(postID=content_object, userID=user).exists()
+def is_liked_by_user(content_object, request):
+    return PostLikeModel.objects.filter(postID=content_object, userID=request.user).exists()
 
 
 @register.simple_tag
@@ -42,10 +40,15 @@ def is_reels_liked_by_user(post, user):
 
 
 @register.simple_tag
-def is_saved_by_user(user, content_object):
-    if not user.is_authenticated:
-        return 'False'
-    return "fa-solid" if user in content_object.saved.all() else "fa-regular"
+def is_saved_by_user(request, content_object):
+    if not hasattr(request, "user") or not hasattr(content_object, "saved"):
+        return "fa-regular"
+
+    if not request.user.is_authenticated:
+        return "fa-regular"
+
+    return "fa-solid" if request.user in content_object.saved.all() else "fa-regular"
+
 
 
 @register.filter

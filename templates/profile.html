@@ -1,1505 +1,1676 @@
 {% extends "base.html" %}
 {% load static %}
+{% load my_tags %}
 
-{% block title %}{{ user.username }} • Instagram{% endblock %}
-
-{% block home_active %}active{% endblock %}
+{% block title %}Profile • Instagram{% endblock %}
+{% block profile_active %}active{% endblock %}
 
 {% block extra_css %}
 <style>
-    .profile-page {
-        max-width: 975px;
-        margin: 0 auto;
-        padding: 30px 20px;
-        color: #fff;
-    }
-
-    /* Profile Header */
-    .profile-header {
-        display: flex;
-        align-items: center;
-        gap: 80px;
-        margin-bottom: 44px;
-        padding-bottom: 44px;
-        border-bottom: 1px solid #262626;
-    }
-
-    .profile-avatar-large {
-        flex-shrink: 0;
-    }
-
-    .profile-avatar-large img {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid #262626;
-    }
-
-    .profile-info {
-        flex: 1;
-    }
-
-    .profile-info h1 {
-        font-size: 28px;
-        font-weight: 300;
-        margin-bottom: 20px;
-        color: #fff;
-    }
-
-    .profile-stats {
-        display: flex;
-        gap: 40px;
-        margin-bottom: 20px;
-    }
-
-    .profile-stat {
-        font-size: 16px;
-        color: #fff;
-    }
-
-    .profile-stat strong {
-        font-weight: 600;
-    }
-
-    .profile-bio {
-        margin-bottom: 20px;
-    }
-
-    .profile-bio strong {
-        display: block;
-        margin-bottom: 4px;
-        color: #fff;
-    }
-
-    .profile-bio p {
-        color: #fff;
-        line-height: 1.4;
-    }
-
-    /* Profile Actions */
-    .profile-actions {
-        display: flex;
-        gap: 8px;
-    }
-
-    .profile-btn {
-        background-color: #262626;
-        border: 1px solid #262626;
-        border-radius: 8px;
-        color: #fff;
-        font-size: 14px;
-        font-weight: 600;
-        padding: 8px 16px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .profile-btn:hover {
-        background-color: #363636;
-        border-color: #363636;
-    }
-
-    /* Profile Navigation */
-    .profile-nav {
-        border-top: 1px solid #262626;
-        margin-bottom: 28px;
-    }
-
-    .profile-nav-tabs {
-        display: flex;
-        justify-content: center;
-        gap: 60px;
-        padding: 16px 0;
-    }
-
-    .profile-tab {
-        background: none;
-        border: none;
-        color: #8e8e8e;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        padding: 16px 0;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        transition: color 0.2s;
-        border-top: 1px solid transparent;
-    }
-
-    .profile-tab.active {
-        color: #fff;
-        border-top-color: #fff;
-    }
-
-    .profile-tab:hover {
-        color: #fff;
-    }
-
-    /* Tab Content */
-    .tab-content {
-        display: none;
-    }
-
-    .tab-content.active {
-        display: block;
-    }
-
-    /* Profile Grid - Same as Explore */
-    .profile-posts, .profile-reels, .tagged-posts {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 3px;
-        padding: 0;
-    }
-
-    .profile-item {
-        position: relative;
-        cursor: pointer;
-        overflow: hidden;
-        background-color: #262626;
-        transition: transform 0.1s ease;
-        aspect-ratio: 1;
-    }
-
-    .profile-item:hover {
-        transform: scale(1.02);
-        z-index: 10;
-    }
-
-    .profile-item img,
-    .profile-item video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        transition: filter 0.2s ease;
-    }
-
-    .profile-item:hover img,
-    .profile-item:hover video {
-        filter: brightness(0.8);
-    }
-
-    /* Overlay that appears on hover */
-    .profile-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-    }
-
-    .profile-item:hover .profile-overlay {
-        opacity: 1;
-    }
-
-    .profile-stats-overlay {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        color: #fff;
-        font-size: 16px;
-        font-weight: 600;
-    }
-
-    .profile-stat-overlay {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .profile-stat-overlay svg {
-        fill: currentColor;
-    }
-
-    /* Content type indicators */
-    .content-indicator {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        z-index: 5;
-    }
-
-    .reel-indicator {
-        width: 24px;
-        height: 24px;
-        fill: #fff;
-        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
-    }
-
-    .carousel-indicator {
-        width: 20px;
-        height: 20px;
-        fill: #fff;
-        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
-    }
-
-    /* Video specific styles */
-    .profile-item video {
-        pointer-events: none;
-    }
-
-    .profile-item.reel video {
-        object-fit: cover;
-    }
-
-    /* Modal Styles - Same as Explore */
-    .post-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 1000;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(10px);
-    }
-
-    .post-modal.active {
-        display: flex;
-    }
-
-    .modal-content {
-        background: #000;
-        border-radius: 8px;
-        max-width: 1200px;
-        max-height: 90vh;
-        width: 90%;
-        display: flex;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .modal-media {
-        flex: 1;
-        max-width: 600px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #000;
-    }
-
-    .modal-media img,
-    .modal-media video {
-        width: 100%;
-        height: auto;
-        max-height: 90vh;
-        object-fit: contain;
-    }
-
-    .modal-sidebar {
-        width: 400px;
-        background: #000;
-        border-left: 1px solid #262626;
-        display: flex;
-        flex-direction: column;
-        max-height: 90vh;
-    }
-
-    .modal-header {
-        padding: 16px;
-        border-bottom: 1px solid #262626;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .modal-user-info {
-        display: flex;
-        align-items: center;
-    }
-
-    .modal-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-        margin-right: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        font-size: 12px;
-    }
-
-    .modal-username {
-        font-size: 14px;
-        font-weight: 600;
-        color: #fff;
-        margin-right: 12px;
-    }
-
-    .modal-follow-btn {
-        background: none;
-        border: 1px solid #0095f6;
-        color: #0095f6;
-        padding: 6px 16px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .modal-follow-btn:hover {
-        background-color: #0095f6;
-        color: #fff;
-    }
-
-    .modal-body {
-        flex: 1;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .modal-post-info {
-        padding: 16px;
-        border-bottom: 1px solid #262626;
-    }
-
-    .modal-caption {
-        color: #fff;
-        font-size: 14px;
-        line-height: 1.4;
-        margin-bottom: 16px;
-    }
-
-    .modal-location {
-        display: flex;
-        align-items: center;
-        color: #8e8e8e;
-        font-size: 12px;
-        margin-bottom: 16px;
-    }
-
-    .modal-location svg {
-        width: 12px;
-        height: 12px;
-        margin-right: 6px;
-        fill: currentColor;
-    }
-
-    .modal-stats {
-        color: #fff;
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 16px;
-    }
-
-    .modal-time {
-        color: #8e8e8e;
-        font-size: 12px;
-        margin-bottom: 0;
-    }
-
-    .modal-comments {
-        flex: 1;
-        padding: 16px;
-        overflow-y: auto;
-        max-height: 300px;
-    }
-
-    .comment-item {
-        display: flex;
-        align-items: flex-start;
-        margin-bottom: 12px;
-    }
-
-    .comment-avatar {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-        margin-right: 8px;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        font-size: 10px;
-    }
-
-    .comment-content {
-        flex: 1;
-    }
-
-    .comment-username {
-        font-size: 13px;
-        font-weight: 600;
-        color: #fff;
-        margin-right: 8px;
-    }
-
-    .comment-text {
-        font-size: 13px;
-        color: #fff;
-        line-height: 1.3;
-    }
-
-    .comment-time {
-        font-size: 12px;
-        color: #8e8e8e;
-        margin-top: 4px;
-    }
-
-    .modal-actions {
-        padding: 16px;
-        border-top: 1px solid #262626;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .modal-actions-left {
-        display: flex;
-        gap: 16px;
-    }
-
-    .modal-action-btn {
-        background: none;
-        border: none;
-        color: #fff;
-        cursor: pointer;
-        padding: 8px;
-        border-radius: 50%;
-        transition: background-color 0.2s ease;
-    }
-
-    .modal-action-btn:hover {
-        background-color: #1a1a1a;
-    }
-
-    .modal-action-btn svg {
-        width: 24px;
-        height: 24px;
-        fill: currentColor;
-    }
-
-    /* Comment Input Section */
-    .comment-input-section {
-        padding: 16px;
-        border-top: 1px solid #262626;
-        background: #000;
-    }
-
-    .comment-input-container {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .comment-input {
-        flex: 1;
-        background: none;
-        border: none;
-        color: #fff;
-        font-size: 14px;
-        outline: none;
-        padding: 8px 0;
-    }
-
-    .comment-input::placeholder {
-        color: #8e8e8e;
-    }
-
-    .comment-submit-btn {
-        background: none;
-        border: none;
-        color: #0095f6;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        padding: 8px 0;
-        opacity: 0.3;
-        transition: opacity 0.2s ease;
-    }
-
-    .comment-submit-btn.active {
-        opacity: 1;
-    }
-
-    .comment-submit-btn:hover.active {
-        color: #1877f2;
-    }
-
-    .emoji-btn {
-        background: none;
-        border: none;
-        color: #8e8e8e;
-        cursor: pointer;
-        padding: 8px;
-        border-radius: 50%;
-        transition: background-color 0.2s ease;
-    }
-
-    .emoji-btn:hover {
-        background-color: #1a1a1a;
-    }
-
-    .emoji-btn svg {
-        width: 20px;
-        height: 20px;
-        fill: currentColor;
-    }
-
-    .modal-close {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        background: rgba(0, 0, 0, 0.7);
-        border: none;
-        color: #fff;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-    }
-
-    .modal-close:hover {
-        background: rgba(0, 0, 0, 0.9);
-    }
-
-    /* Empty state */
-    .empty-state {
-        text-align: center;
-        padding: 80px 20px;
-        color: #8e8e8e;
-        grid-column: 1 / -1;
-    }
-
-    .empty-state svg {
-        margin-bottom: 24px;
-        opacity: 0.3;
-    }
-
-    .empty-state h3 {
-        font-size: 22px;
-        margin-bottom: 8px;
-        color: #fff;
-    }
-
-    /* Edit Profile Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.8);
-        animation: fadeIn 0.3s;
-    }
-
-    .modal.show {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .edit-modal-content {
-        background-color: #262626;
-        border-radius: 12px;
-        width: 90%;
-        max-width: 500px;
-        max-height: 80vh;
-        overflow-y: auto;
-    }
-
-    .edit-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px;
-        border-bottom: 1px solid #363636;
-    }
-
-    .edit-modal-header h3 {
-        color: #fff;
-        margin: 0;
-        font-size: 18px;
-    }
-
-    .close-modal {
-        background: none;
-        border: none;
-        color: #8e8e8e;
-        font-size: 24px;
-        cursor: pointer;
-        padding: 0;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .close-modal:hover {
-        color: #fff;
-    }
-
-    .edit-modal-body {
-        padding: 20px;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-group label {
-        display: block;
-        color: #fff;
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-
-    .form-input {
-        width: 100%;
-        background-color: #121212;
-        border: 1px solid #363636;
-        border-radius: 6px;
-        padding: 12px;
-        color: #fff;
-        font-size: 14px;
-        resize: vertical;
-    }
-
-    .form-input:focus {
-        outline: none;
-        border-color: #0095f6;
-    }
-
-    .modal-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-        padding: 20px;
-        border-top: 1px solid #363636;
-    }
-
-    .cancel-btn, .save-btn {
-        padding: 8px 16px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .cancel-btn {
-        background: none;
-        border: 1px solid #363636;
-        color: #8e8e8e;
-    }
-
-    .cancel-btn:hover {
-        color: #fff;
-        border-color: #8e8e8e;
-    }
-
-    .save-btn {
-        background-color: #0095f6;
-        border: none;
-        color: #fff;
-    }
-
-    .save-btn:hover {
-        background-color: #1877f2;
-    }
-
-    /* Share Options */
-    .share-options {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .share-option {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px;
-        background: none;
-        border: 1px solid #363636;
-        border-radius: 8px;
-        color: #fff;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .share-option:hover {
-        background-color: #363636;
-    }
-
-    /* Loading state for videos */
-    .profile-item.loading::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 20px;
-        height: 20px;
-        margin: -10px 0 0 -10px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-top: 2px solid #fff;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .profile-header {
-            gap: 30px;
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .profile-nav-tabs {
-            gap: 40px;
-        }
-
-        .profile-posts, .profile-reels, .tagged-posts {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 2px;
-        }
-
-        .modal-content {
-            flex-direction: column;
-            width: 95%;
-            max-height: 95vh;
-        }
-
-        .modal-sidebar {
-            width: 100%;
-            max-height: 60vh;
-        }
-
-        .modal-media {
-            max-width: 100%;
-        }
-
-        .modal-comments {
-            max-height: 200px;
-        }
-
-        .edit-modal-content {
-            width: 95%;
-            margin: 20px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .profile-posts, .profile-reels, .tagged-posts {
-            gap: 1px;
-        }
-
-        .comment-input-container {
-            gap: 8px;
-        }
-
-        .comment-input {
-            font-size: 13px;
-        }
-    }
+  .profile-page {
+      max-width: 975px;
+      margin: 0 auto;
+      padding: 30px 20px;
+      color: #fff;
+  }
+
+  /* Profile Header */
+  .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 80px;
+      margin-bottom: 44px;
+      padding-bottom: 44px;
+      border-bottom: 1px solid #262626;
+  }
+
+  .profile-avatar-large {
+      flex-shrink: 0;
+  }
+
+  .profile-avatar-large img {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #262626;
+  }
+
+  .profile-info {
+      flex: 1;
+  }
+
+  .profile-info h1 {
+      font-size: 28px;
+      font-weight: 300;
+      margin-bottom: 20px;
+      color: #fff;
+  }
+
+  .profile-stats {
+      display: flex;
+      gap: 40px;
+      margin-bottom: 20px;
+  }
+
+  .profile-stat {
+      font-size: 16px;
+      color: #fff;
+      text-decoration: none;
+  }
+
+  .profile-stat strong {
+      font-weight: 600;
+  }
+
+  .profile-bio {
+      margin-bottom: 20px;
+  }
+
+  .profile-bio strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #fff;
+  }
+
+  .profile-bio p {
+      color: #fff;
+      line-height: 1.4;
+  }
+
+  /* Profile Actions */
+  .profile-actions {
+      display: flex;
+      gap: 8px;
+  }
+
+  .profile-btn {
+      background-color: #262626;
+      border: 1px solid #262626;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+  }
+
+  .profile-btn:hover {
+      background-color: #363636;
+      border-color: #363636;
+  }
+
+  .follow-btn {
+      background-color: #0095f6;
+      border-color: #0095f6;
+  }
+
+  .follow-btn:hover {
+      background-color: #1877f2;
+      border-color: #1877f2;
+  }
+
+  .following-btn {
+      background-color: #262626;
+      border-color: #262626;
+      color: #fff;
+  }
+
+  /* Profile Navigation */
+  .profile-nav {
+      border-top: 1px solid #262626;
+      margin-bottom: 28px;
+  }
+
+  .profile-nav-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      padding: 16px 0;
+  }
+
+  .profile-tab {
+      background: none;
+      border: none;
+      color: #8e8e8e;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 16px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+      border-top: 1px solid transparent;
+  }
+
+  .profile-tab.active {
+      color: #fff;
+      border-top-color: #fff;
+  }
+
+  .profile-tab:hover {
+      color: #fff;
+  }
+
+  /* Tab Content */
+  .tab-content {
+      display: none;
+  }
+
+  .tab-content.active {
+      display: block;
+  }
+
+  /* Profile Grid */
+  .profile-posts, .profile-reels, .tagged-posts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      padding: 0;
+  }
+
+  .profile-item {
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      background-color: #262626;
+      transition: transform 0.1s ease;
+      aspect-ratio: 1;
+  }
+
+  .profile-item:hover {
+      transform: scale(1.02);
+      z-index: 10;
+  }
+
+  .profile-item img,
+  .profile-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: filter 0.2s ease;
+  }
+
+  .profile-item:hover img,
+  .profile-item:hover video {
+      filter: brightness(0.8);
+  }
+
+  /* Overlay that appears on hover */
+  .profile-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+  }
+
+  .profile-item:hover .profile-overlay {
+      opacity: 1;
+  }
+
+  .profile-stats-overlay {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+  }
+
+  .profile-stat-overlay {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+  }
+
+  /* Content type indicators */
+  .content-indicator {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 5;
+  }
+
+  .reel-indicator {
+      width: 24px;
+      height: 24px;
+      color: #fff;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+  }
+
+  /* Modal Styles */
+  .post-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+  }
+
+  .post-modal.active {
+      display: flex;
+  }
+
+  .modal-content {
+      background: #000;
+      border-radius: 8px;
+      max-width: 1200px;
+      max-height: 90vh;
+      width: 90%;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+  }
+
+  .modal-media {
+      flex: 1;
+      max-width: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+  }
+
+  .modal-media img,
+  .modal-media video {
+      width: 100%;
+      height: auto;
+      max-height: 90vh;
+      object-fit: contain;
+  }
+
+  .modal-sidebar {
+      width: 400px;
+      background: #000;
+      border-left: 1px solid #262626;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+  }
+
+  .modal-header {
+      padding: 16px;
+      border-bottom: 1px solid #262626;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+  }
+
+  .modal-user-info {
+      display: flex;
+      align-items: center;
+  }
+
+  .modal-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 12px;
+      overflow: hidden;
+  }
+
+  .modal-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+  }
+
+  .modal-username {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      margin-right: 12px;
+      text-decoration: none;
+  }
+
+  .modal-follow-btn {
+      background: none;
+      border: 1px solid #0095f6;
+      color: #0095f6;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+  }
+
+  .modal-follow-btn:hover {
+      background-color: #0095f6;
+      color: #fff;
+  }
+
+  .modal-follow-btn.following {
+      background-color: #262626;
+      border-color: #262626;
+      color: #fff;
+  }
+
+  .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+  }
+
+  .modal-post-info {
+      padding: 16px;
+      border-bottom: 1px solid #262626;
+  }
+
+  .modal-caption {
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 16px;
+  }
+
+  .modal-caption .caption-username {
+      font-weight: 600;
+      margin-right: 8px;
+  }
+
+  .modal-stats {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+  }
+
+  .modal-time {
+      color: #8e8e8e;
+      font-size: 12px;
+      margin-bottom: 0;
+  }
+
+  .modal-comments {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      max-height: 300px;
+  }
+
+  .comment-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      gap: 12px;
+  }
+
+  .comment-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+  }
+
+  .comment-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+  }
+
+  .comment-content {
+      flex: 1;
+  }
+
+  .comment-text {
+      font-size: 14px;
+      color: #fff;
+      line-height: 1.4;
+      margin-bottom: 4px;
+  }
+
+  .comment-text .comment-username {
+      font-weight: 600;
+      margin-right: 8px;
+  }
+
+  .comment-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+      color: #8e8e8e;
+  }
+
+  .comment-time {
+      font-weight: 400;
+  }
+
+  .comment-reply {
+      cursor: pointer;
+      font-weight: 600;
+      background: none;
+      border: none;
+      color: #8e8e8e;
+      padding: 0;
+  }
+
+  .comment-reply:hover {
+      color: #fff;
+  }
+
+  .comment-likes {
+      font-weight: 600;
+  }
+
+  .comment-heart {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-left: auto;
+      color: #8e8e8e;
+  }
+
+  .comment-heart:hover {
+      color: #fff;
+  }
+
+  .comment-heart.liked {
+      color: #ed4956;
+  }
+
+  .replies-container {
+      margin-left: 44px;
+      margin-top: 8px;
+  }
+
+  .reply-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 8px;
+      gap: 8px;
+  }
+
+  .reply-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+  }
+
+  .reply-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+  }
+
+  .modal-actions {
+      padding: 16px;
+      border-top: 1px solid #262626;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+  }
+
+  .modal-actions-left {
+      display: flex;
+      gap: 16px;
+  }
+
+  .modal-action-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background-color 0.2s ease;
+      font-size: 24px;
+  }
+
+  .modal-action-btn:hover {
+      background-color: #1a1a1a;
+  }
+
+  .modal-action-btn.liked {
+      color: #ed4956;
+  }
+
+  .modal-action-btn.saved {
+      color: #fff;
+  }
+
+  /* Comment Input Section */
+  .comment-input-section {
+      padding: 16px;
+      border-top: 1px solid #262626;
+      background: #000;
+  }
+
+  .comment-form {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+  }
+
+  .comment-input {
+      flex: 1;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      padding: 8px 0;
+  }
+
+  .comment-input::placeholder {
+      color: #8e8e8e;
+  }
+
+  .comment-submit-btn {
+      background: none;
+      border: none;
+      color: #0095f6;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 8px 0;
+      opacity: 0.3;
+      transition: opacity 0.2s ease;
+  }
+
+  .comment-submit-btn.active {
+      opacity: 1;
+  }
+
+  .comment-submit-btn:hover.active {
+      color: #1877f2;
+  }
+
+  .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(0, 0, 0, 0.7);
+      border: none;
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+  }
+
+  .modal-close:hover {
+      background: rgba(0, 0, 0, 0.9);
+  }
+
+  /* Empty state */
+  .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: #8e8e8e;
+      grid-column: 1 / -1;
+  }
+
+  .empty-state i {
+      font-size: 96px;
+      margin-bottom: 24px;
+      opacity: 0.3;
+  }
+
+  .empty-state h3 {
+      font-size: 22px;
+      margin-bottom: 8px;
+      color: #fff;
+  }
+
+  .no-comments {
+      text-align: center;
+      padding: 20px;
+      color: #8e8e8e;
+      font-size: 14px;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+      .profile-header {
+          gap: 30px;
+          flex-direction: column;
+          text-align: center;
+      }
+
+      .profile-nav-tabs {
+          gap: 40px;
+      }
+
+      .profile-posts, .profile-reels, .tagged-posts {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 2px;
+      }
+
+      .modal-content {
+          flex-direction: column;
+          width: 95%;
+          max-height: 95vh;
+      }
+
+      .modal-sidebar {
+          width: 100%;
+          max-height: 60vh;
+      }
+
+      .modal-media {
+          max-width: 100%;
+      }
+
+      .modal-comments {
+          max-height: 200px;
+      }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="profile-page">
-    <div class="profile-header">
-        <div class="profile-avatar-large">
-            {% if user.avatar %}
-            <img src="{{ user.avatar.url }}" alt="{{ user.username }}">
-            {% else %}
-            <svg class="icon"
-                 viewBox="0 0 24 24"
-                 fill="none"
-                 stroke="currentColor"
-                 stroke-width="2"
-                 style="height: 150; width: 150px; border-radius: 50%; margin-right: 15px;">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-            </svg>
-            {% endif %}
-        </div>
+  <div class="profile-header">
+      <div class="profile-avatar-large">
+          {% if user.avatar %}
+          <img src="{{ user.avatar.url }}" alt="{{ user.username }}">
+          {% else %}
+          <img src="{% static 'images/default-avatar.png' %}" alt="{{ user.username }}">
+          {% endif %}
+      </div>
 
-        {% if user.is_authenticated %}
-        <div class="profile-info">
-            <h1>{{ user.username }}</h1>
-            <div class="profile-stats">
-                <div class="profile-stat"><strong>{{ posts.count|default:"0" }}</strong> posts</div>
-                <a style="text-decoration:none" href="{% url 'followers' pk=user.pk %}">
-                    <div class="profile-stat"><strong>{{ user.followers_count }}</strong> followers</div>
-                </a>
-                <a style="text-decoration:none" href="{% url 'followings' pk=user.pk %}">
-                    <div class="profile-stat"><strong>{{ user.following_count }}</strong> following</div>
-                </a>
-            </div>
-            <div class="profile-bio">
-                <strong>{{ user.get_full_name|default:user.username }}</strong>
-                <p>{{ user.bio|default:"No bio yet." }}</p>
-            </div>
-            <div class="profile-actions">
-                <button class="profile-btn" id="edit-profile-btn">Edit profile</button>
-                <button class="profile-btn" id="share-profile-btn">Share profile</button>
-            </div>
-        </div>
-        {% else %}
-        <p>You are not logged in. <a href="{% url 'login' %}">Login</a></p>
-        {% endif %}
-    </div>
+      <div class="profile-info">
+          <h1>{{ user.username }}</h1>
+          <div class="profile-stats">
+              <div class="profile-stat"><strong>{{ posts.count|add:reels.count }}</strong> posts</div>
+              <a href="{% url 'followers' user.pk %}" class="profile-stat"><strong>{{ user.followers_count }}</strong>
+                  followers</a>
+              <a href="{% url 'followings' user.pk %}" class="profile-stat"><strong>{{ user.following_count }}</strong> following</a>
+          </div>
+          <div class="profile-bio">
+              {% if user.first_name or user.last_name %}
+              <strong>{{ user.first_name }} {{ user.last_name }}</strong>
+              {% endif %}
+              {% if user.bio %}
+              <p>{{ user.bio|linebreaks }}</p>
+              {% endif %}
+              {% if user.website %}
+              <a href="{{ user.website }}" target="_blank" class="profile-btn">{{ user.website }}</a>
+              {% endif %}
+          </div>
+          <div class="profile-actions">
+              {% if user == request.user %}
+              <button class="profile-btn" id="edit-profile-btn">Edit profile</button>
+              <button class="profile-btn" id="share-profile-btn">Share profile</button>
+              {% else %}
+              {% if request|is_following:user %}
+              <a href="{% url 'follow-create' user.pk %}?next={{ request.get_full_path }}"
+                 class="profile-btn following-btn">Following</a>
+              {% else %}
+              <a href="{% url 'follow-create' user.pk %}?next={{ request.get_full_path }}"
+                 class="profile-btn follow-btn">Follow</a>
+              {% endif %}
+              <button class="profile-btn">Message</button>
+              {% endif %}
+          </div>
+      </div>
+  </div>
 
-    <!-- Profile Navigation Tabs -->
-    <div class="profile-nav">
-        <div class="profile-nav-tabs">
-            <button class="profile-tab active" data-tab="posts">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="3" y="3" width="7" height="7"/>
-                    <rect x="14" y="3" width="7" height="7"/>
-                    <rect x="14" y="14" width="7" height="7"/>
-                    <rect x="3" y="14" width="7" height="7"/>
-                </svg>
-                Posts
-            </button>
-            <button class="profile-tab" data-tab="reels">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8.5 8.7c.3-.2.6-.2.9 0l6.9 4.1c.3.2.3.6 0 .8l-6.9 4.1c-.3.2-.6.2-.9 0-.3-.2-.5-.4-.5-.7V9.4c0-.3.2-.5.5-.7z"/>
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                </svg>
-                Reels
-            </button>
-            <button class="profile-tab" data-tab="tagged">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-                Tagged
-            </button>
-        </div>
-    </div>
+  <div class="profile-nav">
+      <div class="profile-nav-tabs">
+          <button class="profile-tab active" data-tab="posts">
+              <i class="fas fa-th"></i>
+              Posts
+          </button>
+          <button class="profile-tab" data-tab="reels">
+              <i class="fas fa-play-circle"></i>
+              Reels
+          </button>
+          <button class="profile-tab" data-tab="tagged">
+              <i class="fas fa-user-tag"></i>
+              Tagged
+          </button>
+      </div>
+  </div>
 
-    <!-- Posts Content -->
-    <div class="tab-content active" id="posts-content">
-        {% if posts %}
-        <div class="profile-posts">
-            {% for post in posts %}
-            <div class="profile-item"
-                 data-type="post"
-                 data-id="{{ post.id }}"
-                 data-url="{{ post.contentUrl.url }}"
-                 data-username="{{ post.userID.username|default:user.username }}"
-                 data-caption="{{ post.caption|default:'' }}"
-                 data-likes="{{ post.likes_count|default:'0' }}"
-                 data-comments="{{ post.comments_count|default:'0' }}"
-                 data-location="{{ post.location|default:'' }}">
-                <img src="{{ post.contentUrl.url }}" alt="Profile post" loading="lazy">
+  <div class="tab-content active" id="posts-content">
+      <div class="profile-posts">
+          {% if posts %}
+          {% for post in posts %}
+          <div class="profile-item"
+               data-type="post"
+               data-id="{{ post.id }}"
+               data-url="{{ post.contentUrl.url }}"
+               data-username="{{ post.userID.username }}"
+               data-user-avatar="{% if post.userID.avatar %}{{ post.userID.avatar.url }}{% endif %}"
+               data-caption="{{ post.caption }}"
+               data-likes="{{ post.likes_count }}"
+               data-comments="{{ post.comments_count }}"
+               data-liked-by-user="{% if post|is_liked_by_user:request %}true{% else %}false{% endif %}"
+               data-saved-by-user="{% if request.user in post.saved.all %}true{% else %}false{% endif %}"
+               data-user-id="{{ post.userID.id }}"
+               data-is-followed="{% if request|is_following:post.userID %}true{% else %}false{% endif %}"
+               data-is-self="{% if post.userID == request.user %}true{% else %}false{% endif %}">
 
-                {% if post.is_carousel %}
-                <div class="content-indicator">
-                    <svg class="carousel-indicator" viewBox="0 0 24 24">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor"
-                              stroke-width="2"/>
-                        <rect x="7" y="7" width="10" height="10" rx="1" ry="1" fill="none" stroke="currentColor"
-                              stroke-width="2"/>
-                    </svg>
-                </div>
-                {% endif %}
+              {% if post.contentUrl %}
+              <img src="{{ post.contentUrl.url }}" alt="Post" loading="lazy">
+              {% endif %}
 
-                <div class="profile-overlay">
-                    <div class="profile-stats-overlay">
-                        <div class="profile-stat-overlay">
-                            <svg width="19" height="19" viewBox="0 0 24 24">
-                                <path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938z"/>
-                            </svg>
-                            <span>{{ post.likes_count|default:"0" }}</span>
-                        </div>
-                        <div class="profile-stat-overlay">
-                            <svg width="19" height="19" viewBox="0 0 24 24">
-                                <path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"/>
-                            </svg>
-                            <span>{{ post.comments_count|default:"0" }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="profile-posts">
-            <div class="empty-state">
-                <svg width="96" height="96" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                </svg>
-                <h3>No posts yet</h3>
-                <p>When you share photos, they'll appear on your profile.</p>
-            </div>
-        </div>
-        {% endif %}
-    </div>
+              <div class="profile-overlay">
+                  <div class="profile-stats-overlay">
+                      <div class="profile-stat-overlay">
+                          <i class="fas fa-heart"></i>
+                          <span>{{ post.likes_count }}</span>
+                      </div>
+                      <div class="profile-stat-overlay">
+                          <i class="fas fa-comment"></i>
+                          <span>{{ post.comments_count }}</span>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          {% endfor %}
+          {% else %}
+          <div class="empty-state">
+              <i class="fas fa-camera"></i>
+              <h3>No posts yet</h3>
+              <p>When you share photos, they'll appear on your profile.</p>
+          </div>
+          {% endif %}
+      </div>
+  </div>
 
-    <!-- Reels Content -->
-    <div class="tab-content" id="reels-content">
-        {% if reels %}
-        <div class="profile-reels">
-            {% for reel in reels %}
-            <div class="profile-item reel"
-                 data-type="reel"
-                 data-id="{{ reel.id }}"
-                 data-url="{{ reel.contentUrl.url }}"
-                 data-username="{{ reel.userID.username|default:user.username }}"
-                 data-caption="{{ reel.caption|default:'' }}"
-                 data-likes="{{ reel.likes_count|default:'0' }}"
-                 data-views="{{ reel.views_count|default:'0' }}"
-                 data-location="{{ reel.location|default:'' }}">
-                <video muted loop playsinline preload="metadata">
-                    <source src="{{ reel.contentUrl.url }}" type="video/mp4">
-                </video>
+  <div class="tab-content" id="reels-content">
+      <div class="profile-reels">
+          {% if reels %}
+          {% for reel in reels %}
+          <div class="profile-item reel"
+               data-type="reel"
+               data-id="{{ reel.id }}"
+               data-url="{{ reel.contentUrl.url }}"
+               data-username="{{ reel.userID.username }}"
+               data-user-avatar="{% if reel.userID.avatar %}{{ reel.userID.avatar.url }}{% endif %}"
+               data-caption="{{ reel.caption }}"
+               data-likes="{{ reel.likes_count }}"
+               data-views="{{ reel.likes_count }}"
+               data-liked-by-user="{% if reel|is_liked_by_user:request %}true{% else %}false{% endif %}"
+               data-saved-by-user="{% if request.user in reel.saved.all %}true{% else %}false{% endif %}"
+               data-user-id="{{ reel.userID.id }}"
+               data-is-followed="{% if request|is_following:reel.userID %}true{% else %}false{% endif %}"
+               data-is-self="{% if reel.userID == request.user %}true{% else %}false{% endif %}">
 
-                <div class="content-indicator">
-                    <svg class="reel-indicator" viewBox="0 0 24 24">
-                        <path d="M8.5 8.7c.3-.2.6-.2.9 0l6.9 4.1c.3.2.3.6 0 .8l-6.9 4.1c-.3.2-.6.2-.9 0-.3-.2-.5-.4-.5-.7V9.4c0-.3.2-.5.5-.7z"/>
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                    </svg>
-                </div>
+              {% if reel.contentUrl %}
+              <video muted loop playsinline preload="metadata">
+                  <source src="{{ reel.contentUrl.url }}" type="video/mp4">
+              </video>
+              {% endif %}
 
-                <div class="profile-overlay">
-                    <div class="profile-stats-overlay">
-                        <div class="profile-stat-overlay">
-                            <svg width="19" height="19" viewBox="0 0 24 24">
-                                <path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938z"/>
-                            </svg>
-                            <span>{{ reel.likes_count|default:"0" }}</span>
-                        </div>
-                        <div class="profile-stat-overlay">
-                            <svg width="19" height="19" viewBox="0 0 24 24">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                            </svg>
-                            <span>{{ reel.views_count|default:"0" }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="profile-reels">
-            <div class="empty-state">
-                <svg width="96" height="96" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z"/>
-                </svg>
-                <h3>No reels yet</h3>
-                <p>When you share reels, they'll appear on your profile.</p>
-            </div>
-        </div>
-        {% endif %}
-    </div>
+              <div class="content-indicator">
+                  <i class="fas fa-play reel-indicator"></i>
+              </div>
+              <div class="profile-overlay">
+                  <div class="profile-stats-overlay">
+                      <div class="profile-stat-overlay">
+                          <i class="fas fa-heart"></i>
+                          <span>{{ reel.likes_count }}</span>
+                      </div>
+                      <div class="profile-stat-overlay">
+                          <i class="fas fa-eye"></i>
+                          <span>{{ reel.likes_count }}</span>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          {% endfor %}
+          {% else %}
+          <div class="empty-state">
+              <i class="fas fa-video"></i>
+              <h3>No reels yet</h3>
+              <p>When you share reels, they'll appear on your profile.</p>
+          </div>
+          {% endif %}
+      </div>
+  </div>
 
-    <!-- Tagged Content -->
-    <div class="tab-content" id="tagged-content">
-        <div class="tagged-posts">
-            <div class="empty-state">
-                <svg width="96" height="96" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-                <h3>No tagged posts yet</h3>
-                <p>When people tag you in photos, they'll appear here.</p>
-            </div>
-        </div>
-    </div>
+  <div class="tab-content" id="tagged-content">
+      <div class="tagged-posts">
+          <div class="empty-state">
+              <i class="fas fa-user-tag"></i>
+              <h3>No tagged posts yet</h3>
+              <p>When people tag you in photos, they'll appear here.</p>
+          </div>
+      </div>
+  </div>
 </div>
 
-<!-- Post Modal -->
 <div class="post-modal" id="postModal">
-    <button class="modal-close" onclick="closeModal()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-        </svg>
-    </button>
+  <button class="modal-close" onclick="closeModal()">
+      <i class="fas fa-times"></i>
+  </button>
 
-    <div class="modal-content">
-        <div class="modal-media">
-            <img id="modalImage" src="/placeholder.svg" alt="" style="display: none;">
-            <video id="modalVideo" controls muted loop playsinline style="display: none;">
-                <source src="/placeholder.svg" type="video/mp4">
-            </video>
-        </div>
+  <div class="modal-content">
+      <div class="modal-media">
+          <img id="modalImage" src="/placeholder.svg" alt="" style="display: none;">
+          <video id="modalVideo" controls muted loop playsinline style="display: none;">
+              <source src="/placeholder.svg" type="video/mp4">
+          </video>
+      </div>
 
-        <div class="modal-sidebar">
-            <div class="modal-header">
-                <div class="modal-user-info">
-                    <div class="modal-avatar" id="modalAvatar">U</div>
-                    <span class="modal-username" id="modalUsername">username</span>
-                    <button class="modal-follow-btn" style="display: none;">Follow</button>
-                </div>
-            </div>
+      <div class="modal-sidebar">
+          <div class="modal-header">
+              <div class="modal-user-info">
+                  <div class="modal-avatar" id="modalAvatar">U</div>
+                  <a href="#" class="modal-username" id="modalUsername">username</a>
+                  <a href="#" class="modal-follow-btn" id="modalFollowBtn" style="display: none;">Follow</a>
+              </div>
+          </div>
 
-            <div class="modal-body">
-                <div class="modal-post-info">
-                    <div class="modal-caption" id="modalCaption"></div>
-                    <div class="modal-location" id="modalLocation" style="display: none;">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                        </svg>
-                        <span id="modalLocationText"></span>
-                    </div>
-                    <div class="modal-stats" id="modalStats"></div>
-                    <div class="modal-time">14 hours ago</div>
-                </div>
+          <div class="modal-body">
+              <div class="modal-post-info">
+                  <div class="modal-caption" id="modalCaption"></div>
+                  <div class="modal-stats" id="modalStats"></div>
+                  <div class="modal-time" id="modalTime">2 hours ago</div>
+              </div>
 
-                <div class="modal-comments" id="modalComments">
+              <div class="modal-comments" id="modalComments">
+                   Comments will be loaded here dynamically
+              </div>
+          </div>
 
-                </div>
-            </div>
+          <div class="modal-actions">
+              <div class="modal-actions-left">
+                  <button class="modal-action-btn" id="modalLikeBtn" onclick="toggleModalLike()">
+                      <i class="far fa-heart"></i>
+                  </button>
+                  <button class="modal-action-btn" onclick="focusCommentInput()">
+                      <i class="far fa-comment"></i>
+                  </button>
+                  <button class="modal-action-btn">
+                      <i class="far fa-paper-plane"></i>
+                  </button>
+              </div>
+              <button class="modal-action-btn" id="modalSaveBtn" onclick="toggleModalSave()">
+                  <i class="far fa-bookmark"></i>
+              </button>
+          </div>
 
-            <div class="modal-actions">
-                <div class="modal-actions-left">
-                    <button class="modal-action-btn" onclick="toggleModalLike()">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938z"/>
-                        </svg>
-                    </button>
-                    <button class="modal-action-btn" onclick="focusCommentInput()">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"/>
-                        </svg>
-                    </button>
-                    <button class="modal-action-btn">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M22 3L2 3 10 12.46 2 22 22 22 14 12.54 22 3Z"/>
-                        </svg>
-                    </button>
-                </div>
-                <button class="modal-action-btn">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Comment Input Section -->
-            <div class="comment-input-section">
-                <div class="comment-input-container">
-                    <button class="emoji-btn">
-                        <svg viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-                            <line x1="9" y1="9" x2="9.01" y2="9"/>
-                            <line x1="15" y1="9" x2="15.01" y2="9"/>
-                        </svg>
-                    </button>
-                    <input
-                            type="text"
-                            class="comment-input"
-                            placeholder="Add a comment..."
-                            id="commentInput"
-                            maxlength="2200"
-                    >
-                    <button class="comment-submit-btn" id="commentSubmitBtn" onclick="submitComment()">Post</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Profile Modal -->
-<div class="modal" id="edit-profile-modal">
-    <div class="edit-modal-content">
-        <div class="edit-modal-header">
-            <h3>Edit Profile</h3>
-            <button class="close-modal">&times;</button>
-        </div>
-        <div class="edit-modal-body">
-            <form action="{% url 'profile' %}" id="edit-profile-form" method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label>Avatar</label>
-                    <input type="file" name="avatar" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>First Name</label>
-                    <input type="text" name="first_name" value="{{ user.first_name }}" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label>Last Name</label>
-                    <input type="text" name="last_name" value="{{ user.last_name }}" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label>Bio</label>
-                    <textarea class="form-input" name="bio" rows="3">{{ user.bio|default:"" }}</textarea>
-                </div>
-                <div class="form-group">
-                    <label>Website</label>
-                    <input type="url" name="website" class="form-input" placeholder="https://example.com"
-                           value="{{ user.website|default:'' }}">
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="cancel-btn">Cancel</button>
-                    <button type="submit" class="save-btn">Save Changes</button>
-                </div>
-            </form>
-
-        </div>
-    </div>
-</div>
-
-{% if form.errors %}
-<ul class="form-errors">
-    {% for field in form %}
-    {% for error in field.errors %}
-    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-    {% endfor %}
-    {% endfor %}
-    {% for error in form.non_field_errors %}
-    <li>{{ error }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-
-<!-- Share Profile Modal -->
-<div class="modal" id="share-profile-modal">
-    <div class="edit-modal-content">
-        <div class="edit-modal-header">
-            <h3>Share Profile</h3>
-            <button class="close-modal">&times;</button>
-        </div>
-        <div class="edit-modal-body">
-            <div class="share-options">
-                <button class="share-option" onclick="shareToFacebook()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#1877f2">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                    Share to Facebook
-                </button>
-                <button class="share-option" onclick="shareToTwitter()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#1da1f2">
-                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                    </svg>
-                    Share to Twitter
-                </button>
-                <button class="share-option" onclick="copyProfileLink()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#8e8e8e">
-                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-                    </svg>
-                    Copy Link
-                </button>
-            </div>
-        </div>
-    </div>
+          <div class="comment-input-section">
+              <form class="comment-form" method="post" id="commentForm">
+                  {% csrf_token %}
+                  <input type="hidden" name="post_id" id="modalPostId" value="">
+                  <input type="hidden" name="parent_comment_id" id="parentCommentId" value="">
+                  <input
+                          type="text"
+                          class="comment-input"
+                          name="comment"
+                          placeholder="Add a comment..."
+                          id="commentInput"
+                          maxlength="250"
+                  >
+                  <input
+                          type="text"
+                          class="comment-input"
+                          name="reply_comment"
+                          placeholder="Add a reply..."
+                          id="replyInput"
+                          maxlength="250"
+                          style="display: none;"
+                  >
+                  <button type="submit" class="comment-submit-btn" id="commentSubmitBtn">Post</button>
+                  <button type="button" class="comment-submit-btn" id="cancelReplyBtn" style="display: none;"
+                          onclick="cancelReply()">Cancel
+                  </button>
+              </form>
+          </div>
+      </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Tab switching functionality
-        const tabs = document.querySelectorAll('.profile-tab');
-        const tabContents = document.querySelectorAll('.tab-content');
+  let currentPostData = null;
+  let isReplyMode = false;
+  let postsData = {};
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                const targetTab = this.getAttribute('data-tab');
+  // Initialize posts data function
+  function initializePostsData() {
+      {% for post in posts %}
+      postsData['{{ post.id }}'] = {
+          comments: [
+              {% for comment in post.comments.all %}
+              {
+                  id: {{ comment.id }},
+                  username: '{{ comment.userID.username }}',
+                  userAvatar: '{% if comment.userID.avatar %}{{ comment.userID.avatar.url }}{% endif %}',
+                  text: '{{ comment.comment|escapejs }}',
+                  timeAgo: '{{ comment.since_created }}',
+                  likesCount: {{ comment.comment_likes_count }},
+                  likedByUser: {% if comment|is_comment_liked_by_user:request.user %}true{% else %}false{% endif %},
+                  replies: [
+                      {% for reply in comment.reply_comments.all %}
+                      {
+                          id: {{ reply.id }},
+                          username: '{{ reply.userID.username }}',
+                          userAvatar: '{% if reply.userID.avatar %}{{ reply.userID.avatar.url }}{% endif %}',
+                          text: '{{ reply.reply_comment|escapejs }}',
+                          timeAgo: '{{ reply.since_created }}',
+                          likesCount: {{ reply.reply_comment_likes_count }},
+                          likedByUser: {% if reply|is_reply_liked_by_user:request.user %}true{% else %}false{% endif %}
+                      }{% if not forloop.last %},{% endif %}
+                      {% endfor %}
+                  ]
+              }{% if not forloop.last %},{% endif %}
+              {% endfor %}
+          ]
+      };
+      {% endfor %}
 
-                // Remove active class from all tabs and contents
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
+      {% for reel in reels %}
+      postsData['{{ reel.id }}'] = {
+          comments: [
+              {% for comment in reel.comments.all %}
+              {
+                  id: {{ comment.id }},
+                  username: '{{ comment.userID.username }}',
+                  userAvatar: '{% if comment.userID.avatar %}{{ comment.userID.avatar.url }}{% endif %}',
+                  text: '{{ comment.comment|escapejs }}',
+                  timeAgo: '{{ comment.since_created }}',
+                  likesCount: {{ comment.comment_likes_count }},
+                  likedByUser: {% if comment|is_comment_liked_by_user:request.user %}true{% else %}false{% endif %},
+                  replies: [
+                      {% for reply in comment.reply_comments.all %}
+                      {
+                          id: {{ reply.id }},
+                          username: '{{ reply.userID.username }}',
+                          userAvatar: '{% if reply.userID.avatar %}{{ reply.userID.avatar.url }}{% endif %}',
+                          text: '{{ reply.reply_comment|escapejs }}',
+                          timeAgo: '{{ reply.since_created }}',
+                          likesCount: {{ reply.reply_comment_likes_count }},
+                          likedByUser: {% if reply|is_reply_liked_by_user:request.user %}true{% else %}false{% endif %}
+                      }{% if not forloop.last %},{% endif %}
+                      {% endfor %}
+                  ]
+              }{% if not forloop.last %},{% endif %}
+              {% endfor %}
+          ]
+      };
+      {% endfor %}
+  }
 
-                // Add active class to clicked tab and corresponding content
-                this.classList.add('active');
-                document.getElementById(targetTab + '-content').classList.add('active');
-            });
-        });
+  // Initialize when page loads
+  document.addEventListener('DOMContentLoaded', function() {
+      // Initialize posts data first
+      initializePostsData();
 
-        // Video hover functionality for reels
-        const reelItems = document.querySelectorAll('.profile-item.reel');
+      // Tab switching functionality
+      const tabs = document.querySelectorAll('.profile-tab');
+      const tabContents = document.querySelectorAll('.tab-content');
 
-        reelItems.forEach(item => {
-            const video = item.querySelector('video');
+      tabs.forEach(tab => {
+          tab.addEventListener('click', function() {
+              const targetTab = this.getAttribute('data-tab');
+              tabs.forEach(t => t.classList.remove('active'));
+              tabContents.forEach(content => content.classList.remove('active'));
+              this.classList.add('active');
+              document.getElementById(targetTab + '-content').classList.add('active');
+          });
+      });
 
-            if (video) {
-                // Auto-play on hover
-                item.addEventListener('mouseenter', function() {
-                    item.classList.add('loading');
-                    video.play().then(() => {
-                        item.classList.remove('loading');
-                    }).catch(() => {
-                        item.classList.remove('loading');
-                    });
-                });
+      // Video hover functionality for reels
+      const reelItems = document.querySelectorAll('.profile-item.reel');
+      reelItems.forEach(item => {
+          const video = item.querySelector('video');
+          if (video) {
+              item.addEventListener('mouseenter', function() {
+                  video.play().catch(() => {});
+              });
+              item.addEventListener('mouseleave', function() {
+                  video.pause();
+                  video.currentTime = 0;
+              });
+          }
+      });
 
-                // Pause on mouse leave
-                item.addEventListener('mouseleave', function() {
-                    video.pause();
-                    video.currentTime = 0;
-                    item.classList.remove('loading');
-                });
+      // Click handlers for opening modal
+      const profileItems = document.querySelectorAll('.profile-item');
+      profileItems.forEach(item => {
+          item.addEventListener('click', function() {
+              openModal(this);
+          });
+      });
 
-                // Handle video loading
-                video.addEventListener('loadstart', function() {
-                    item.classList.add('loading');
-                });
+      // Comment form submission
+      const commentForm = document.getElementById('commentForm');
+      if (commentForm) {
+          commentForm.addEventListener('submit', function(e) {
+              e.preventDefault();
+              submitComment();
+          });
+      }
 
-                video.addEventListener('canplay', function() {
-                    item.classList.remove('loading');
-                });
-            }
-        });
+      // Comment input functionality
+      const commentInput = document.getElementById('commentInput');
+      const replyInput = document.getElementById('replyInput');
+      const commentSubmitBtn = document.getElementById('commentSubmitBtn');
 
-        // Click handlers for opening modal
-        const profileItems = document.querySelectorAll('.profile-item');
-        profileItems.forEach(item => {
-            item.addEventListener('click', function() {
-                openModal(this);
-            });
-        });
+      if (commentInput && commentSubmitBtn) {
+          commentInput.addEventListener('input', function() {
+              updateSubmitButton();
+          });
+      }
 
-        // Edit Profile Modal
-        const editProfileBtn = document.getElementById('edit-profile-btn');
-        const editProfileModal = document.getElementById('edit-profile-modal');
+      if (replyInput && commentSubmitBtn) {
+          replyInput.addEventListener('input', function() {
+              updateSubmitButton();
+          });
+      }
+  });
 
-        if (editProfileBtn) {
-            editProfileBtn.addEventListener('click', function() {
-                editProfileModal.classList.add('show');
-            });
-        }
+  function loadComments(postId) {
+      const modalComments = document.getElementById('modalComments');
 
-        // Share Profile Modal
-        const shareProfileBtn = document.getElementById('share-profile-btn');
-        const shareProfileModal = document.getElementById('share-profile-modal');
+      // Get comments from our initialized data
+      const postData = postsData[postId];
+      if (!postData || !postData.comments) {
+          modalComments.innerHTML = '<div class="no-comments">No comments yet.</div>';
+          return;
+      }
 
-        if (shareProfileBtn) {
-            shareProfileBtn.addEventListener('click', function() {
-                shareProfileModal.classList.add('show');
-            });
-        }
+      renderComments(postData.comments);
+  }
 
-        // Close modals
-        document.querySelectorAll('.close-modal, .cancel-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.modal').forEach(modal => {
-                    modal.classList.remove('show');
-                });
-            });
-        });
+  function renderComments(comments) {
+      const modalComments = document.getElementById('modalComments');
 
-        // Close modal when clicking outside
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('show');
-                }
-            });
-        });
+      if (comments.length === 0) {
+          modalComments.innerHTML = '<div class="no-comments">No comments yet.</div>';
+          return;
+      }
 
-        // Comment input functionality
-        const commentInput = document.getElementById('commentInput');
-        const commentSubmitBtn = document.getElementById('commentSubmitBtn');
+      modalComments.innerHTML = '';
 
-        if (commentInput && commentSubmitBtn) {
-            commentInput.addEventListener('input', function() {
-                if (this.value.trim().length > 0) {
-                    commentSubmitBtn.classList.add('active');
-                } else {
-                    commentSubmitBtn.classList.remove('active');
-                }
-            });
+      comments.forEach(comment => {
+          const commentElement = createCommentElement(comment);
+          modalComments.appendChild(commentElement);
+      });
+  }
 
-            commentInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && this.value.trim().length > 0) {
-                    submitComment();
-                }
-            });
-        }
+  function createCommentElement(comment) {
+      const commentDiv = document.createElement('div');
+      commentDiv.className = 'comment-item';
+      commentDiv.dataset.commentId = comment.id;
 
-        // Save profile changes
-        const saveBtn = document.querySelector('.save-btn');
-        saveBtn.addEventListener('click', function(e) {
-            // Allow normal form submission
-            document.getElementById('edit-profile-form').submit();
-        });
-    });
+      const avatarHtml = comment.userAvatar ?
+          `<img src="${comment.userAvatar}" alt="${comment.username}">` :
+          comment.username.charAt(0).toUpperCase();
 
-    function openModal(item) {
-        const modal = document.getElementById('postModal');
-        const modalImage = document.getElementById('modalImage');
-        const modalVideo = document.getElementById('modalVideo');
-        const modalUsername = document.getElementById('modalUsername');
-        const modalAvatar = document.getElementById('modalAvatar');
-        const modalCaption = document.getElementById('modalCaption');
-        const modalLocation = document.getElementById('modalLocation');
-        const modalLocationText = document.getElementById('modalLocationText');
-        const modalStats = document.getElementById('modalStats');
+      commentDiv.innerHTML = `
+          <div class="comment-avatar">${avatarHtml}</div>
+          <div class="comment-content">
+              <div class="comment-text">
+                  <span class="comment-username">${comment.username}</span>${comment.text}
+              </div>
+              <div class="comment-actions">
+                  <span class="comment-time">${comment.timeAgo}</span>
+                  <button class="comment-reply" onclick="startReply('${comment.id}', '${comment.username}')">Reply</button>
+                  <span class="comment-likes">${comment.likesCount} likes</span>
+                  <button class="comment-heart ${comment.likedByUser ? 'liked' : ''}" onclick="toggleCommentLike(${comment.id})">
+                      <i class="fas fa-heart"></i>
+                  </button>
+              </div>
+              <div class="replies-container" id="replies-${comment.id}">
+                  ${comment.replies ? comment.replies.map(reply => createReplyHTML(reply)).join('') : ''}
+              </div>
+          </div>
+      `;
 
-        const type = item.dataset.type;
-        const url = item.dataset.url;
-        const username = item.dataset.username;
-        const caption = item.dataset.caption;
-        const likes = item.dataset.likes;
-        const comments = item.dataset.comments;
-        const views = item.dataset.views;
-        const location = item.dataset.location;
+      return commentDiv;
+  }
 
-        // Set user info
-        modalUsername.textContent = username;
-        modalAvatar.textContent = username.charAt(0).toUpperCase();
+  function createReplyHTML(reply) {
+      const avatarHtml = reply.userAvatar ?
+          `<img src="${reply.userAvatar}" alt="${reply.username}">` :
+          reply.username.charAt(0).toUpperCase();
 
-        // Set caption
-        modalCaption.textContent = caption;
+      return `
+          <div class="reply-item" data-reply-id="${reply.id}">
+              <div class="reply-avatar">${avatarHtml}</div>
+              <div class="comment-content">
+                  <div class="comment-text">
+                      <span class="comment-username">${reply.username}</span>${reply.text}
+                  </div>
+                  <div class="comment-actions">
+                      <span class="comment-time">${reply.timeAgo}</span>
+                      <span class="comment-likes">${reply.likesCount} likes</span>
+                      <button class="comment-heart ${reply.likedByUser ? 'liked' : ''}" onclick="toggleReplyLike(${reply.id})">
+                          <i class="fas fa-heart"></i>
+                      </button>
+                  </div>
+              </div>
+          </div>
+      `;
+  }
 
-        // Set location
-        if (location && location !== 'None' && location !== '') {
-            modalLocationText.textContent = location;
-            modalLocation.style.display = 'flex';
-        } else {
-            modalLocation.style.display = 'none';
-        }
+  function updateSubmitButton() {
+      const commentInput = document.getElementById('commentInput');
+      const replyInput = document.getElementById('replyInput');
+      const commentSubmitBtn = document.getElementById('commentSubmitBtn');
 
-        // Set stats
-        if (type === 'reel') {
-            modalStats.textContent = `${likes} likes • ${views} views`;
-            modalImage.style.display = 'none';
-            modalVideo.style.display = 'block';
-            modalVideo.querySelector('source').src = url;
-            modalVideo.load();
-        } else {
-            modalStats.textContent = `${likes} likes • ${comments} comments`;
-            modalVideo.style.display = 'none';
-            modalImage.style.display = 'block';
-            modalImage.src = url;
-        }
+      const activeInput = isReplyMode ? replyInput : commentInput;
 
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
+      if (activeInput && activeInput.value.trim().length > 0) {
+          commentSubmitBtn.classList.add('active');
+      } else {
+          commentSubmitBtn.classList.remove('active');
+      }
+  }
 
-    function closeModal() {
-        const modal = document.getElementById('postModal');
-        const modalVideo = document.getElementById('modalVideo');
-        const commentInput = document.getElementById('commentInput');
-        const commentSubmitBtn = document.getElementById('commentSubmitBtn');
+  function openModal(item) {
+      const modal = document.getElementById('postModal');
+      const modalImage = document.getElementById('modalImage');
+      const modalVideo = document.getElementById('modalVideo');
+      const modalUsername = document.getElementById('modalUsername');
+      const modalAvatar = document.getElementById('modalAvatar');
+      const modalCaption = document.getElementById('modalCaption');
+      const modalStats = document.getElementById('modalStats');
+      const modalLikeBtn = document.getElementById('modalLikeBtn');
+      const modalSaveBtn = document.getElementById('modalSaveBtn');
+      const modalFollowBtn = document.getElementById('modalFollowBtn');
+      const modalPostId = document.getElementById('modalPostId');
+      const modalTime = document.getElementById('modalTime');
 
-        modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
+      // Store current post data
+      currentPostData = {
+          type: item.dataset.type,
+          id: item.dataset.id,
+          url: item.dataset.url,
+          username: item.dataset.username,
+          userAvatar: item.dataset.userAvatar,
+          caption: item.dataset.caption,
+          likes: parseInt(item.dataset.likes),
+          comments: parseInt(item.dataset.comments),
+          views: item.dataset.views,
+          likedByUser: item.dataset.likedByUser === 'true',
+          savedByUser: item.dataset.savedByUser === 'true',
+          isSelf: item.dataset.isSelf === 'true',
+          isFollowed: item.dataset.isFollowed === 'true',
+          userId: item.dataset.userId
+      };
 
-        // Pause video if playing
-        if (modalVideo.style.display === 'block') {
-            modalVideo.pause();
-        }
+      // Set media
+      modalImage.style.display = 'none';
+      modalVideo.style.display = 'none';
+      modalVideo.pause();
 
-        // Clear comment input
-        if (commentInput) {
-            commentInput.value = '';
-            commentSubmitBtn.classList.remove('active');
-        }
-    }
+      if (currentPostData.type === 'post') {
+          modalImage.src = currentPostData.url;
+          modalImage.style.display = 'block';
+      } else if (currentPostData.type === 'reel') {
+          modalVideo.src = currentPostData.url;
+          modalVideo.style.display = 'block';
+          modalVideo.load();
+      }
 
-    function focusCommentInput() {
-        const commentInput = document.getElementById('commentInput');
-        if (commentInput) {
-            commentInput.focus();
-        }
-    }
+      // Set user info
+      modalUsername.textContent = currentPostData.username;
+      modalUsername.href = `/another_profile/${currentPostData.userId}/`;
 
-    function toggleModalLike() {
-        // Add your like functionality here
-        console.log('Like toggled');
-    }
+      if (currentPostData.userAvatar) {
+          modalAvatar.innerHTML = `<img src="${currentPostData.userAvatar}" alt="${currentPostData.username}">`;
+      } else {
+          modalAvatar.textContent = currentPostData.username.charAt(0).toUpperCase();
+      }
 
-    function submitComment() {
-        const commentInput = document.getElementById('commentInput');
-        const commentSubmitBtn = document.getElementById('commentSubmitBtn');
-        const commentsContainer = document.getElementById('modalComments');
+      // Set caption
+      modalCaption.innerHTML = `<span class="caption-username">${currentPostData.username}</span>${currentPostData.caption}`;
 
-        if (commentInput && commentInput.value.trim().length > 0) {
-            const commentText = commentInput.value.trim();
+      // Set stats
+      updateModalStats();
 
-            // Create new comment element
-            const newComment = document.createElement('div');
-            newComment.className = 'comment-item';
-            newComment.innerHTML = `
-                <div class="comment-avatar">Y</div>
-                <div class="comment-content">
-                    <span class="comment-username">your_username</span>
-                    <span class="comment-text">${commentText}</span>
-                    <div class="comment-time">now</div>
-                </div>
-            `;
+      // Set like state
+      updateLikeButton();
 
-            // Add to comments container
-            commentsContainer.appendChild(newComment);
+      // Set save state
+      updateSaveButton();
 
-            // Clear input
-            commentInput.value = '';
-            commentSubmitBtn.classList.remove('active');
+      // Set follow button
+      if (currentPostData.isSelf) {
+          modalFollowBtn.style.display = 'none';
+      } else {
+          modalFollowBtn.style.display = 'inline-block';
+          modalFollowBtn.href = `/follow-create/${currentPostData.userId}/?next=${window.location.pathname}`;
+          if (currentPostData.isFollowed) {
+              modalFollowBtn.textContent = 'Following';
+              modalFollowBtn.classList.add('following');
+          } else {
+              modalFollowBtn.textContent = 'Follow';
+              modalFollowBtn.classList.remove('following');
+          }
+      }
 
-            // Scroll to bottom of comments
-            commentsContainer.scrollTop = commentsContainer.scrollHeight;
+      // Set post ID for comment form
+      modalPostId.value = currentPostData.id;
 
-            // Here you would typically send the comment to your backend
-            console.log('Comment submitted:', commentText);
-        }
-    }
+      // Set time (you can make this dynamic)
+      modalTime.textContent = '2 hours ago';
 
-    // Close modal when clicking outside
-    document.getElementById('postModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeModal();
-        }
-    });
+      // Load comments
+      loadComments(currentPostData.id);
 
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeModal();
-        }
-    });
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+  }
 
-    // Share functions
-    function shareToFacebook() {
-        const url = window.location.href;
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-    }
+  function updateModalStats() {
+      const modalStats = document.getElementById('modalStats');
+      let statsText = `${currentPostData.likes} likes`;
 
-    function shareToTwitter() {
-        const url = window.location.href;
-        const text = `Check out my Instagram profile!`;
-        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
-    }
+      if (currentPostData.type === 'reel') {
+          statsText += ` • ${currentPostData.views || currentPostData.likes} views`;
+      } else {
+          statsText += ` • ${currentPostData.comments} comments`;
+      }
+      modalStats.textContent = statsText;
+  }
 
-    function copyProfileLink() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(function() {
-            alert('Profile link copied to clipboard!');
-            document.getElementById('share-profile-modal').classList.remove('show');
-        });
-    }
+  function updateLikeButton() {
+      const modalLikeBtn = document.getElementById('modalLikeBtn');
+      const likeIcon = modalLikeBtn.querySelector('i');
+
+      if (currentPostData.likedByUser) {
+          modalLikeBtn.classList.add('liked');
+          likeIcon.className = 'fas fa-heart';
+      } else {
+          modalLikeBtn.classList.remove('liked');
+          likeIcon.className = 'far fa-heart';
+      }
+  }
+
+  function updateSaveButton() {
+      const modalSaveBtn = document.getElementById('modalSaveBtn');
+      const saveIcon = modalSaveBtn.querySelector('i');
+
+      if (currentPostData.savedByUser) {
+          modalSaveBtn.classList.add('saved');
+          saveIcon.className = 'fas fa-bookmark';
+      } else {
+          modalSaveBtn.classList.remove('saved');
+          saveIcon.className = 'far fa-bookmark';
+      }
+  }
+
+  function startReply(commentId, username) {
+      const commentInput = document.getElementById('commentInput');
+      const replyInput = document.getElementById('replyInput');
+      const parentCommentId = document.getElementById('parentCommentId');
+      const cancelReplyBtn = document.getElementById('cancelReplyBtn');
+
+      isReplyMode = true;
+
+      // Hide comment input, show reply input
+      commentInput.style.display = 'none';
+      replyInput.style.display = 'block';
+      cancelReplyBtn.style.display = 'inline-block';
+
+      // Set reply placeholder and focus
+      replyInput.placeholder = `Reply to ${username}...`;
+      replyInput.value = `@${username} `;
+      replyInput.focus();
+
+      // Set parent comment ID
+      parentCommentId.value = commentId;
+
+      updateSubmitButton();
+  }
+
+  function cancelReply() {
+      const commentInput = document.getElementById('commentInput');
+      const replyInput = document.getElementById('replyInput');
+      const parentCommentId = document.getElementById('parentCommentId');
+      const cancelReplyBtn = document.getElementById('cancelReplyBtn');
+
+      isReplyMode = false;
+
+      // Show comment input, hide reply input
+      commentInput.style.display = 'block';
+      replyInput.style.display = 'none';
+      cancelReplyBtn.style.display = 'none';
+
+      // Clear values
+      replyInput.value = '';
+      parentCommentId.value = '';
+
+      updateSubmitButton();
+  }
+
+  function submitComment() {
+      const commentInput = document.getElementById('commentInput');
+      const replyInput = document.getElementById('replyInput');
+      const parentCommentId = document.getElementById('parentCommentId');
+      const postId = document.getElementById('modalPostId').value;
+
+      const activeInput = isReplyMode ? replyInput : commentInput;
+      const text = activeInput.value.trim();
+
+      if (!text) return;
+
+      const formData = new FormData();
+      formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+      formData.append('post_id', postId);
+
+      if (isReplyMode) {
+          formData.append('reply_comment', text);
+          formData.append('parent_comment_id', parentCommentId.value);
+      } else {
+          formData.append('comment', text);
+      }
+
+      fetch('/explore/', { // Assuming this endpoint handles comment/reply submission
+          method: 'POST',
+          body: formData
+      })
+      .then(response => {
+          if (response.ok) {
+              // Clear input
+              activeInput.value = '';
+              updateSubmitButton();
+
+              // Cancel reply mode if active
+              if (isReplyMode) {
+                  cancelReply();
+              }
+
+              // Update the postsData with the new comment/reply
+              // This is a simplified approach; for production, you might want the server to return the new comment/reply object
+              // and then append it to postsData and re-render only the new comment/reply.
+              // For now, we'll just increment the count and reload comments to reflect changes.
+              if (!isReplyMode) { // Only increment post comment count for top-level comments
+                  currentPostData.comments++;
+                  updateModalStats();
+              }
+              loadComments(postId); // Reload comments to show the new one and update counts
+          }
+      })
+      .catch(error => {
+          console.error('Error submitting comment:', error);
+      });
+  }
+
+  function toggleModalLike() {
+      const postId = currentPostData.id;
+
+      fetch(`/like/${postId}/`, {
+          method: 'GET', // Assuming Django view expects GET for post likes
+          headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+          }
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              currentPostData.likedByUser = data.liked;
+              currentPostData.likes = data.likes_count;
+
+              updateLikeButton();
+              updateModalStats();
+          }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      });
+  }
+
+  function toggleModalSave() {
+      const postId = currentPostData.id;
+
+      fetch(`/saved/${postId}/`, {
+          method: 'GET', // Assuming Django view expects GET for saving posts
+      })
+      .then(() => {
+          currentPostData.savedByUser = !currentPostData.savedByUser;
+          updateSaveButton();
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      });
+  }
+
+  function toggleCommentLike(commentId) {
+      const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+      if (!commentElement) {
+          console.error('Comment element not found for ID:', commentId);
+          return;
+      }
+
+      const heartButton = commentElement.querySelector('.comment-heart');
+      const likesSpan = commentElement.querySelector('.comment-likes');
+      let isCurrentlyLiked = heartButton.classList.contains('liked');
+      let currentLikes = parseInt(likesSpan.textContent.split(' ')[0]);
+      const action = isCurrentlyLiked ? 'unlike' : 'like';
+
+      // Optimistic UI update
+      if (isCurrentlyLiked) {
+          heartButton.classList.remove('liked');
+          heartButton.querySelector('i').className = 'far fa-heart';
+          likesSpan.textContent = `${currentLikes - 1} likes`;
+      } else {
+          heartButton.classList.add('liked');
+          heartButton.querySelector('i').className = 'fas fa-heart';
+          likesSpan.textContent = `${currentLikes + 1} likes`;
+      }
+
+      // Update postsData in memory optimistically
+      const postData = postsData[currentPostData.id];
+      if (postData) {
+          const comment = postData.comments.find(c => c.id == commentId);
+          if (comment) {
+              comment.likedByUser = !isCurrentlyLiked;
+              comment.likesCount = isCurrentlyLiked ? currentLikes - 1 : currentLikes + 1;
+          }
+      }
+
+      console.log(`Attempting to ${action} comment ${commentId} via GET...`);
+
+      // Send GET request to Django backend
+      fetch(`/comment/${commentId}/?action=${action}&post_id=${currentPostData.id}`, {
+          method: 'GET', // Changed to GET
+          headers: {
+              'X-Requested-With': 'XMLHttpRequest', // Keep this header if Django uses it for AJAX detection
+          }
+      })
+      .then(response => {
+          console.log('Comment like GET response status:', response.status);
+          // Django view redirects, so we don't expect JSON here.
+          // The optimistic update already handled the UI.
+      })
+      .catch(error => {
+          console.error('Error liking/unliking comment:', error);
+          // Revert optimistic update if there's a network error
+          if (isCurrentlyLiked) { // If it was liked, and we tried to unlike, but failed
+              heartButton.classList.add('liked');
+              heartButton.querySelector('i').className = 'fas fa-heart';
+              likesSpan.textContent = `${currentLikes} likes`;
+          } else { // If it was unliked, and we tried to like, but failed
+              heartButton.classList.remove('liked');
+              heartButton.querySelector('i').className = 'far fa-heart';
+              likesSpan.textContent = `${currentLikes} likes`;
+          }
+          // Revert postsData in memory
+          if (postData) {
+              const comment = postData.comments.find(c => c.id == commentId);
+              if (comment) {
+                  comment.likedByUser = isCurrentlyLiked;
+                  comment.likesCount = currentLikes;
+              }
+          }
+      });
+  }
+
+  function toggleReplyLike(replyId) {
+      const replyElement = document.querySelector(`[data-reply-id="${replyId}"]`);
+      if (!replyElement) {
+          console.error('Reply element not found for ID:', replyId);
+          return;
+      }
+
+      const heartButton = replyElement.querySelector('.comment-heart');
+      const likesSpan = replyElement.querySelector('.comment-likes');
+      let isCurrentlyLiked = heartButton.classList.contains('liked');
+      let currentLikes = parseInt(likesSpan.textContent.split(' ')[0]);
+      const action = isCurrentlyLiked ? 'unlike' : 'like';
+
+      // Optimistic UI update
+      if (isCurrentlyLiked) {
+          heartButton.classList.remove('liked');
+          heartButton.querySelector('i').className = 'far fa-heart';
+          likesSpan.textContent = `${currentLikes - 1} likes`;
+      } else {
+          heartButton.classList.add('liked');
+          heartButton.querySelector('i').className = 'fas fa-heart';
+          likesSpan.textContent = `${currentLikes + 1} likes`;
+      }
+
+      // Update postsData in memory optimistically
+      const postData = postsData[currentPostData.id];
+      if (postData) {
+          postData.comments.forEach(comment => {
+              const reply = comment.replies.find(r => r.id == replyId);
+              if (reply) {
+                  reply.likedByUser = !isCurrentlyLiked;
+                  reply.likesCount = isCurrentlyLiked ? currentLikes - 1 : currentLikes + 1;
+              }
+          });
+      }
+
+      console.log(`Attempting to ${action} reply ${replyId} via GET...`);
+
+      // Send GET request to Django backend
+      fetch(`/reply_comment/${replyId}/?action=${action}&post_id=${currentPostData.id}`, {
+          method: 'GET', // Changed to GET
+          headers: {
+              'X-Requested-With': 'XMLHttpRequest', // Keep this header if Django uses it for AJAX detection
+          }
+      })
+      .then(response => {
+          console.log('Reply like GET response status:', response.status);
+          // Django view redirects, so we don't expect JSON here.
+          // The optimistic update already handled the UI.
+      })
+      .catch(error => {
+          console.error('Error liking/unliking reply:', error);
+          // Revert optimistic update if there's a network error
+          if (isCurrentlyLiked) {
+              heartButton.classList.add('liked');
+              heartButton.querySelector('i').className = 'fas fa-heart';
+              likesSpan.textContent = `${currentLikes} likes`;
+          } else {
+              heartButton.classList.remove('liked');
+              heartButton.querySelector('i').className = 'far fa-heart';
+              likesSpan.textContent = `${currentLikes} likes`;
+          }
+          // Revert postsData in memory
+          if (postData) {
+              postData.comments.forEach(comment => {
+                  const reply = comment.replies.find(r => r.id == replyId);
+                  if (reply) {
+                      reply.likedByUser = isCurrentlyLiked;
+                      reply.likesCount = currentLikes;
+                  }
+              });
+          }
+      });
+  }
+
+  function closeModal() {
+      const modal = document.getElementById('postModal');
+      const modalVideo = document.getElementById('modalVideo');
+      const commentInput = document.getElementById('commentInput');
+      const commentSubmitBtn = document.getElementById('commentSubmitBtn');
+
+      modal.classList.remove('active');
+      document.body.style.overflow = 'auto';
+
+      // Pause video if playing
+      if (modalVideo.style.display === 'block') {
+          modalVideo.pause();
+      }
+
+      // Clear inputs and reset state
+      if (commentInput) {
+          commentInput.value = '';
+          commentSubmitBtn.classList.remove('active');
+      }
+
+      // Cancel reply mode
+      if (isReplyMode) {
+          cancelReply();
+      }
+
+      currentPostData = null;
+  }
+
+  function focusCommentInput() {
+      const commentInput = document.getElementById('commentInput');
+      if (commentInput) {
+          commentInput.focus();
+      }
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('postModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+          closeModal();
+      }
+  });
+
+  // Close modal with Escape key
+  document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+          closeModal();
+      }
+  });
 </script>
 {% endblock %}
