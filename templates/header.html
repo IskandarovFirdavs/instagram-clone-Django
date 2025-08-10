@@ -58,19 +58,22 @@
         </li>
         <li>
             <a href="{% url 'notifications' %}" class="{% block notifications_active %}{% endblock %}">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20.84 4.61C19.32 3.09 17.16 3.09 15.64 4.61L12 8.25L8.36 4.61C6.84 3.09 4.68 3.09 3.16 4.61C1.64 6.13 1.64 8.29 3.16 9.81L12 18.65L20.84 9.81C22.36 8.29 22.36 6.13 20.84 4.61Z"
-                          stroke="currentColor" fill="none"/>
+                {% if unread_notifications > 0 %}
+                <span class="badge bg-secondary" style="margin-right:15px">
+                    <svg color="white" width="25" height="25" viewBox="0 0 24 24" fill="non"
+                         xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.35l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                          stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="19" cy="5" r="4" fill="red" stroke="white" stroke-width="1.5"/>
                 </svg>
-                Notifications
-                {% if unread_notifications != 0 %}
-                <span class="badge bg-secondary">
-                    <sup>
-                        <i class="fa-solid fa-circle"
-                           style="color: #db0000;font-size:10px;margin-left:3px"></i>
-                    </sup>
                 </span>
+                {% else %}
+                <i style="font-size: 22px; width: 40px;" class="fa-regular fa-heart"></i>
+
                 {% endif %}
+
+                Notifications
+
             </a>
         </li>
         <li>

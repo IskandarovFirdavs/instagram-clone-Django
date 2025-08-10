@@ -17,16 +17,22 @@ class PostModel(models.Model):
     post_type = models.CharField(max_length=8, choices=PostTypeChoice)
     contentUrl = models.FileField(upload_to='posts')
     tagging = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='tagging', null=True, blank=True)
-    latitude = models.FloatField(
-        null=True, blank=True
-    )
-    longitude = models.FloatField(
-        null=True, blank=True
-    )
     hashtags = models.ManyToManyField('HashtagModel', blank=True, null=True)
     music = models.ManyToManyField('MusicModel', blank=True, null=True)
     saved = models.ManyToManyField(UserModel, blank=True, null=True, related_name='saved')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    location_name = models.CharField(max_length=255, blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+
+    def location(self):
+        if self.location_name:
+            return self.location_name
+        if self.latitude is not None and self.longitude is not None:
+            return f"{self.latitude},{self.longitude}"
+        return ""
+
 
     def since_created(self):
         now = timezone.now()

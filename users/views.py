@@ -52,6 +52,8 @@ def profile_view(request):
     reels = PostModel.objects.filter(userID=request.user, post_type=PostModel.PostTypeChoice.Reels).order_by(
         '-created_at')
 
+    unread_notifications = NotificationModel.objects.filter(owner=request.user, is_read=False).count()
+
     qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
 
     if request.method == "POST":
@@ -74,6 +76,7 @@ def profile_view(request):
         'posts': posts,
         'reels': reels,
         "form": form,
+        'unread_notifications': unread_notifications,
     })
 
 

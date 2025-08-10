@@ -16,4 +16,6 @@ urlpatterns = [
     path('home_reply_comment/<int:id>/', views.home_reply_comment_like, name='home-reply-comment-like'),
     path('saved/', views.SavedListView.as_view(), name="saved"),
     path("saved/<int:id>/", views.create_saved_video, name="saved-create"),
+    path('api/nominatim-search/', views.nominatim_search, name='nominatim_search'),
+    path('api/nominatim-reverse/', views.nominatim_reverse, name='nominatim_reverse'),
 ]

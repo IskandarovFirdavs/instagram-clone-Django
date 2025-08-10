@@ -5,6 +5,8 @@
 {% block title %}Instagram{% endblock %}
 {% block home_active %}active{% endblock %}
 
+
+
 {% block content %}
 <div class="home-page" style="display: flex; flex-direction: column; align-items: center;">
     <!-- Stories Section -->
@@ -79,6 +81,11 @@
                 </svg>
             </div>
         </div>
+        {% if post.location_name %}
+        <div class="location">
+            <span class="truncate-location">{{ post.location_name }}</span>
+        </div>
+        {% endif %}
 
         <img src="{{ post.contentUrl.url }}" alt="Post image" class="post-image"
              style="width: 100%; height: auto; object-fit: cover;">
@@ -88,7 +95,7 @@
                 <button class="action-btn like-btn" style="background: none; border: none; cursor: pointer;">
                     <a href="{% url 'like' id=post.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
                        style="text-decoration: none;">
-                        {% if post|is_liked_by_user:request.user %}
+                        {% if post|is_liked_by_user:request %}
                         <i class="fa-solid fa-heart" style="color: #ff0000; font-size: 25px;"></i>
                         {% else %}
                         <i class="fa-regular fa-heart" style="color: #fff; font-size: 25px;"></i>
@@ -114,7 +121,7 @@
                     style="background: none; border: none; cursor: pointer;">
                 <a href="{% url 'saved-create' id=post.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
                    title="Save" style="color: #fff;">
-                    <i class="{% is_saved_by_user request.user post %} fa-bookmark"></i>
+                    <i class="{% is_saved_by_user request post %} fa-bookmark"></i>
                 </a>
             </button>
         </div>
@@ -314,7 +321,8 @@
                 <div class="story-user-avatar"
                      style="display:flex;align-items:center;justify-content:center;width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; overflow: hidden;">
                     {% if user.avatar %}
-                    <img id="storyUserAvatar" src="{{ user.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;" alt="">
+                    <img id="storyUserAvatar" src="{{ user.avatar.url }}"
+                         style="width: 100%; height: 100%; object-fit: cover;" alt="">
                     {% else %}
                     <i class="fa-regular fa-user"></i>
                     {% endif %}
@@ -353,20 +361,20 @@
         </button>
     </div>
     <!-- Flip to Previous User -->
-<button id="prevUserBtn" onclick="previousUserStory()"
-    style="position: fixed; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.4); border: none; cursor: pointer; z-index: 2000; display: none; padding: 10px; border-radius: 50%;">
-    <svg viewBox="0 0 24 24" width="32" height="32" stroke="white" stroke-width="2" fill="none">
-        <polyline points="15,18 9,12 15,6"/>
-    </svg>
-</button>
+    <button id="prevUserBtn" onclick="previousUserStory()"
+            style="position: fixed; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.4); border: none; cursor: pointer; z-index: 2000; display: none; padding: 10px; border-radius: 50%;">
+        <svg viewBox="0 0 24 24" width="32" height="32" stroke="white" stroke-width="2" fill="none">
+            <polyline points="15,18 9,12 15,6"/>
+        </svg>
+    </button>
 
-<!-- Flip to Next User -->
-<button id="nextUserBtn" onclick="nextUserStory()"
-    style="position: fixed; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.4); border: none; cursor: pointer; z-index: 2000; display: none; padding: 10px; border-radius: 50%;">
-    <svg viewBox="0 0 24 24" width="32" height="32" stroke="white" stroke-width="2" fill="none">
-        <polyline points="9,18 15,12 9,6"/>
-    </svg>
-</button>
+    <!-- Flip to Next User -->
+    <button id="nextUserBtn" onclick="nextUserStory()"
+            style="position: fixed; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0, 0, 0, 0.4); border: none; cursor: pointer; z-index: 2000; display: none; padding: 10px; border-radius: 50%;">
+        <svg viewBox="0 0 24 24" width="32" height="32" stroke="white" stroke-width="2" fill="none">
+            <polyline points="9,18 15,12 9,6"/>
+        </svg>
+    </button>
 
 
 </div>
@@ -374,183 +382,184 @@
 
 {% block scripts %}
 <script>
-    // --- Functions to handle comments and replies ---
-    function toggleComments(element) {
-        const post = element.closest('.post');
-        const commentsSection = post.querySelector('.comments-section');
-        if (commentsSection) {
-            commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
-        }
-    }
 
-    function toggleReplies(element) {
-        const parentComment = element.closest('.comment-item');
-        const repliesContainer = parentComment.querySelector('.replies-container');
-        if (repliesContainer) {
-            repliesContainer.style.display = repliesContainer.style.display === 'none' ? 'flex' : 'none';
-        }
-    }
+   // --- Functions to handle comments and replies ---
+   function toggleComments(element) {
+       const post = element.closest('.post');
+       const commentsSection = post.querySelector('.comments-section');
+       if (commentsSection) {
+           commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
+       }
+   }
 
-    function showReplyInput(element) {
-        const parentComment = element.closest('.comment-item');
-        const replyInputSection = parentComment.querySelector('.reply-input-section');
-        if (replyInputSection) {
-            replyInputSection.style.display = 'block';
-        }
-    }
+   function toggleReplies(element) {
+       const parentComment = element.closest('.comment-item');
+       const repliesContainer = parentComment.querySelector('.replies-container');
+       if (repliesContainer) {
+           repliesContainer.style.display = repliesContainer.style.display === 'none' ? 'flex' : 'none';
+       }
+   }
 
-    function cancelReply(element) {
-        const replyInputSection = element.closest('.reply-input-section');
-        if (replyInputSection) {
-            replyInputSection.style.display = 'none';
-        }
-    }
+   function showReplyInput(element) {
+       const parentComment = element.closest('.comment-item');
+       const replyInputSection = parentComment.querySelector('.reply-input-section');
+       if (replyInputSection) {
+           replyInputSection.style.display = 'block';
+       }
+   }
 
-    function togglePostButton(input) {
-        const postButton = input.parentNode.querySelector('.comment-post-btn');
-        if (input.value.trim() !== '') {
-            postButton.style.opacity = '1';
-            postButton.style.pointerEvents = 'auto';
-        } else {
-            postButton.style.opacity = '0.3';
-            postButton.style.pointerEvents = 'none';
-        }
-    }
+   function cancelReply(element) {
+       const replyInputSection = element.closest('.reply-input-section');
+       if (replyInputSection) {
+           replyInputSection.style.display = 'none';
+       }
+   }
 
-    function toggleSave(element) {
-        console.log("Toggle save button clicked.");
-    }
+   function togglePostButton(input) {
+       const postButton = input.parentNode.querySelector('.comment-post-btn');
+       if (input.value.trim() !== '') {
+           postButton.style.opacity = '1';
+           postButton.style.pointerEvents = 'auto';
+       } else {
+           postButton.style.opacity = '0.3';
+           postButton.style.pointerEvents = 'none';
+       }
+   }
 
-    let groupedUserStories = [];
-    let currentUserIndex = 0;
-    let currentStoryIndex = 0;
-    let storyTimer;
-    let currentStories = [];
+   function toggleSave(element) {
+       console.log("Toggle save button clicked.");
+   }
 
-    function openStoryViewer(username) {
-        groupedUserStories = [];
-        const allUsers = document.querySelectorAll('.story-item');
+   let groupedUserStories = [];
+   let currentUserIndex = 0;
+   let currentStoryIndex = 0;
+   let storyTimer;
+   let currentStories = [];
 
-        allUsers.forEach(item => {
-            const uname = item.querySelector('.story-username').textContent.trim();
-            const storyImgs = Array.from(document.getElementById(`stories-${uname}`).querySelectorAll('img'));
-            if (storyImgs.length > 0) {
-                groupedUserStories.push({ username: uname, stories: storyImgs });
-            }
-        });
+   function openStoryViewer(username) {
+       groupedUserStories = [];
+       const allUsers = document.querySelectorAll('.story-item');
 
-        currentUserIndex = groupedUserStories.findIndex(u => u.username === username);
-        currentStoryIndex = 0;
+       allUsers.forEach(item => {
+           const uname = item.querySelector('.story-username').textContent.trim();
+           const storyImgs = Array.from(document.getElementById(`stories-${uname}`).querySelectorAll('img'));
+           if (storyImgs.length > 0) {
+               groupedUserStories.push({ username: uname, stories: storyImgs });
+           }
+       });
 
-        if (currentUserIndex === -1 || groupedUserStories.length === 0) return;
+       currentUserIndex = groupedUserStories.findIndex(u => u.username === username);
+       currentStoryIndex = 0;
 
-        document.getElementById('storyViewer').style.display = 'flex';
-        setupStoryViewer();
-        showStory();
-    }
+       if (currentUserIndex === -1 || groupedUserStories.length === 0) return;
 
-    function setupStoryViewer() {
-        const user = groupedUserStories[currentUserIndex];
+       document.getElementById('storyViewer').style.display = 'flex';
+       setupStoryViewer();
+       showStory();
+   }
 
-        const progressContainer = document.getElementById('storyProgress');
-        progressContainer.innerHTML = '';
+   function setupStoryViewer() {
+       const user = groupedUserStories[currentUserIndex];
 
-        user.stories.forEach(() => {
-            const bar = document.createElement('div');
-            bar.style.cssText = 'flex: 1; height: 2px; background: rgba(255, 255, 255, 0.3); border-radius: 1px; overflow: hidden;';
-            bar.innerHTML = '<div class="progress-fill" style="height: 100%; background: #fff; width: 0%; transition: width 0.1s linear;"></div>';
-            progressContainer.appendChild(bar);
-        });
+       const progressContainer = document.getElementById('storyProgress');
+       progressContainer.innerHTML = '';
 
-        document.getElementById('storyUsername').textContent = user.username;
-        document.getElementById('storyPrev').style.display = user.stories.length > 1 ? 'flex' : 'none';
-        document.getElementById('storyNext').style.display = user.stories.length > 1 ? 'flex' : 'none';
+       user.stories.forEach(() => {
+           const bar = document.createElement('div');
+           bar.style.cssText = 'flex: 1; height: 2px; background: rgba(255, 255, 255, 0.3); border-radius: 1px; overflow: hidden;';
+           bar.innerHTML = '<div class="progress-fill" style="height: 100%; background: #fff; width: 0%; transition: width 0.1s linear;"></div>';
+           progressContainer.appendChild(bar);
+       });
 
-        document.getElementById('prevUserBtn').style.display = currentUserIndex > 0 ? 'block' : 'none';
-        document.getElementById('nextUserBtn').style.display = currentUserIndex < groupedUserStories.length - 1 ? 'block' : 'none';
+       document.getElementById('storyUsername').textContent = user.username;
+       document.getElementById('storyPrev').style.display = user.stories.length > 1 ? 'flex' : 'none';
+       document.getElementById('storyNext').style.display = user.stories.length > 1 ? 'flex' : 'none';
 
-        currentStories = user.stories;
-    }
+       document.getElementById('prevUserBtn').style.display = currentUserIndex > 0 ? 'block' : 'none';
+       document.getElementById('nextUserBtn').style.display = currentUserIndex < groupedUserStories.length - 1 ? 'block' : 'none';
 
-    function showStory() {
-        if (currentStoryIndex >= currentStories.length) {
-            closeStoryViewer();
-            return;
-        }
+       currentStories = user.stories;
+   }
 
-        const story = currentStories[currentStoryIndex];
-        document.getElementById('storyImage').src = story.src;
-        document.getElementById('storyTime').textContent = story.dataset.time || '';
+   function showStory() {
+       if (currentStoryIndex >= currentStories.length) {
+           closeStoryViewer();
+           return;
+       }
 
-        const progressBars = document.querySelectorAll('.progress-fill');
-        progressBars.forEach((bar, index) => {
-            bar.style.width = index < currentStoryIndex ? '100%' : index === currentStoryIndex ? '0%' : '0%';
-            if (index === currentStoryIndex) setTimeout(() => bar.style.width = '100%', 100);
-        });
+       const story = currentStories[currentStoryIndex];
+       document.getElementById('storyImage').src = story.src;
+       document.getElementById('storyTime').textContent = story.dataset.time || '';
 
-        clearTimeout(storyTimer);
-        storyTimer = setTimeout(nextStory, 5000);
-    }
+       const progressBars = document.querySelectorAll('.progress-fill');
+       progressBars.forEach((bar, index) => {
+           bar.style.width = index < currentStoryIndex ? '100%' : index === currentStoryIndex ? '0%' : '0%';
+           if (index === currentStoryIndex) setTimeout(() => bar.style.width = '100%', 100);
+       });
 
-    function nextStory() {
-        if (currentStoryIndex < currentStories.length - 1) {
-            currentStoryIndex++;
-            showStory();
-        } else if (currentUserIndex < groupedUserStories.length - 1) {
-            currentUserIndex++;
-            currentStoryIndex = 0;
-            setupStoryViewer();
-            showStory();
-        } else {
-            closeStoryViewer();
-        }
-    }
+       clearTimeout(storyTimer);
+       storyTimer = setTimeout(nextStory, 5000);
+   }
 
-    function previousStory() {
-        if (currentStoryIndex > 0) {
-            currentStoryIndex--;
-            showStory();
-        } else if (currentUserIndex > 0) {
-            currentUserIndex--;
-            currentStoryIndex = groupedUserStories[currentUserIndex].stories.length - 1;
-            setupStoryViewer();
-            showStory();
-        }
-    }
+   function nextStory() {
+       if (currentStoryIndex < currentStories.length - 1) {
+           currentStoryIndex++;
+           showStory();
+       } else if (currentUserIndex < groupedUserStories.length - 1) {
+           currentUserIndex++;
+           currentStoryIndex = 0;
+           setupStoryViewer();
+           showStory();
+       } else {
+           closeStoryViewer();
+       }
+   }
 
-    function nextUserStory() {
-        if (currentUserIndex < groupedUserStories.length - 1) {
-            currentUserIndex++;
-            currentStoryIndex = 0;
-            setupStoryViewer();
-            showStory();
-        }
-    }
+   function previousStory() {
+       if (currentStoryIndex > 0) {
+           currentStoryIndex--;
+           showStory();
+       } else if (currentUserIndex > 0) {
+           currentUserIndex--;
+           currentStoryIndex = groupedUserStories[currentUserIndex].stories.length - 1;
+           setupStoryViewer();
+           showStory();
+       }
+   }
 
-    function previousUserStory() {
-        if (currentUserIndex > 0) {
-            currentUserIndex--;
-            currentStoryIndex = 0;
-            setupStoryViewer();
-            showStory();
-        }
-    }
+   function nextUserStory() {
+       if (currentUserIndex < groupedUserStories.length - 1) {
+           currentUserIndex++;
+           currentStoryIndex = 0;
+           setupStoryViewer();
+           showStory();
+       }
+   }
 
-    function closeStoryViewer() {
-        clearTimeout(storyTimer);
-        document.getElementById('storyViewer').style.display = 'none';
-    }
+   function previousUserStory() {
+       if (currentUserIndex > 0) {
+           currentUserIndex--;
+           currentStoryIndex = 0;
+           setupStoryViewer();
+           showStory();
+       }
+   }
 
-    document.getElementById('storyViewer').addEventListener('click', (e) => {
-        if (e.target.id === 'storyViewer') closeStoryViewer();
-    });
+   function closeStoryViewer() {
+       clearTimeout(storyTimer);
+       document.getElementById('storyViewer').style.display = 'none';
+   }
 
-    document.addEventListener('keydown', (e) => {
-        if (document.getElementById('storyViewer').style.display === 'flex') {
-            if (e.key === 'ArrowRight') nextStory();
-            if (e.key === 'ArrowLeft') previousStory();
-            if (e.key === 'Escape') closeStoryViewer();
-        }
-    });
+   document.getElementById('storyViewer').addEventListener('click', (e) => {
+       if (e.target.id === 'storyViewer') closeStoryViewer();
+   });
+
+   document.addEventListener('keydown', (e) => {
+       if (document.getElementById('storyViewer').style.display === 'flex') {
+           if (e.key === 'ArrowRight') nextStory();
+           if (e.key === 'ArrowLeft') previousStory();
+           if (e.key === 'Escape') closeStoryViewer();
+       }
+   });
 </script>
 {% endblock %}

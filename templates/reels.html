@@ -682,7 +682,7 @@
                 <a href="{% url 'saved-create' id=reel.id %}?next={{ request.path }}&{{ request.GET.urlencode }}"
                    title="Save" style="height: 100%; width: 100%;">
                     <i style="color:white;height: 50px; width: 50px; font-size: 30px;"
-                       class="{% is_saved_by_user request.user reel %} fa-bookmark"></i>
+                       class="{% is_saved_by_user request reel %} fa-bookmark"></i>
                     <span style="color: white;">{{ reel.saved.count }}</span>
                 </a>
             </button>

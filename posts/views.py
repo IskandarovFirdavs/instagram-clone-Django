@@ -1,3 +1,4 @@
+from django.contrib.sites import requests
 from django.db import IntegrityError
 from django.db.models import Count, Prefetch
 from django.utils import timezone
@@ -7,7 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render, get_object_or_404
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView, ListView
 from posts.forms import PostModelForm
 from posts.models import PostModel, PostLikeModel, CommentModel, CommentLikeModel, ReplyCommentModel, \
@@ -109,6 +110,7 @@ def home_view(request):
 
         messages.error(request, 'Comment or reply text cannot be empty.')
         return redirect(request.path)
+
     context = {
         'posts': posts,
         'users': qs,
@@ -129,16 +131,14 @@ def post_create(request):
 
     if request.method == "POST":
         form = PostModelForm(request.POST, request.FILES)
-
         if form.is_valid():
             post = form.save(commit=False)
             post.userID = request.user
             post.save()
             form.save_m2m()
             return redirect('profile')
-
     else:
-        form = PostModelForm(instance=request.user)
+        form = PostModelForm()
 
     context = {
         'users': qs,
@@ -147,6 +147,62 @@ def post_create(request):
         'user': request.user
     }
     return render(request, 'create.html', context)
+
+
+@require_GET
+def nominatim_search(request):
+    q = request.GET.get('q', '').strip()
+    if not q:
+        return JsonResponse({'results': []})
+
+    params = {
+        'q': q,
+        'format': 'jsonv2',
+        'addressdetails': 1,
+        'limit': 6
+    }
+    headers = {'User-Agent': 'MyInstagramClone/1.0 (youremail@example.com)'}
+    try:
+        r = requests.get('https://nominatim.openstreetmap.org/search', params=params, headers=headers, timeout=5)
+        r.raise_for_status()
+        data = r.json()
+    except requests.RequestException:
+        return JsonResponse({'results': []})
+
+    results = []
+    for item in data:
+        results.append({
+            'display_name': item.get('display_name'),
+            'lat': item.get('lat'),
+            'lon': item.get('lon'),
+            'type': item.get('type')
+        })
+    return JsonResponse({'results': results})
+
+
+@require_GET
+def nominatim_reverse(request):
+    lat = request.GET.get('lat')
+    lon = request.GET.get('lon')
+    if not lat or not lon:
+        return JsonResponse({'display_name': ''})
+
+    params = {
+        'lat': lat,
+        'lon': lon,
+        'format': 'jsonv2',
+        'addressdetails': 1
+    }
+    headers = {'User-Agent': 'MyInstagramClone/1.0 (youremail@example.com)'}
+    try:
+        r = requests.get('https://nominatim.openstreetmap.org/reverse', params=params, headers=headers, timeout=5)
+        r.raise_for_status()
+        data = r.json()
+        display_name = data.get('display_name', '')
+    except requests.RequestException:
+        display_name = ''
+
+    return JsonResponse({'display_name': display_name})
 
 
 class DirectView(TemplateView):
@@ -251,7 +307,6 @@ def like_comment(request, comment_id):
     next_url = request.GET.get('next', '/explore/')
     post_id = request.GET.get('post_id')
 
-
     user = request.user
     comment_owner = comment.userID
     is_self_like = (comment_owner == user)
@@ -286,7 +341,6 @@ def like_comment(request, comment_id):
     if post_id:
         next_url += f'?post_id={post_id}'
     return redirect(next_url)
-
 
 
 @login_required
@@ -327,7 +381,6 @@ def home_comment_like(request, comment_id):
     return redirect(request.GET.get('next', '/'))
 
 
-
 @login_required
 def home_reply_comment_like(request, id):
     reply_comment = get_object_or_404(ReplyCommentModel, id=id)
@@ -365,7 +418,6 @@ def home_reply_comment_like(request, id):
     return redirect(request.GET.get('next', '/'))
 
 
-
 class MessagesView(ListView):
     template_name = 'messages.html'
 
@@ -386,7 +438,6 @@ class MessagesView(ListView):
         context['unread_notifications'] = unread_notifications
 
         return context
-
 
 
 @login_required(login_url='login')
@@ -453,13 +504,14 @@ class SavedListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         qs_users = UserModel.objects.exclude(id=self.request.user.id).order_by('username')
         q = self.request.GET.get('q')
-        unread_notifications = NotificationModel.objects.filter(owner=self.request.user, is_read=False).count()
-
         if q:
             qs_users = qs_users.filter(username__icontains=q)
 
         context['users'] = qs_users
-        context['unread_notifications'] = unread_notifications
+        context['unread_notifications'] = NotificationModel.objects.filter(
+            owner=self.request.user,
+            is_read=False
+        ).count()
         context['reels'] = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Reels,
                                                     saved=self.request.user).order_by('-created_at')
         context['posts'] = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Post,
@@ -489,7 +541,7 @@ def like_create(request, id):
 
     user = request.user
     post_owner = post.userID
-    is_self_like = ( post_owner==user)
+    is_self_like = (post_owner == user)
 
     if like:
         like.delete()
@@ -517,7 +569,6 @@ def like_create(request, id):
                     print("❌ Notification creation failed:", str(e))
             else:
                 print("⚠️ Skipped: Post owner is invalid")
-
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
