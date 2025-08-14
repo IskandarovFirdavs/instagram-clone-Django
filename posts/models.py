@@ -22,6 +22,8 @@ class PostModel(models.Model):
     saved = models.ManyToManyField(UserModel, blank=True, null=True, related_name='saved')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    archived = models.BooleanField(default=False)
+
     location_name = models.CharField(max_length=255, blank=True, null=True)
     latitude = models.FloatField(blank=True, null=True)
     longitude = models.FloatField(blank=True, null=True)

@@ -62,7 +62,7 @@ def home_view(request):
     ).order_by('-created_at').exclude(userID=request.user)
 
     histories = PostModel.objects.filter(
-        **base_history_filters
+        **base_history_filters, archived=False
     ).prefetch_related(
         'likes',
         'saved'

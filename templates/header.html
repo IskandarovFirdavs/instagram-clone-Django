@@ -92,11 +92,20 @@
         {% if user.is_authenticated %}
         <a href="{% url 'profile' %}" class="{% block profile_active %}{% endblock %}">
             <!-- Instagram Profile Icon -->
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="8" r="5" stroke="currentColor" fill="none"/>
-                <path d="M20 21C20 16.58 16.42 13 12 13S4 16.58 4 21" stroke="currentColor" fill="none"
-                      stroke-linecap="round"/>
+            {% if user.avatar %}
+            <img style="height: 30px; width: 30px; border-radius: 50%; object-fit: fit; margin-right: 15px;"
+                 src="{{ user.avatar.url }}">
+            {% else %}
+            <svg class="icon"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 style="height: 30px; width: 30px; border-radius: 50%; margin-right: 15px;">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
             </svg>
+            {% endif %}
             <span>Profile</span>
         </a>
         {% else %}

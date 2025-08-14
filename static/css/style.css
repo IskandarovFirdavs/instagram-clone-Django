@@ -1017,8 +1017,9 @@ body {
   pointer-events: none;
 }
 
-/* Smooth Transitions */
-* {
-  transition: background-color 0.2s ease, border-color 0.2s ease,
-    transform 0.2s ease;
+.location{
+width:100%;
+display:flex;
+padding: 0px 0px 5px 10px;
+color:gray;
 }
