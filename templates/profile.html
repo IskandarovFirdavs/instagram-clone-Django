@@ -7,21 +7,19 @@
 
 {% block extra_css %}
 <style>
-    /* Overlay */
     .edit-profile-modal {
-        display: none;               /* default yopiq */
+        display: none;
         position: fixed;
-        inset: 0;                    /* top:0; right:0; bottom:0; left:0 */
-        z-index: 9999;               /* eng oldinda */
-        background: rgba(0, 0, 0, 0.6); /* yarim shaffof qora fon */
-        backdrop-filter: blur(4px);  /* orqani biroz xiralashtirish */
+        inset: 0;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
 
-        display: flex;               /* markazga chiqarish uchun */
+        display: flex;
         align-items: center;
         justify-content: center;
     }
 
-    /* Modal content (o‘rtadagi oynacha) */
     .edit-profile-content {
         background: #111;
         padding: 30px;
@@ -32,13 +30,11 @@
         color: #fff;
         box-shadow: 0 8px 30px rgba(0,0,0,0.8);
 
-        /* animatsiya */
         transform: scale(0.8);
         opacity: 0;
         animation: popUp 0.3s ease forwards;
     }
 
-    /* Pop-up animatsiya */
     @keyframes popUp {
         to {
             transform: scale(1);
