@@ -1,0 +1,718 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Messages • Instagram{% endblock %}
+
+{% block messages_active %}active{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="styles.css">
+<style>
+    /* ===== CSS RESET & BASE STYLES ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #000000;
+      color: #ffffff;
+      line-height: 1.5;
+    }
+
+    /* ===== CSS VARIABLES ===== */
+    :root {
+      /* Background Colors */
+      --bg-primary: #000000;
+      --bg-secondary: #121212;
+      --bg-tertiary: #1a1a1a;
+      --bg-card: #262626;
+      --bg-hover: rgba(255, 255, 255, 0.05);
+
+      /* Border Colors */
+      --border-primary: #363636;
+      --border-secondary: #2a2a2a;
+
+      /* Text Colors */
+      --text-primary: #ffffff;
+      --text-secondary: #a8a8a8;
+      --text-muted: #737373;
+
+      /* Accent Colors */
+      --accent-blue: #0095f6;
+      --accent-blue-hover: #1ba1f2;
+      --accent-gradient: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+
+      /* Message Colors */
+      --message-sent: var(--accent-blue);
+      --message-received: var(--bg-card);
+
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+
+      /* Border Radius */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 50%;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    /* ===== MAIN LAYOUT ===== */
+    .messages-container {
+      display: flex;
+      height: 100vh;
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-secondary);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    /* ===== SIDEBAR STYLES ===== */
+    .messages-sidebar {
+      width: 350px;
+      background-color: var(--bg-secondary);
+      border-right: 1px solid var(--border-primary);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .messages-header {
+      padding: var(--spacing-lg) var(--spacing-md);
+      border-bottom: 1px solid var(--border-primary);
+      background-color: var(--bg-secondary);
+    }
+
+    .messages-header h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .rooms-header {
+      padding: var(--spacing-md);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background-color: var(--bg-tertiary);
+    }
+
+    /* Room Items */
+    .room-item {
+      border-bottom: 1px solid var(--border-secondary);
+      transition: all 0.2s ease;
+    }
+
+    .room-item:hover {
+      background-color: var(--bg-hover);
+    }
+
+    .room-item a {
+      display: block;
+      padding: var(--spacing-md);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .room-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-xs);
+      line-height: 1.3;
+    }
+
+    .room-preview {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ===== CHAT CONTAINER ===== */
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-secondary);
+      border-right: 1px solid var(--border-primary);
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      padding: var(--spacing-lg) var(--spacing-md);
+      border-bottom: 1px solid var(--border-primary);
+      background-color: var(--bg-secondary);
+      min-height: 72px;
+    }
+
+    .chat-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-right: var(--spacing-md);
+    }
+
+    .chat-type-badge {
+      background: var(--accent-gradient);
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      padding: var(--spacing-xs) var(--spacing-md);
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Messages Area */
+    .chats {
+      flex: 1;
+      padding: var(--spacing-md);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+      background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    }
+
+    .chats::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chats::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chats::-webkit-scrollbar-thumb {
+      background-color: var(--border-primary);
+      border-radius: 3px;
+    }
+
+    .chats::-webkit-scrollbar-thumb:hover {
+      background-color: var(--text-muted);
+    }
+
+    /* Message Bubbles */
+    .single-message {
+      max-width: 70%;
+      display: flex;
+      flex-direction: column;
+      animation: fadeInUp 0.3s ease;
+    }
+
+    .single-message.sent {
+      align-self: flex-end;
+    }
+
+    .msg-body {
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-radius: var(--radius-lg);
+      background-color: var(--message-received);
+      color: var(--text-primary);
+      word-wrap: break-word;
+      line-height: 1.4;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+
+    .single-message.sent .msg-body {
+      background: var(--accent-gradient);
+      color: white;
+      font-weight: 500;
+    }
+
+    .sender {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: var(--spacing-xs);
+      padding: 0 var(--spacing-md);
+      font-weight: 500;
+    }
+
+    .single-message.sent .sender {
+      text-align: right;
+    }
+
+    /* Chat Input */
+    .chat-input-area {
+      padding: var(--spacing-md);
+      border-top: 1px solid var(--border-primary);
+      background-color: var(--bg-secondary);
+    }
+
+    .input-wrapper {
+      display: flex;
+      align-items: flex-end;
+      background-color: var(--bg-card);
+      border-radius: 24px;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 2px solid transparent;
+      transition: border-color 0.2s ease;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: var(--accent-blue);
+    }
+
+    .chat-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      color: var(--text-primary);
+      resize: none;
+      max-height: 120px;
+      min-height: 20px;
+      line-height: 1.4;
+      font-family: inherit;
+    }
+
+    .chat-input:focus {
+      outline: none;
+    }
+
+    .chat-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .send-btn {
+      background: none;
+      border: none;
+      color: var(--accent-blue);
+      cursor: pointer;
+      padding: var(--spacing-sm);
+      margin-left: var(--spacing-sm);
+      border-radius: var(--radius-full);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .send-btn:hover {
+      background-color: var(--bg-hover);
+      transform: scale(1.1);
+    }
+
+    .send-btn i {
+      font-size: 18px;
+    }
+
+    /* ===== MEMBERS SIDEBAR ===== */
+    .members-sidebar {
+      width: 300px;
+      background-color: var(--bg-secondary);
+      padding: var(--spacing-md);
+      overflow-y: auto;
+      border-left: 1px solid var(--border-primary);
+    }
+
+    .members-header {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-lg);
+      padding-bottom: var(--spacing-md);
+      border-bottom: 1px solid var(--border-primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Member Profile Cards */
+    .member-profile-card {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+      border: 1px solid var(--border-secondary);
+      transition: all 0.2s ease;
+    }
+
+    .member-profile-card:hover {
+      border-color: var(--border-primary);
+      box-shadow: var(--shadow-md);
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-full);
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      color: white;
+      margin-right: var(--spacing-md);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .profile-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .profile-details {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-sm);
+      padding: var(--spacing-xs) 0;
+    }
+
+    .detail-item .label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .detail-item .value {
+      font-size: 13px;
+      color: var(--text-primary);
+      font-weight: 600;
+      text-align: right;
+      max-width: 60%;
+      word-break: break-word;
+    }
+
+    .profile-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      padding: var(--spacing-md);
+      border-radius: var(--radius-sm);
+      background-color: rgba(0, 149, 246, 0.1);
+      border: 1px solid rgba(0, 149, 246, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .profile-link:hover {
+      background-color: rgba(0, 149, 246, 0.2);
+      border-color: var(--accent-blue);
+      transform: translateY(-1px);
+    }
+
+    .profile-link svg {
+      margin-left: var(--spacing-sm);
+    }
+
+    /* Member Items (for group chats) */
+    .member-item {
+      display: flex;
+      align-items: center;
+      padding: var(--spacing-md);
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--spacing-xs);
+      transition: background-color 0.2s ease;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .member-item:hover {
+      background-color: var(--bg-hover);
+    }
+
+    /* Add Room Button */
+    .add-room-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-md);
+      color: var(--accent-blue);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      margin-top: var(--spacing-lg);
+      background-color: var(--bg-card);
+      border: 2px solid var(--border-primary);
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .add-room-btn:hover {
+      background-color: var(--bg-hover);
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+    }
+
+    .add-room-btn i {
+      margin-right: var(--spacing-sm);
+      font-size: 16px;
+    }
+
+    /* ===== EMPTY STATES ===== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-xl);
+      text-align: center;
+      color: var(--text-secondary);
+      height: 100%;
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: var(--spacing-lg);
+      opacity: 0.5;
+      color: var(--text-muted);
+    }
+
+    .empty-state p {
+      margin: var(--spacing-xs) 0;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .empty-state p:first-of-type {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+    @media (max-width: 1024px) {
+      .members-sidebar {
+        display: none;
+      }
+
+      .messages-container {
+        max-width: 100%;
+        border-radius: 0;
+        border: none;
+        height: 100vh;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .messages-sidebar {
+        width: 280px;
+      }
+
+      .single-message {
+        max-width: 85%;
+      }
+
+      .chat-header {
+        padding: var(--spacing-md);
+      }
+
+      .messages-header {
+        padding: var(--spacing-md);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .messages-container {
+        flex-direction: column;
+      }
+
+      .messages-sidebar {
+        width: 100%;
+        height: 200px;
+        border-right: none;
+        border-bottom: 1px solid var(--border-primary);
+      }
+
+      .chat-container {
+        border-right: none;
+      }
+
+      .members-sidebar {
+        display: none;
+      }
+
+      .single-message {
+        max-width: 90%;
+      }
+    }
+
+    /* ===== ACCESSIBILITY ===== */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Focus styles for keyboard navigation */
+    .room-item a:focus,
+    .profile-link:focus,
+    .add-room-btn:focus,
+    .send-btn:focus {
+      outline: 2px solid var(--accent-blue);
+      outline-offset: 2px;
+    }
+
+    .chat-input:focus {
+      outline: none;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="messages-container">
+    <!-- Left sidebar - Rooms list -->
+    <div class="messages-sidebar">
+        <div class="messages-header">
+            <h2>Messages</h2>
+        </div>
+
+        <div class="rooms-header">Rooms</div>
+
+        {% if filtered_queryset %}
+        {% for query in filtered_queryset %}
+        <div class="room-item">
+            <a href="{% url 'room' room_name=query.room_name username=request.user %}">
+                <div class="room-name">{{ query.room_name }}</div>
+                <div class="room-preview">
+                    {% if query.messages.last.sender == request.user %}
+                    Me: {{ query.messages.last.message }}
+                    {% else %}
+                    {{ query.messages.last.sender.username }}: {{ query.messages.last.message }}
+                    {% endif %}
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+        {% else %}
+        {% for room in rooms %}
+        <div class="room-item">
+            <a href="{% url 'room' room_name=room.room_name username=request.user %}">
+                <div class="room-name">{{ room.room_name }}</div>
+                <div class="room-preview">
+                    {% if room.messages.last.sender == request.user %}
+                    Me: {{ room.messages.last.message }}
+                    {% else %}
+                    {% if room.messages.last.sender.username %}
+                    {{ room.messages.last.sender.username }}: {{ room.messages.last.message }}
+                    {% else %}
+                    Start a conversation
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <i class="fa-regular fa-comment-dots"></i>
+            <p>No rooms yet</p>
+            <p>Create a room to start messaging</p>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const socket = new WebSocket(`ws://${window.location.host}/ws/messages/{{room_name}}/`);
+    const messageForm = document.getElementById("msg-form");
+    const messageInput = document.getElementById("message");
+    const chatsDiv = document.getElementById("chats-container");
+
+    // Auto-resize textarea
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    function scrollToBottom() {
+        chatsDiv.scrollTop = chatsDiv.scrollHeight;
+    }
+
+    scrollToBottom();
+
+    messageForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+        if (message) {
+            socket.send(JSON.stringify({
+                message: message,
+                room_name: "{{room_name}}",
+                sender: "{{user}}"
+            }));
+            messageInput.value = "";
+            messageInput.style.height = 'auto';
+        }
+    });
+
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            messageForm.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    socket.addEventListener("message", (e) => {
+        const data = JSON.parse(e.data).message;
+        const isCurrentUser = data.sender === "{{user}}";
+
+        // Remove empty state if it exists
+        const emptyState = chatsDiv.querySelector('.empty-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        chatsDiv.insertAdjacentHTML('beforeend', `
+            <div class="single-message ${isCurrentUser ? 'sent' : ''}">
+                <div class="msg-body">${data.message}</div>
+                <p class="sender">${isCurrentUser ? 'Me' : data.sender} • ${timeString}</p>
+            </div>
+        `);
+
+        scrollToBottom();
+    });
+</script>
+{% endblock %}

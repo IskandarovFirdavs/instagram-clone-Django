@@ -1,0 +1,780 @@
+{% load my_tags %}
+{% load my_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{{ room_name }} Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #1a1b26;
+            color: #a9b1d6;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .page-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Left Sidebar - Rooms */
+        .rooms-sidebar {
+            width: 320px;
+            background-color: #16161e;
+            border-right: 1px solid #2a2f3d;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: #2a2f3d;
+            border-radius: 8px;
+            padding: 8px 16px;
+            transition: all 0.2s ease;
+        }
+
+        .search-bar:focus-within {
+            background-color: #3a3f4d;
+            box-shadow: 0 0 0 2px rgba(122, 162, 247, 0.3);
+        }
+
+        .search-icon {
+            color: #565f89;
+            margin-right: 12px;
+            width: 16px;
+            height: 16px;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: #c0caf5;
+            font-size: 14px;
+            outline: none;
+            width: 100%;
+        }
+
+        .search-input::placeholder {
+            color: #565f89;
+        }
+
+        .rooms-sidebar h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #c0caf5;
+            margin: 20px 0 12px;
+            padding-left: 4px;
+        }
+
+        .room-item {
+            background-color: #2a2f3d;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .room-item:hover {
+            background-color: #3a3f4d;
+            border-color: #7aa2f7;
+        }
+
+        .room-item a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .room-item p {
+            color: #c0caf5;
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .room-item small {
+            display: block;
+            color: #a9b1d6;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .room-item small[style*="font-weight:700"] {
+            color: #7aa2f7;
+            font-weight: 600;
+        }
+
+        .room-item small[style*="font-weight:100"] {
+            color: #a9b1d6;
+            opacity: 0.8;
+        }
+
+        /* Filter Form */
+        .filter-form {
+            margin: 16px 0;
+            padding: 12px;
+            background-color: #2a2f3d;
+            border-radius: 8px;
+        }
+
+        .filter-form p {
+            margin-bottom: 8px;
+            color: #c0caf5;
+            font-size: 13px;
+        }
+
+        .filter-form select,
+        .filter-form input {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: #1a1b26;
+            border: 1px solid #3a3f4d;
+            border-radius: 6px;
+            color: #c0caf5;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .filter-form button[type="submit"] {
+            width: 100%;
+            padding: 8px 16px;
+            background-color: #7aa2f7;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .filter-form button[type="submit"]:hover {
+            background-color: #89a5f8;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .pagination a {
+            color: #7aa2f7;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background-color: #2a2f3d;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .pagination a:hover {
+            background-color: #3a3f4d;
+            border-color: #7aa2f7;
+        }
+
+        .pagination .current {
+            color: #c0caf5;
+            font-size: 13px;
+            padding: 6px 10px;
+            background-color: #2a2f3d;
+            border-radius: 6px;
+        }
+
+        /* User Info */
+        .user-info {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-top: 1px solid #2a2f3d;
+        }
+
+        .user-info a {
+            color: #7aa2f7;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: color 0.2s ease;
+        }
+
+        .user-info a:hover {
+            color: #9ece6a;
+        }
+
+        .user-info svg {
+            transition: transform 0.2s ease;
+        }
+
+        .user-info a:hover svg {
+            transform: translateX(2px);
+        }
+
+        /* Main Content Area */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #1a1b26;
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #9ece6a;
+            text-align: center;
+            padding: 16px;
+            background-color: #16161e;
+            border-bottom: 1px solid #2a2f3d;
+            margin: 0;
+        }
+
+        .chats-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #1a1b26;
+        }
+
+        .chats-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chats-container::-webkit-scrollbar-track {
+            background: #16161e;
+        }
+
+        .chats-container::-webkit-scrollbar-thumb {
+            background: #2a2f3d;
+            border-radius: 3px;
+        }
+
+        .single-message {
+            max-width: 70%;
+            margin-bottom: 16px;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sent {
+            margin-left: auto;
+        }
+
+        .msg-body {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .single-message:not(.sent) .msg-body {
+            background-color: #2a2f3d;
+            color: #c0caf5;
+            border-bottom-left-radius: 4px;
+        }
+
+        .sent .msg-body {
+            background-color: #7aa2f7;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .sender {
+            font-size: 11px;
+            color: #565f89;
+            margin-top: 4px;
+            padding: 0 8px;
+            font-weight: 500;
+        }
+
+        /* Message Form */
+        .msg-form {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 16px;
+            background-color: #16161e;
+            border-top: 1px solid #2a2f3d;
+        }
+
+        .msg-form textarea {
+            flex: 1;
+            min-height: 40px;
+            max-height: 120px;
+            resize: none;
+            border: none;
+            padding: 12px 16px;
+            background-color: #2a2f3d;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+            color: #c0caf5;
+            transition: all 0.2s ease;
+        }
+
+        .msg-form textarea:focus {
+            background-color: #3a3f4d;
+            box-shadow: 0 0 0 2px rgba(122, 162, 247, 0.3);
+        }
+
+        .msg-form textarea::placeholder {
+            color: #565f89;
+        }
+
+        .msg-form button {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background-color: #7aa2f7;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .msg-form button:hover {
+            background-color: #89a5f8;
+            transform: scale(1.05);
+        }
+
+        /* Right Sidebar - Members */
+        .members-sidebar {
+            width: 280px;
+            background-color: #16161e;
+            border-left: 1px solid #2a2f3d;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .members-sidebar h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #c0caf5;
+            margin-bottom: 16px;
+            padding-left: 4px;
+        }
+
+        .member-item {
+            background-color: #2a2f3d;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .member-item:hover {
+            background-color: #3a3f4d;
+            transform: translateX(2px);
+        }
+
+        .member-item a {
+            color: #c0caf5;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            display: block;
+        }
+
+        .members-sidebar .user-info {
+            margin-top: auto;
+            padding: 16px 0 0;
+        }
+
+        .members-sidebar .user-info a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #7aa2f7;
+            font-weight: 500;
+        }
+
+        .members-sidebar .user-info a:hover {
+            color: #9ece6a;
+        }
+
+        .member-profile-card {
+    background: linear-gradient(135deg, #2a2f3d 0%, #1a1b26 100%);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 12px 0;
+    border: 1px solid rgba(122, 162, 247, 0.2);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.member-profile-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(122, 162, 247, 0.3);
+    border-color: rgba(122, 162, 247, 0.4);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(122, 162, 247, 0.2);
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7aa2f7 0%, #bb9af7 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+    margin-right: 16px;
+    box-shadow: 0 4px 12px rgba(122, 162, 247, 0.4);
+}
+
+.profile-header h3 {
+    color: #c0caf5;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.profile-details {
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: between;
+    margin-bottom: 12px;
+    align-items: center;
+}
+
+.detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.label {
+    color: #565f89;
+    font-weight: 500;
+    font-size: 14px;
+    min-width: 120px;
+    margin-right: 12px;
+}
+
+.value {
+    color: #c0caf5;
+    font-size: 14px;
+    font-weight: 400;
+    flex: 1;
+}
+
+.profile-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(122, 162, 247, 0.1);
+    color: #7aa2f7;
+    text-decoration: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(122, 162, 247, 0.3);
+}
+
+.profile-link:hover {
+    background: rgba(122, 162, 247, 0.2);
+    transform: translateX(4px);
+    box-shadow: 0 4px 16px rgba(122, 162, 247, 0.3);
+}
+
+.profile-link svg {
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+}
+
+.profile-link:hover svg {
+    transform: translateX(3px);
+}
+
+        @media (max-width: 768px) {
+            .rooms-sidebar, .members-sidebar {
+                display: none;
+            }
+
+            .single-message {
+                max-width: 85%;
+            }
+
+            .msg-form {
+                padding: 12px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"/>
+</head>
+<body>
+<div class="page-container">
+    <div class="rooms-sidebar">
+<!--        <form method="GET" class="search-container">-->
+<!--            <div class="search-bar">-->
+<!--                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"-->
+<!--                     stroke-width="2">-->
+<!--                    <circle cx="11" cy="11" r="8"/>-->
+<!--                    <path d="m21 21-4.35-4.35"/>-->
+<!--                </svg>-->
+<!--                <input type="text" name="q" placeholder="Search users" class="search-input" id="search-input"-->
+<!--                       autocomplete="off">-->
+<!--            </div>-->
+<!--        </form>-->
+
+<!--        {% for member in members %}-->
+<!--        <div class="member-item">-->
+<!--            <a href="{% url 'another-profile-view' pk=member.pk %}">-->
+<!--                <span>{{ member.username }}</span>-->
+<!--            </a>-->
+<!--        </div>-->
+<!--        {% empty %}-->
+<!--        {% endfor %}-->
+
+        <h2>Rooms</h2>
+<!--        <form method="get" class="filter-form">-->
+<!--            {{ filter.form.as_p }}-->
+<!--            <button type="submit">Filter Rooms</button>-->
+<!--        </form>-->
+
+        {% if filtered_queryset %}
+        {% for query in filtered_queryset %}
+        <div class="room-item">
+            <a href="{% url 'room' room_name=query.room_name username=request.user %}">
+                <p>{{ query.room_name }}</p>
+                <span>
+                    <small style="font-weight:700">
+                        {% if query.messages.last.sender == request.user %}
+                            Me
+                        {% else %}
+                            {{ query.messages.last.sender.username }}
+                        {% endif %}
+                        : {{ query.messages.last.message }}
+                    </small>
+                </span>
+            </a>
+        </div>
+        {% endfor %}
+        {% else %}
+        {% for room in rooms %}
+        <div class="room-item">
+            <a href="{% url 'room' room_name=room.room_name username=request.user %}">
+                <p>{{ room.room_name }}</p>
+                <span>
+                    <small style="font-weight:700">
+                        {% if room.messages.last.sender == request.user %}
+                         Me
+                        {% else %}
+                        {{ room.messages.last.sender.username }}
+                        {% endif %}
+                    </small>
+                    <small style="font-weight:100">: {{ room.messages.last.message }}</small>
+                </span>
+            </a>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+
+
+        <div class="user-info">
+            <a href="{% url 'profile' %}">
+                <span>{{ request.user.username }}</span>
+            </a>
+            <a href="{% url 'login' %}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+
+    <div class="content">
+        <h1>
+            {{ room_name }} ({{ room_name.chat_type }} chat)
+        </h1>
+        <div class="chats-container" id="chats-container">
+            {% for message in messages %}
+            {% if message.sender.username == request.user.username %}
+            <div class="single-message sent">
+                <div class="msg-body">{{ message.message }}</div>
+                <p class="sender">Me</p>
+            </div>
+            {% else %}
+            <div class="single-message">
+                <div class="msg-body">{{ message.message }}</div>
+                <p class="sender">{{ message.sender }}</p>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <form action="" id="msg-form" method="post" class="msg-form">
+            {% csrf_token %}
+            <textarea name="message" id="message" placeholder="Type your message..."></textarea>
+            <button type="submit">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="members-sidebar">
+        {% if room_name.chat_type == 'private' %}
+        {% for member in other_members %}
+        <div class="member-profile-card">
+            <div class="profile-header">
+                <div class="avatar">
+                    {{ member.username|first|upper }}
+                </div>
+                <h3>{{ member.username }}</h3>
+            </div>
+
+            <div class="profile-details">
+                <div class="detail-item">
+                    <span class="label">First name:</span>
+                    <span class="value">{{ member.first_name|default:"Not specified" }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="label">Last name:</span>
+                    <span class="value">{{ member.last_name|default:"Not specified" }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="label">Email:</span>
+                    <span class="value"><small>{{ member.email|default:"Not specified" }}</small></span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="label">Member since:</span>
+                    <span class="value">{{ member.date_joined|date:"M d, Y" }}</span>
+                </div>
+            </div>
+
+            <a href="{% url 'another-profile-view' pk=member.pk %}" class="profile-link">
+                View Full Profile
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </a>
+        </div>
+        {% endfor %}
+        {% else %}
+        <h2>Members</h2>
+        {% for member in room_name.members.all %}
+        <div class="member-item">
+                <span>{{ member.username }}</span>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <div class="user-info">
+            <a href="{% url 'home' %}">
+                <i class="fa-solid fa-plus"></i>
+                <span>Add room</span>
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    const socket = new WebSocket(`ws://${window.location.host}/ws/messages/{{room_name}}/`);
+    const messageForm = document.getElementById("msg-form");
+    const messageInput = document.getElementById("message");
+    const chatsDiv = document.getElementById("chats-container");
+
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    function scrollToBottom() {
+        chatsDiv.scrollTop = chatsDiv.scrollHeight;
+    }
+
+    scrollToBottom();
+
+    messageForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+        if (message) {
+            socket.send(JSON.stringify({
+                message: message,
+                room_name: "{{room_name}}",
+                sender: "{{user}}"
+            }));
+            messageInput.value = "";
+            messageInput.style.height = 'auto';
+        }
+    });
+
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            messageForm.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    socket.addEventListener("message", (e) => {
+        const data = JSON.parse(e.data).message;
+        const isCurrentUser = data.sender === "{{user}}";
+
+        chatsDiv.insertAdjacentHTML('beforeend', `
+            <div class="single-message ${isCurrentUser ? 'sent' : ''}">
+                <div class="msg-body">${data.message}</div>
+                <p class="sender">${isCurrentUser ? 'Me' : data.sender}</p>
+            </div>
+        `);
+
+        scrollToBottom();
+    });
+</script>
+</html>

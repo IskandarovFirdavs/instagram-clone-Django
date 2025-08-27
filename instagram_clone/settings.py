@@ -19,6 +19,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -26,9 +27,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'channels',
 
     'posts',
     'users',
+    'chat',
 
 ]
 
@@ -60,7 +63,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'instagram_clone.wsgi.application'
+ASGI_APPLICATION = "instagram_clone.asgi.application"
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -131,7 +140,3 @@ AUTH_USER_MODEL = 'users.UserModel'
 
 LOGIN_URL = '/login/'
 
-
-# Celery settings
-CELERY_BROKER_URL = "redis://localhost:6379"
-CELERY_RESULT_BACKEND = "redis://localhost:6379"

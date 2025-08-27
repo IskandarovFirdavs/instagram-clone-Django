@@ -418,28 +418,6 @@ def home_reply_comment_like(request, id):
     return redirect(request.GET.get('next', '/'))
 
 
-class MessagesView(ListView):
-    template_name = 'messages.html'
-
-    context_object_name = 'users'
-
-    def get_queryset(self):
-        qs = UserModel.objects.exclude(id=self.request.user.id).order_by('username')
-        q = self.request.GET.get('q')
-
-        if q:
-            qs = qs.filter(username__icontains=q)
-
-        return qs
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        unread_notifications = NotificationModel.objects.filter(owner=self.request.user, is_read=False).count()
-        context['unread_notifications'] = unread_notifications
-
-        return context
-
-
 @login_required(login_url='login')
 def reels_view(request):
     reels = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Reels).exclude(userID=request.user).order_by(

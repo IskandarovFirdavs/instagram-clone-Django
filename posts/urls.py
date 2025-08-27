@@ -6,7 +6,6 @@ urlpatterns = [
     path('create/', views.post_create, name='create'),
     path('direct/', views.DirectView.as_view(), name='direct'),
     path('explore/', views.explore_view, name='explore'),
-    path('messages/', views.MessagesView.as_view(), name='messages'),
     path('notifications/', views.notification_view, name='notifications'),
     path('reels/', views.reels_view, name='reels'),
     path('like/<int:id>/', views.like_create, name='like'),
