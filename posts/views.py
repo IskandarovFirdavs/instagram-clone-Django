@@ -10,6 +10,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView, ListView
+from django.urls import reverse
+
+from chat.models import Room, Message
 from posts.forms import PostModelForm
 from posts.models import PostModel, PostLikeModel, CommentModel, CommentLikeModel, ReplyCommentModel, \
     ReplyCommentLikeModel, NotificationModel
@@ -26,6 +29,7 @@ def home_view(request):
     one_day_ago = timezone.now() - timedelta(days=77)
     qs = UserModel.objects.exclude(id=request.user.id)
     unread_notifications = NotificationModel.objects.filter(owner=request.user, is_read=False).count()
+    rooms = request.user.chats.order_by('-room_name')
 
     base_post_filters = {
         'post_type': PostModel.PostTypeChoice.Post,
@@ -114,6 +118,7 @@ def home_view(request):
     context = {
         'posts': posts,
         'users': qs,
+        'rooms': rooms,
         'unread_notifications': unread_notifications,
         'grouped_histories': grouped_histories.items(),
         'followed_users': followed_ids,
@@ -211,6 +216,7 @@ class DirectView(TemplateView):
 
 @login_required(login_url='login')
 def explore_view(request):
+    rooms = Room.objects.filter(members=request.user)
     posts = PostModel.objects.filter(
         post_type=PostModel.PostTypeChoice.Post
     ).prefetch_related(
@@ -292,6 +298,7 @@ def explore_view(request):
 
     context = {
         'users': qs,
+        'rooms': rooms,
         'unread_notifications': unread_notifications,
         'posts': posts,
         'reels': reels,
@@ -397,7 +404,6 @@ def home_reply_comment_like(request, id):
                 liked_by=user
             ).delete()
     else:
-        # Save new like
         new_like = ReplyCommentLikeModel.objects.create(reply_commentID=reply_comment, userID=user)
 
         if not is_self_like:
@@ -434,7 +440,6 @@ def reels_view(request):
             messages.error(request, 'Reel not found or invalid ID.')
             return redirect('reels')
 
-        # Comment
         comment_text = request.POST.get('comment')
         if comment_text:
             CommentModel.objects.create(
@@ -444,7 +449,6 @@ def reels_view(request):
             )
             return redirect('reels')
 
-        # Reply
         reply_text = request.POST.get("reply_comment")
         comment_id = request.POST.get('parent_comment_id')
         if reply_text and comment_id:
@@ -675,3 +679,50 @@ def notification_view(request):
     }
 
     return render(request, 'notifications.html', context)
+
+
+@login_required
+def forward_message(request, room_name, post_id):
+    if request.method != 'POST':
+        return redirect('chats')
+
+    post = get_object_or_404(PostModel, id=post_id)
+    room = get_object_or_404(Room, room_name=room_name)
+
+
+    if post.post_type == PostModel.PostTypeChoice.Reels:
+        page_name = 'reels'
+    else:
+        page_name = 'explore'
+
+    try:
+        page_path = reverse(page_name)
+    except Exception:
+        page_path = reverse('home')
+
+    post_page_url = request.build_absolute_uri(f"{page_path}?post_id={post.id}")
+
+    try:
+        like_path = reverse('like', args=[post.id])
+        like_next = page_path
+        like_url = request.build_absolute_uri(f"{like_path}?next={like_next}")
+    except Exception:
+        like_url = ''
+
+    caption = (post.caption or '').strip()
+    message_text = f"Forwarded post #{post.id}"
+    if caption:
+        message_text += f": {caption}"
+    if post_page_url:
+        message_text += f" ({post_page_url})"
+    elif like_url:
+        message_text += f" ({like_url})"
+
+    Message.objects.create(
+        sender=request.user,
+        room=room,
+        message=message_text
+    )
+
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'home'
+    return redirect(next_url)

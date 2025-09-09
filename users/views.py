@@ -80,13 +80,18 @@ def profile_view(request):
     })
 
 
-def another_user_profile_view(request, pk):
+def another_profile_view(request, pk):
     user = UserModel.objects.get(pk=pk)
     qs = UserModel.objects.exclude(pk=request.user.pk).order_by('username')
+    posts = PostModel.objects.filter(pk=request.user.pk)
+    reels = PostModel.objects.filter(pk=request.user.pk, post_type=PostModel.PostTypeChoice.Reels).order_by(
+        '-created_at')
 
     return render(request, 'another_profile.html', {
         'user': user,
-        'users': qs
+        'users': qs,
+        "posts": posts,
+        "reels": reels,
     })
 
 
@@ -157,6 +162,7 @@ def followings_list_view(request, pk):
     user = get_object_or_404(UserModel, pk=pk)
     followings = user.following_set.all()
     qs = UserModel.objects.exclude(pk=request.user.pk).order_by('username')
+
 
     context = {
         'usr': user,

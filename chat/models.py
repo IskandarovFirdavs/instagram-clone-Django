@@ -1,5 +1,6 @@
 from django.db import models
 
+from posts.models import PostModel
 from users.models import UserModel
 
 
@@ -27,7 +28,7 @@ class Message(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='messages')
     message = models.CharField(max_length=255)
     sender = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-
+    post = models.ForeignKey(PostModel, null=True, blank=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

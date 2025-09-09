@@ -7,6 +7,15 @@
 
 {% block extra_css %}
 <style>
+    :root {
+    --bg-color: #2c2c2e;
+    --primary-text-color: #f2f2f7;
+    --secondary-text-color: #a9a9b3;
+    --border-color: #48484a;
+    --accent-color: #0a84ff;
+    --accent-hover-color: #3f9eff;
+}
+
     .explore-container {
         padding: 0;
         max-width: 975px;
@@ -619,6 +628,113 @@
             padding: 0 4px;
         }
     }
+    .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+
+<!--share-->
+.shareModal {
+    width: 90%;
+    max-width: 420px;
+    max-height: 90vh;
+    background: var(--bg-color);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.hidden {
+    display: none;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+        background:black;
+
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--primary-text-color);
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.close-button:hover {
+    color: var(--primary-text-color);
+}
+
+.room-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+        background:black;
+
+}
+
+.room-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    transition: background-color 0.2s ease;
+}
+
+.room-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.room-name {
+    color: var(--primary-text-color);
+    font-weight: 500;
+}
+
+.share-button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.share-button:hover {
+    background-color: var(--accent-hover-color);
+}
+
+.empty-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--secondary-text-color);
+}
 </style>
 {% endblock %}
 
@@ -770,7 +886,8 @@
                     <div class="modal-actions-left">
                         <button class="modal-action-btn like-btn" id="modalLikeBtn">
                             <a style="color:white" href="#" id="modalLikeLink">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.5">
                                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                                 </svg>
                             </a>
@@ -780,12 +897,11 @@
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                             </svg>
                         </button>
-                        <button class="modal-action-btn share-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <line x1="22" y1="2" x2="11" y2="13"/>
-                                <polygon points="22,2 15,22 11,13 2,9 22,2"/>
-                            </svg>
-                        </button>
+                   <button id="modalOpenShareBtn" type="button" class="open-share-btn" aria-label="Share post">
+    <i class="fa fa-share"></i>
+</button>
+
+
                     </div>
                     <button class="modal-action-btn save-btn" id="modalSaveBtn">
                         <a style="color: white" href="#" id="modalSaveLink" title="Save">
@@ -803,9 +919,31 @@
                         {% endif %}
                     </div>
                     <input type="hidden" name="post_id" id="modalPostIdInput" value="">
-                    <input type="text" name="comment" class="comment-input" placeholder="Add a comment..." oninput="toggleModalPostButton(this)" id="modalCommentInput">
+                    <input type="text" name="comment" class="comment-input" placeholder="Add a comment..."
+                           oninput="toggleModalPostButton(this)" id="modalCommentInput">
                     <button type="submit" class="comment-post-btn" id="modalCommentSubmit">Post</button>
                 </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay hidden" id="shareModalOverlay">
+        <div class="shareModal">
+            <div class="modal-header">
+                <h2>Share with...</h2>
+                <button id="close-share-modal-btn" class="close-button">&times;</button>
+            </div>
+
+            <div class="room-list">
+                {% for room in rooms %}
+                <form method="post" class="room-item forward-form" data-room-name="{{ room.room_name }}">
+                    {% csrf_token %}
+                    <span class="room-name">{{ room.room_name }}</span>
+                    <input type="hidden" name="post_id" class="forward-post-id-input" value="">
+                    <button type="submit" class="share-button">Share</button>
+                </form>
+                {% empty %}
+                <p class="empty-message">No rooms available to share.</p>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -857,7 +995,6 @@
         let currentLikes = parseInt(likesSpan.textContent) || 0;
         const isLiked = heartBtn.classList.contains('liked');
 
-        // Check if user is authenticated
         const isAuthenticated = "{{ request.user.is_authenticated|lower }}";
         if (isAuthenticated !== 'true') {
             alert('Please log in to like comments');
@@ -865,7 +1002,6 @@
             return;
         }
 
-        // Optimistically update UI before redirect
         if (isLiked) {
             heartBtn.classList.remove('liked');
             likesSpan.textContent = `${currentLikes - 1} likes`;
@@ -874,16 +1010,14 @@
             likesSpan.textContent = `${currentLikes + 1} likes`;
         }
 
-        // Construct and log the URL for debugging
         const action = isLiked ? 'unlike' : 'like';
         const url = isComment
             ? `/comment/${id}/?action=${action}&next=${encodeURIComponent(window.location.pathname)}&post_id=${modalPostIdInput.value}`
             : `/reply_comment/${id}/?action=${action}&next=${encodeURIComponent(window.location.pathname)}&post_id=${modalPostIdInput.value}`;
-        console.log(`Navigating to: ${url}`); // Debug log
+        console.log(`Navigating to: ${url}`);
         window.location.href = url;
     });
 
-    // Store all posts and reels data with their comments
     const postsData = {
     {% for post in posts %}
     '{{ post.id }}': {
@@ -1112,7 +1246,6 @@ const reelsData = {
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Add click handler for follow button
         const modalFollowBtn = document.getElementById('modalFollowBtn');
         if (modalFollowBtn) {
             modalFollowBtn.addEventListener('click', function(e) {
@@ -1215,4 +1348,111 @@ const reelsData = {
         toggleModalPostButton(modalCommentInput);
     }
 </script>
+<script>
+'use strict';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const shareModalOverlay = document.getElementById('shareModalOverlay');
+  const closeShareBtn = document.getElementById('close-share-modal-btn');
+  const modalPostIdInput = document.getElementById('modalPostIdInput');
+  const modalOpenShareBtn = document.getElementById('modalOpenShareBtn');
+
+  if (!shareModalOverlay) console.warn('shareModalOverlay element not found (id="shareModalOverlay")');
+  if (!modalPostIdInput) console.warn('modalPostIdInput element not found (id="modalPostIdInput")');
+
+  const getForwardForms = () => document.querySelectorAll('.forward-form');
+
+  function openShareModalForPost(postId) {
+    console.log('[share] openShareModalForPost:', postId);
+    if (!shareModalOverlay || !modalPostIdInput) {
+      console.error('[share] Missing required elements to open share modal.');
+      return;
+    }
+
+    modalPostIdInput.value = String(postId);
+
+    getForwardForms().forEach(form => {
+      const roomName = form.dataset.roomName;
+      if (!roomName) {
+        console.warn('[share] forward-form missing data-room-name', form);
+        return;
+      }
+      form.action = `/forward/${encodeURIComponent(roomName)}/${encodeURIComponent(postId)}/`;
+      const hiddenInput = form.querySelector('.forward-post-id-input');
+      if (hiddenInput) hiddenInput.value = postId;
+    });
+
+    shareModalOverlay.classList.remove('hidden');
+  }
+
+  function closeShareModal() {
+    if (!shareModalOverlay) return;
+    shareModalOverlay.classList.add('hidden');
+  }
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest && e.target.closest('.open-share-btn');
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const postIdFromBtn = btn.dataset.postId;
+    const fallbackPostId = modalPostIdInput ? modalPostIdInput.value : null;
+    const postId = postIdFromBtn || fallbackPostId;
+
+    if (!postId) {
+      console.error('[share] No post id available to open share modal. Button:', btn, 'modalPostIdInput:', modalPostIdInput);
+      alert('Cannot open share dialog: post id missing.');
+      return;
+    }
+
+    openShareModalForPost(postId);
+  });
+
+  if (closeShareBtn) {
+    closeShareBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeShareModal();
+    });
+  }
+
+  if (shareModalOverlay) {
+    shareModalOverlay.addEventListener('click', (e) => {
+      if (e.target === shareModalOverlay) closeShareModal();
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && shareModalOverlay && !shareModalOverlay.classList.contains('hidden')) {
+      closeShareModal();
+    }
+  });
+
+  if (modalOpenShareBtn) {
+    modalOpenShareBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const currentPostId = modalPostIdInput ? modalPostIdInput.value : null;
+      if (!currentPostId) {
+        console.error('[share] modalOpenShareBtn clicked but modalPostIdInput is empty.');
+        alert('Cannot share: post id missing.');
+        return;
+      }
+      openShareModalForPost(currentPostId);
+    });
+  }
+
+  window.__debugShareModal = {
+    open: openShareModalForPost,
+    close: closeShareModal,
+    elements: {
+      shareModalOverlay,
+      modalPostIdInput,
+      getForwardForms,
+    }
+  };
+});
+</script>
+
 {% endblock %}

@@ -855,23 +855,26 @@
                 <a href="{% url 'follow-create' user.pk %}?next={{ request.get_full_path }}"
                    class="profile-btn follow-btn">Follow</a>
                 {% endif %}
-                <button class="profile-btn">Message</button>
+                <a style="color:white;text-decoration:none;"
+                   href="{% url 'profile-another' username=request.user.username %}">
+                    <button class="profile-btn">Message</button>
+                </a>
                 {% endif %}
             </div>
         </div>
     </div>
- <!-- Edit Profile Modal -->
-        <div id="editProfileModal" class="edit-profile-modal">
-            <div class="edit-profile-content">
-                <span class="close-btn" id="closeEditProfile">&times;</span>
-                <h2>Edit Profile</h2>
-                <form method="post" enctype="multipart/form-data" class="edit-profile-form">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" class="profile-btn save-btn">Save changes</button>
-                </form>
-            </div>
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="edit-profile-modal">
+        <div class="edit-profile-content">
+            <span class="close-btn" id="closeEditProfile">&times;</span>
+            <h2>Edit Profile</h2>
+            <form method="post" enctype="multipart/form-data" class="edit-profile-form">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="profile-btn save-btn">Save changes</button>
+            </form>
         </div>
+    </div>
     <div class="profile-nav">
         <div class="profile-nav-tabs">
             <button class="profile-tab active" data-tab="posts">

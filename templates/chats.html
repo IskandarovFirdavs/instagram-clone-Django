@@ -610,7 +610,7 @@
         {% if filtered_queryset %}
         {% for query in filtered_queryset %}
         <div class="room-item">
-            <a href="{% url 'room' room_name=query.room_name username=request.user %}">
+            <a href="{% url 'room' room_name=query.room_name %}">
                 <div class="room-name">{{ query.room_name }}</div>
                 <div class="room-preview">
                     {% if query.messages.last.sender == request.user %}
@@ -625,7 +625,7 @@
         {% else %}
         {% for room in rooms %}
         <div class="room-item">
-            <a href="{% url 'room' room_name=room.room_name username=request.user %}">
+            <a href="{% url 'room' room_name=room.room_name  %}">
                 <div class="room-name">{{ room.room_name }}</div>
                 <div class="room-preview">
                     {% if room.messages.last.sender == request.user %}

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load my_tags %}
 
 {% block title %}Messages • Instagram{% endblock %}
 
@@ -70,8 +71,8 @@
     /* ===== MAIN LAYOUT ===== */
     .messages-container {
       display: flex;
-      height: 100vh;
-      max-width: 1200px;
+      height: 90vh;
+      width: 900px;
       margin: 0 auto;
       background-color: var(--bg-primary);
       border: 1px solid var(--border-secondary);
@@ -153,6 +154,8 @@
       flex-direction: column;
       background-color: var(--bg-secondary);
       border-right: 1px solid var(--border-primary);
+      position: relative;
+
     }
 
     .chat-header {
@@ -191,6 +194,7 @@
       flex-direction: column;
       gap: var(--spacing-md);
       background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+      scroll-behavior: smooth;
     }
 
     .chats::-webkit-scrollbar {
@@ -611,7 +615,7 @@
 
         {% for member in members %}
         <div class="member-item">
-            <a style="color:white;text-decoration:none;" href="{% url 'profile-another' pk=member.pk %}">
+            <a style="color:white;text-decoration:none;" href="{% url 'profile-another' username=member.username %}">
                 <div style="width:100px;display:flex;justify-content:space-between;align-items:center">
                     <img style="height:40px;width:40px;border-radius:50px" src="{{ member.avatar.url }}">
                     <em>{{ member.username }}</em></div>
@@ -628,7 +632,7 @@
         {% if filtered_queryset %}
         {% for query in filtered_queryset %}
         <div class="room-item">
-            <a href="{% url 'room' room_name=query.room_name username=request.user %}">
+            <a href="{% url 'room' room_name=query.room_name  %}">
                 <div class="room-name">{{ query.room_name }}</div>
                 <div class="room-preview">
                     {% if query.messages.last.sender == request.user %}
@@ -643,7 +647,7 @@
         {% else %}
         {% for room in rooms %}
         <div class="room-item">
-            <a href="{% url 'room' room_name=room.room_name username=request.user %}">
+            <a href="{% url 'room' room_name=room.room_name %}">
                 <div class="room-name">{{ room.room_name }}</div>
                 <div class="room-preview">
                     {% if room.messages.last.sender == request.user %}
@@ -671,7 +675,7 @@
     <!-- Main chat area -->
     <div class="chat-container">
         <div class="chat-header">
-            <h2>{{ room_name }}</h2>
+            <h2>{% split_after_second_underscore room_name.room_name request %}</h2>
             <span class="chat-type-badge">{{ room_name.chat_type }} chat</span>
         </div>
 
@@ -679,7 +683,7 @@
             {% for message in messages %}
             {% if message.sender.username == request.user.username %}
             <div class="single-message sent">
-                <div class="msg-body">{{ message.message }}</div>
+                <div id="{{ message.id }}" class="msg-body">{{ message.message }}</div>
                 <p class="sender">Me • {{ message.timestamp|time }}</p>
             </div>
             {% else %}
@@ -687,6 +691,7 @@
                 <div class="msg-body">{{ message.message }}</div>
                 <p class="sender">{{ message.sender }} • {{ message.timestamp|time }}</p>
             </div>
+
             {% endif %}
             {% empty %}
             <div class="empty-state">
@@ -696,6 +701,15 @@
             </div>
             {% endfor %}
         </div>
+
+        <!--   BLUE ARROW HERE     -->
+<div id="scrollToBottomArrow" class="arrow" style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); display: none;">
+            <a href="#{{ messages.last.id }}">
+                <i class="fa-solid fa-arrow-down"
+                   style="font-size: 24px; color: #0095f6; background-color: rgba(38,38,38,0.8); border-radius: 50%; padding: 8px;"></i>
+            </a>
+        </div>
+
 
         <div class="chat-input-area">
             <form id="msg-form" method="post" class="msg-form">
@@ -712,70 +726,21 @@
     </div>
 
     <!-- Right sidebar - Members list -->
-    <div class="members-sidebar">
-        {% if room_name.chat_type == 'private' %}
-        {% for member in other_members %}
-        <div class="member-profile-card">
-            <div class="profile-header">
-                <div class="avatar">
-                    {{ member.username|first|upper }}
-                </div>
-                <h3>{{ member.username }}</h3>
-            </div>
 
-            <div class="profile-details">
-                <div class="detail-item">
-                    <span class="label">First name:</span>
-                    <span class="value">{{ member.first_name|default:"Not specified" }}</span>
-                </div>
-
-                <div class="detail-item">
-                    <span class="label">Last name:</span>
-                    <span class="value">{{ member.last_name|default:"Not specified" }}</span>
-                </div>
-
-                <div class="detail-item">
-                    <span class="label">Email:</span>
-                    <span class="value">{{ member.email|default:"Not specified" }}</span>
-                </div>
-
-                <div class="detail-item">
-                    <span class="label">Member since:</span>
-                    <span class="value">{{ member.date_joined|date:"M d, Y" }}</span>
-                </div>
-            </div>
-
-            <a href="{% url 'profile-another' pk=member.pk %}" class="profile-link">
-                View Full Profile
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-            </a>
-        </div>
-        {% endfor %}
-        {% else %}
-        <div class="members-header">Members</div>
-        {% for member in room_name.members.all %}
-        <div class="member-item">
-            <span>{{ member.username }}</span>
-        </div>
-        {% endfor %}
-        {% endif %}
-
-        <a href="{% url 'chat' %}" class="add-room-btn">
-            <i class="fa-solid fa-plus"></i>
-            <span>Add room</span>
-        </a>
-    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    const socket = new WebSocket(`ws://${window.location.host}/ws/messages/{{room_name}}/`);
+        const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    const socket = new WebSocket(`${protocol}${window.location.host}/ws/messages/{{room_name}}/`);
+
     const messageForm = document.getElementById("msg-form");
     const messageInput = document.getElementById("message");
     const chatsDiv = document.getElementById("chats-container");
+
+    // --- NEW: Get the arrow element ---
+    const scrollArrow = document.getElementById("scrollToBottomArrow");
 
     // Auto-resize textarea
     messageInput.addEventListener('input', function() {
@@ -784,10 +749,33 @@
     });
 
     function scrollToBottom() {
-        chatsDiv.scrollTop = chatsDiv.scrollHeight;
+        // We use scrollIntoView for a slightly more reliable smooth scroll effect
+        // The anchor link will still work as a fallback
+        const lastMessage = chatsDiv.lastElementChild;
+        if (lastMessage) {
+            lastMessage.scrollIntoView({ behavior: "smooth", block: "end" });
+        }
     }
 
-    scrollToBottom();
+    // --- NEW: Function to check scroll position and toggle arrow visibility ---
+    function toggleScrollArrow() {
+        // A small buffer (e.g., 10px) to ensure it triggers correctly
+        const buffer = 10;
+
+        // If the user's scroll position from the bottom is greater than the buffer, show the arrow
+        if (chatsDiv.scrollHeight - chatsDiv.scrollTop - chatsDiv.clientHeight > buffer) {
+            scrollArrow.style.display = 'block';
+        } else {
+            scrollArrow.style.display = 'none';
+        }
+    }
+
+    // Initial scroll to the bottom when the page loads
+    chatsDiv.scrollTop = chatsDiv.scrollHeight;
+
+    // --- NEW: Run the visibility check when the page loads and whenever the user scrolls ---
+    toggleScrollArrow();
+    chatsDiv.addEventListener('scroll', toggleScrollArrow);
 
     messageForm.addEventListener("submit", function(e) {
         e.preventDefault();
@@ -814,7 +802,6 @@
         const data = JSON.parse(e.data).message;
         const isCurrentUser = data.sender === "{{user}}";
 
-        // Remove empty state if it exists
         const emptyState = chatsDiv.querySelector('.empty-state');
         if (emptyState) {
             emptyState.remove();
@@ -830,7 +817,9 @@
             </div>
         `);
 
+        // Scroll to bottom and then check if the arrow should be visible (it shouldn't be)
         scrollToBottom();
+        toggleScrollArrow();
     });
 </script>
 {% endblock %}

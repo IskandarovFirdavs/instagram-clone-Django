@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
 from chat.models import Room, Message
@@ -20,7 +21,7 @@ def chat_view(request):
     return render(request, 'chat.html')
 
 
-def room_view(request, room_name, username):
+def room_view(request, room_name):
     existing_room = get_object_or_404(Room, room_name=room_name)
     get_messages = Message.objects.filter(room=existing_room)
     rooms = request.user.chats.all()
@@ -56,6 +57,7 @@ def chats_list(request):
     return render(request, 'chats.html', context)
 
 
+@login_required
 def another_user_profile_view(request, username):
     user = get_object_or_404(UserModel, username=username)
     users = UserModel.objects.exclude(id=request.user.id).order_by('username')
@@ -75,4 +77,5 @@ def another_user_profile_view(request, username):
         )
         room.members.add(request.user, user)
 
-    return redirect('room', room_name=room.room_name, username=request.user.username)
+    return redirect('room', room_name=room.room_name)
+
