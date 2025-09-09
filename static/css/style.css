@@ -114,9 +114,8 @@ body {
 /* Main Content Area - Flexible width with proper margins */
 .main-content {
   flex: 1;
-  margin-left: 244px;
-  margin-right: 320px;
-  max-width: 630px;
+  margin-left: 20%;
+  max-width: 100%;
   padding: 20px;
   min-height: 100vh;
 }

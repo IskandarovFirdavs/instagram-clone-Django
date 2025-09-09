@@ -5,10 +5,9 @@
     <ul class="sidebar-nav">
         <li>
             <a href="{% url 'home' %}" class="{% block home_active %}{% endblock %}">
-                <!-- Instagram Home Icon -->
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 12.01L12.01 2L2 12.01V21C2 21.55 2.45 22 3 22H9V16H15V22H21C21.55 22 22 21.55 22 21V12.01Z"
-                          stroke="none" fill="currentColor"/>
+                <!-- Instagram Home Icon (filled when active) -->
+                <svg class="icon" aria-label="Home" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24">
+                    <path d="M9.005 16.545a2.997 2.997 0 0 1 2.997-2.997A2.997 2.997 0 0 1 15 16.545V22h7V11.543L12 2 2 11.543V22h7.005Z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
                 </svg>
                 <span>Home</span>
             </a>
@@ -16,9 +15,9 @@
         <li>
             <a href="{% url 'search' %}" class="{% block search_active %}{% endblock %}">
                 <!-- Instagram Search Icon -->
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="11" cy="11" r="8" stroke="currentColor" fill="none"/>
-                    <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-linecap="round"/>
+                <svg class="icon" aria-label="Search" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24">
+                    <path d="M19 10.5A8.5 8.5 0 1 1 10.5 2a8.5 8.5 0 0 1 8.5 8.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    <line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="16.511" x2="22" y1="16.511" y2="22"></line>
                 </svg>
                 <span>Search</span>
             </a>
@@ -26,10 +25,10 @@
         <li>
             <a href="{% url 'explore' %}" class="{% block explore_active %}{% endblock %}">
                 <!-- Instagram Explore Icon -->
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon
-                            points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"
-                            stroke="currentColor" fill="none"/>
+                <svg class="icon" aria-label="Explore" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24">
+                    <polygon fill="none" points="13.941 13.953 7.581 16.424 10.06 10.056 16.42 7.585 13.941 13.953" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></polygon>
+                    <polygon fill-rule="evenodd" points="10.06 10.056 13.949 13.945 7.581 16.424 10.06 10.056"></polygon>
+                    <circle cx="12.001" cy="12.005" fill="none" r="10.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></circle>
                 </svg>
                 <span>Explore</span>
             </a>
@@ -37,10 +36,12 @@
         <li>
             <a href="{% url 'reels' %}" class="{% block reels_active %}{% endblock %}">
                 <!-- Instagram Reels Icon -->
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M15.5 2.25L9 8.75V21.25L15.5 14.75V2.25Z" stroke="currentColor" fill="none"/>
-                    <path d="M9 8.75L2.5 15.25V21.25L9 14.75V8.75Z" stroke="currentColor" fill="none"/>
-                    <path d="M15.5 14.75L22 8.25V2.25L15.5 8.75V14.75Z" stroke="currentColor" fill="none"/>
+                <svg class="icon" aria-label="Reels" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24">
+                    <line fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2" x1="2.049" x2="21.95" y1="7.002" y2="7.002"></line>
+                    <line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="13.504" x2="16.362" y1="2.001" y2="7.002"></line>
+                    <line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="7.207" x2="10.002" y1="2.11" y2="7.002"></line>
+                    <path d="M2 12.001v3.449c0 2.849.698 4.006 1.606 4.945.94.908 2.098 1.607 4.946 1.607h6.896c2.848 0 4.006-.699 4.946-1.607.908-.939 1.606-2.096 1.606-4.945V8.552c0-2.848-.698-4.006-1.606-4.945C19.454 2.699 18.296 2 15.448 2H8.552c-2.848 0-4.006.699-4.946 1.607C2.698 4.546 2 5.704 2 8.552Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    <path d="M9.763 17.664a.908.908 0 0 1-.454-.787V11.63a.909.909 0 0 1 1.364-.788l4.545 2.624a.909.909 0 0 1 0 1.575l-4.545 2.624a.91.91 0 0 1-.91 0Z" fill-rule="evenodd"></path>
                 </svg>
                 <span>Reels</span>
             </a>
@@ -48,41 +49,32 @@
         <li>
             <a href="{% url 'chats' %}" class="{% block messages_active %}{% endblock %}">
                 <!-- Instagram Messages Icon -->
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C10.3596 22 8.77516 21.6039 7.35418 20.8583L2.5 22L3.64175 17.3542C2.89608 15.9332 2.5 14.3488 2.5 12.7C2.5 6.47715 6.97715 2 12.5 2H12Z"
-                          stroke="currentColor" fill="none"/>
-                    <path d="M8 12L12 8L16 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg class="icon" aria-label="Direct Messages" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24">
+                    <line fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2" x1="22" x2="9.218" y1="3" y2="10.083"></line>
+                    <polygon fill="none" points="11.698 20.334 22 3.001 2 3.001 9.218 10.084 11.698 20.334" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></polygon>
                 </svg>
                 <span>Messages</span>
             </a>
         </li>
         <li>
             <a href="{% url 'notifications' %}" class="{% block notifications_active %}{% endblock %}">
-                {% if unread_notifications > 0 %}
-                <span class="badge bg-secondary" style="margin-right:15px">
-                    <svg color="white" width="25" height="25" viewBox="0 0 24 24" fill="non"
-                         xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.35l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                          stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <circle cx="19" cy="5" r="4" fill="red" stroke="white" stroke-width="1.5"/>
+                <!-- Instagram Notifications Icon -->
+                <svg class="icon" aria-label="Notifications" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24">
+                    <path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938m0-2a6.04 6.04 0 0 0-4.797 2.127 6.052 6.052 0 0 0-4.787-2.127A6.985 6.985 0 0 0 .5 9.122c0 3.61 2.55 5.827 5.015 7.97.283.246.569.494.853.747l1.027.918a44.998 44.998 0 0 0 3.518 3.018 2 2 0 0 0 2.174 0 45.263 45.263 0 0 0 3.626-3.115l.922-.824c.293-.26.59-.519.885-.774 2.334-2.025 4.98-4.32 4.98-7.94a6.985 6.985 0 0 0-6.708-7.218Z"></path>
                 </svg>
-                </span>
-                {% else %}
-                <i style="font-size: 22px; width: 40px;" class="fa-regular fa-heart"></i>
-
+                <span>Notifications</span>
+                {% if unread_notifications > 0 %}
+                <span class="notification-badge"></span>
                 {% endif %}
-
-                Notifications
-
             </a>
         </li>
         <li>
             <a href="{% url 'create' %}" class="{% block create_active %}{% endblock %}">
-                <!-- Instagram Create/Plus Icon -->
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="3" ry="3" stroke="currentColor" fill="none"/>
-                    <line x1="12" y1="8" x2="12" y2="16" stroke="currentColor" stroke-linecap="round"/>
-                    <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-linecap="round"/>
+                <!-- Instagram Create Icon -->
+                <svg class="icon" aria-label="New Post" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24">
+                    <path d="M2 12v3.45c0 2.849.698 4.005 1.606 4.944.94.909 2.098 1.608 4.946 1.608h6.896c2.848 0 4.006-.7 4.946-1.608C21.302 19.455 22 18.3 22 15.45V8.552c0-2.849-.698-4.006-1.606-4.945C19.454 2.7 18.296 2 15.448 2H8.552c-2.848 0-4.006.699-4.946 1.607C2.698 4.547 2 5.703 2 8.552Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    <line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="6.545" x2="17.455" y1="12.001" y2="12.001"></line>
+                    <line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="12.003" x2="12.003" y1="6.545" y2="17.455"></line>
                 </svg>
                 <span>Create</span>
             </a>
@@ -93,17 +85,13 @@
         <a href="{% url 'profile' %}" class="{% block profile_active %}{% endblock %}">
             <!-- Instagram Profile Icon -->
             {% if user.avatar %}
-            <img style="height: 30px; width: 30px; border-radius: 50%; object-fit: fit; margin-right: 15px;"
+            <img style="height: 24px; width: 24px; border-radius: 50%; object-fit: cover; margin-right: 16px;"
                  src="{{ user.avatar.url }}">
             {% else %}
-            <svg class="icon"
-                 viewBox="0 0 24 24"
-                 fill="none"
-                 stroke="currentColor"
-                 stroke-width="2"
-                 style="height: 30px; width: 30px; border-radius: 50%; margin-right: 15px;">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
+            <svg class="icon" aria-label="Profile" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <circle cx="12.004" cy="12.005" fill="none" r="10.5" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"></circle>
+                <path d="M18.793 20.014a9.96 9.96 0 0 0-13.586.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"></path>
+                <circle cx="12.006" cy="9.367" fill="none" r="4.188" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"></circle>
             </svg>
             {% endif %}
             <span>Profile</span>
@@ -124,10 +112,10 @@
     <div class="sidebar-more">
         <a href="#" class="more-btn" id="more-btn">
             <!-- Instagram More/Menu Icon -->
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" stroke-linecap="round"/>
-                <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-linecap="round"/>
-                <line x1="4" y1="18" x2="20" y2="18" stroke="currentColor" stroke-linecap="round"/>
+            <svg class="icon" aria-label="Settings" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="3" x2="21" y1="4" y2="4"></line>
+                <line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="3" x2="21" y1="12" y2="12"></line>
+                <line fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="3" x2="21" y1="20" y2="20"></line>
             </svg>
             <span>More</span>
         </a>
@@ -136,10 +124,10 @@
             <div class="more-menu">
                 <a href="#" class="more-item">
                     <!-- Settings Icon -->
-                    <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" fill="none"/>
-                        <path d="M19.4 15C19.2669 15.3016 19.2272 15.6362 19.286 15.9606C19.3448 16.285 19.4995 16.5843 19.73 16.82L19.79 16.88C19.976 17.0657 20.1235 17.2863 20.2241 17.5291C20.3248 17.7719 20.3766 18.0322 20.3766 18.295C20.3766 18.5578 20.3248 18.8181 20.2241 19.0609C20.1235 19.3037 19.976 19.5243 19.79 19.71C19.6043 19.896 19.3837 20.0435 19.1409 20.1441C18.8981 20.2448 18.6378 20.2966 18.375 20.2966C18.1122 20.2966 17.8519 20.2448 17.6091 20.1441C17.3663 20.0435 17.1457 19.896 16.96 19.71L16.9 19.65C16.6643 19.4195 16.365 19.2648 16.0406 19.206C15.7162 19.1472 15.3816 19.1869 15.08 19.32C14.7842 19.4468 14.532 19.6572 14.3543 19.9255C14.1766 20.1938 14.0813 20.5082 14.08 20.83V21C14.08 21.5304 13.8693 22.0391 13.4942 22.4142C13.1191 22.7893 12.6104 23 12.08 23C11.5496 23 11.0409 22.7893 10.6658 22.4142C10.2907 22.0391 10.08 21.5304 10.08 21V20.91C10.0723 20.579 9.96512 20.2573 9.77251 19.9887C9.5799 19.7201 9.31074 19.5176 9 19.41C8.69838 19.2769 8.36381 19.2372 8.03941 19.296C7.71502 19.3548 7.41568 19.5095 7.18 19.74L7.12 19.8C6.93425 19.986 6.71368 20.1335 6.47088 20.2341C6.22808 20.3348 5.96783 20.3866 5.705 20.3866C5.44217 20.3866 5.18192 20.3348 4.93912 20.2341C4.69632 20.1335 4.47575 19.986 4.29 19.8C4.10405 19.6143 3.95653 19.3937 3.85588 19.1509C3.75523 18.9081 3.70343 18.6478 3.70343 18.385C3.70343 18.1222 3.75523 17.8619 3.85588 17.6191C3.95653 17.3763 4.10405 17.1557 4.29 16.97L4.35 16.91C4.58054 16.6743 4.73519 16.375 4.794 16.0506C4.85282 15.7262 4.81312 15.3916 4.68 15.09C4.55324 14.7942 4.34276 14.542 4.07447 14.3643C3.80618 14.1866 3.49179 14.0913 3.17 14.09H3C2.46957 14.09 1.96086 13.8793 1.58579 13.5042C1.21071 13.1291 1 12.6204 1 12.09C1 11.5596 1.21071 11.0509 1.58579 10.6758C1.96086 10.3007 2.46957 10.09 3 10.09H3.09C3.42099 10.0823 3.742 9.97512 4.01062 9.78251C4.27925 9.5899 4.48167 9.32074 4.59 9.01C4.72312 8.70838 4.76282 8.37381 4.704 8.04941C4.64519 7.72502 4.49054 7.42568 4.26 7.19L4.2 7.13C4.01405 6.94425 3.86653 6.72368 3.76588 6.48088C3.66523 6.23808 3.61343 5.97783 3.61343 5.715C3.61343 5.45217 3.66523 5.19192 3.76588 4.94912C3.86653 4.70632 4.01405 4.48575 4.2 4.3C4.38575 4.11405 4.60632 3.96653 4.84912 3.86588C5.09192 3.76523 5.35217 3.71343 5.615 3.71343C5.87783 3.71343 6.13808 3.76523 6.38088 3.86588C6.62368 3.96653 6.84425 4.11405 7.03 4.3L7.09 4.36C7.32568 4.59054 7.62502 4.74519 7.94941 4.804C8.27381 4.86282 8.60838 4.82312 8.91 4.69H9C9.29577 4.56324 9.54802 4.35276 9.72569 4.08447C9.90337 3.81618 9.99872 3.50179 10 3.18V3C10 2.46957 10.2107 1.96086 10.5858 1.58579C10.9609 1.21071 11.4696 1 12 1C12.5304 1 13.0391 1.21071 13.4142 1.58579C13.7893 1.96086 14 2.46957 14 3V3.09C14.0013 3.41179 14.0966 3.72618 14.2743 3.99447C14.452 4.26276 14.7042 4.47324 15 4.6C15.3016 4.73312 15.6362 4.77282 15.9606 4.714C16.285 4.65519 16.5843 4.50054 16.82 4.27L16.88 4.21C17.0657 4.02405 17.2863 3.87653 17.5291 3.77588C17.7719 3.67523 18.0322 3.62343 18.295 3.62343C18.5578 3.62343 18.8181 3.67523 19.0609 3.77588C19.3037 3.87653 19.5243 4.02405 19.71 4.21C19.896 4.39575 20.0435 4.61632 20.1441 4.85912C20.2448 5.10192 20.2966 5.36217 20.2966 5.625C20.2966 5.88783 20.2448 6.14808 20.1441 6.39088C20.0435 6.63368 19.896 6.85425 19.71 7.04L19.65 7.1C19.4195 7.33568 19.2648 7.63502 19.206 7.95941C19.1472 8.28381 19.1869 8.61838 19.32 8.92V9C19.4468 9.29577 19.6572 9.54802 19.9255 9.72569C20.1938 9.90337 20.5082 9.99872 20.83 10H21C21.5304 10 22.0391 10.2107 22.4142 10.5858C22.7893 10.9609 23 11.4696 23 12C23 12.5304 22.7893 13.0391 22.4142 13.4142C22.0391 13.7893 21.5304 14 21 14H20.91C20.5882 14.0013 20.2738 14.0966 20.0055 14.2743C19.7372 14.452 19.5268 14.7042 19.4 15Z"
-                              stroke="currentColor" fill="none"/>
+                    <svg class="more-icon" aria-label="Settings" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24">
+                        <circle cx="12" cy="12" r="1.5" fill="currentColor"></circle>
+                        <circle cx="12" cy="5.5" r="1.5" fill="currentColor"></circle>
+                        <circle cx="12" cy="18.5" r="1.5" fill="currentColor"></circle>
                     </svg>
                     <span>Settings</span>
                 </a>
@@ -152,9 +140,8 @@
                 </a>
                 <a href="{% url 'saved' %}" class="more-item">
                     <!-- Saved Icon -->
-                    <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 21L12 16L5 21V5C5 4.46957 5.21071 3.96086 5.58579 3.58579C5.96086 3.21071 6.46957 3 7 3H17C17.5304 3 18.0391 3.21071 18.4142 3.58579C18.7893 3.96086 19 4.46957 19 5V21Z"
-                              stroke="currentColor" fill="none"/>
+                    <svg class="more-icon" aria-label="Saved" fill="currentColor" height="24" role="img" viewBox="0 0 24 24" width="24">
+                        <polygon fill="none" points="20 21 12 13.44 4 21 4 3 20 3 20 21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></polygon>
                     </svg>
                     <span>Saved</span>
                 </a>
@@ -176,8 +163,7 @@
                 <a href="#" class="more-item">
                     <!-- Report Icon -->
                     <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
-                              stroke="currentColor" fill="none"/>
+                        <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" fill="none"/>
                         <polyline points="14,2 14,8 20,8" stroke="currentColor" fill="none"/>
                         <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor"/>
                         <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor"/>
@@ -189,8 +175,7 @@
                 <a href="#" class="more-item">
                     <!-- Switch Accounts Icon -->
                     <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
-                              stroke="currentColor" fill="none"/>
+                        <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" fill="none"/>
                         <circle cx="8.5" cy="7" r="4" stroke="currentColor" fill="none"/>
                         <line x1="20" y1="8" x2="20" y2="14" stroke="currentColor"/>
                         <line x1="23" y1="11" x2="17" y2="11" stroke="currentColor"/>
@@ -200,8 +185,7 @@
                 <a href="{% url 'logout' %}" class="more-item">
                     <!-- Logout Icon -->
                     <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9"
-                              stroke="currentColor" fill="none"/>
+                        <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" fill="none"/>
                         <polyline points="16,17 21,12 16,7" stroke="currentColor" fill="none"/>
                         <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor"/>
                     </svg>
@@ -298,7 +282,7 @@
     }
 
     /* Special styling for filled home icon when active */
-    .sidebar-nav a.active .icon path[fill="currentColor"] {
+    .sidebar-nav a.active .icon {
         fill: currentColor;
     }
 
@@ -416,78 +400,29 @@
         margin: 8px 0;
     }
 
-    /* Enhanced Theme Styles */
-    body.dark-theme {
-        background-color: #000;
-        color: #fff;
+    /* Notification Badge */
+    .notification-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 8px;
+        height: 8px;
+        background-color: #ff3040;
+        border-radius: 50%;
+        border: 2px solid #000;
     }
 
-    body.dark-theme .main-content {
-        background-color: #000;
-    }
-
-    body.dark-theme .post {
-        background-color: #000;
-        border-color: #262626;
-    }
-
-    body.dark-theme .stories-container {
-        background-color: #000;
-        border-color: #262626;
-    }
-
-    /* Light theme styles */
-    body.light-theme {
-        background-color: #fafafa;
-        color: #262626;
-    }
-
-    body.light-theme .sidebar {
+    /* Active state for navigation items */
+    .sidebar-nav a.active::before {
+        content: '';
+        position: absolute;
+        left: -12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 24px;
         background-color: #fff;
-        border-color: #dbdbdb;
-    }
-
-    body.light-theme .sidebar-nav a,
-    body.light-theme .sidebar-profile a,
-    body.light-theme .more-btn {
-        color: #262626;
-    }
-
-    body.light-theme .sidebar-nav a:hover,
-    body.light-theme .sidebar-profile a:hover,
-    body.light-theme .more-btn:hover {
-        background-color: #f5f5f5;
-    }
-
-    body.light-theme .more-dropdown {
-        background-color: #fff;
-        border: 1px solid #dbdbdb;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-
-    body.light-theme .more-item {
-        color: #262626;
-    }
-
-    body.light-theme .more-item:hover {
-        background-color: #f5f5f5;
-    }
-
-    body.light-theme .more-divider {
-        background-color: #dbdbdb;
-    }
-
-    /* Icon Animation Effects */
-    @keyframes iconPulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
-
-    .sidebar-nav a:active .icon,
-    .sidebar-profile a:active .icon,
-    .more-btn:active .icon {
-        animation: iconPulse 0.3s ease;
+        border-radius: 0 2px 2px 0;
     }
 
     /* Mobile responsive */
@@ -521,41 +456,21 @@
             left: 72px;
             bottom: 20px;
         }
+
+        .notification-badge {
+            top: 8px;
+            right: 8px;
+        }
+
+        .sidebar-nav a.active::before {
+            left: 0;
+        }
     }
 
     @media (max-width: 768px) {
         .sidebar {
             display: none;
         }
-    }
-
-    /* Notification Badge */
-    .notification-badge {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        width: 8px;
-        height: 8px;
-        background-color: #ff3040;
-        border-radius: 50%;
-        border: 2px solid #000;
-    }
-
-    /* Active state for navigation items */
-    .sidebar-nav a.active::before {
-        content: '';
-        position: absolute;
-        left: -12px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 3px;
-        height: 24px;
-        background-color: #fff;
-        border-radius: 0 2px 2px 0;
-    }
-
-    body.light-theme .sidebar-nav a.active::before {
-        background-color: #262626;
     }
 </style>
 
@@ -635,8 +550,6 @@
                 body.style.transition = '';
             }, 300);
         }
-
-
 
         // Enhanced notification system
         function showNotification(message, type = 'info') {
