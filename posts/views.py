@@ -426,7 +426,7 @@ def home_reply_comment_like(request, id):
 
 @login_required(login_url='login')
 def reels_view(request):
-    reels = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Reels).exclude(userID=request.user).order_by(
+    reels = PostModel.objects.filter(post_type=PostModel.PostTypeChoice.Reels).order_by(
         '-created_at')
     qs = UserModel.objects.exclude(id=request.user.id).order_by('username')
     unread_notifications = NotificationModel.objects.filter(owner=request.user, is_read=False).count()

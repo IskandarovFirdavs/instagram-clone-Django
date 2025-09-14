@@ -684,12 +684,12 @@
             {% if message.sender.username == request.user.username %}
             <div class="single-message sent">
                 <div id="{{ message.id }}" class="msg-body">{{ message.message }}</div>
-                <p class="sender">Me • {{ message.timestamp|time }}</p>
+                <p class="sender">Me • {{ message.created_at|time }}</p>
             </div>
             {% else %}
             <div class="single-message">
                 <div class="msg-body">{{ message.message }}</div>
-                <p class="sender">{{ message.sender }} • {{ message.timestamp|time }}</p>
+                <p class="sender">{{ message.sender }} • {{ message.created_at|time }}</p>
             </div>
 
             {% endif %}
