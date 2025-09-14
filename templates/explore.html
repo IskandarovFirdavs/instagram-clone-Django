@@ -641,6 +641,9 @@
     z-index: 1000;
 }
 
+.modal-overlay.hidden {
+    display: none !important;
+}
 
 <!--share-->
 .shareModal {
@@ -897,9 +900,10 @@
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                             </svg>
                         </button>
-                   <button id="modalOpenShareBtn" type="button" class="open-share-btn" aria-label="Share post">
+                        <button id="modalOpenShareBtn" type="button" class="open-share-btn" aria-label="Share post">
     <i class="fa fa-share"></i>
 </button>
+
 
 
                     </div>
@@ -952,6 +956,22 @@
 
 {% block scripts %}
 <script>
+    // Add getCookie function for CSRF token handling
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     const globalPostModal = document.getElementById('globalPostModal');
     const modalImage = document.getElementById('modalImage');
     const modalVideo = document.getElementById('modalVideo');
@@ -970,6 +990,7 @@
     const modalSaveIcon = document.getElementById('modalSaveIcon');
     const modalComments = document.getElementById('modalComments');
     const modalCommentInput = document.getElementById('modalCommentInput');
+    const modalOpenShareBtn = document.getElementById('modalOpenShareBtn'); // Added this line
 
     modalComments.addEventListener('click', function(e) {
         const heartBtn = e.target.closest('.comment-heart');
@@ -1178,6 +1199,9 @@ const reelsData = {
 
         modalUsername.textContent = postData.username;
         modalPostIdInput.value = postData.id;
+        if (modalOpenShareBtn) {
+            modalOpenShareBtn.dataset.postId = postData.id;
+        }
 
         if (postData.userAvatar && postData.userAvatar !== 'None') {
             modalAvatar.innerHTML = `<img src="${postData.userAvatar}" alt="${postData.username}">`;
@@ -1349,110 +1373,157 @@ const reelsData = {
     }
 </script>
 <script>
-'use strict';
+    'use strict';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const shareModalOverlay = document.getElementById('shareModalOverlay');
-  const closeShareBtn = document.getElementById('close-share-modal-btn');
-  const modalPostIdInput = document.getElementById('modalPostIdInput');
-  const modalOpenShareBtn = document.getElementById('modalOpenShareBtn');
+    document.addEventListener('DOMContentLoaded', () => {
+      const shareModalOverlay = document.getElementById('shareModalOverlay');
+      const closeShareBtn = document.getElementById('close-share-modal-btn');
+      const modalPostIdInput = document.getElementById('modalPostIdInput');
+      const modalOpenShareBtn = document.getElementById('modalOpenShareBtn');
 
-  if (!shareModalOverlay) console.warn('shareModalOverlay element not found (id="shareModalOverlay")');
-  if (!modalPostIdInput) console.warn('modalPostIdInput element not found (id="modalPostIdInput")');
+      if (!shareModalOverlay) console.warn('shareModalOverlay element not found (id="shareModalOverlay")');
+      if (!modalPostIdInput) console.warn('modalPostIdInput element not found (id="modalPostIdInput")');
 
-  const getForwardForms = () => document.querySelectorAll('.forward-form');
+      const getForwardForms = () => document.querySelectorAll('.forward-form');
 
-  function openShareModalForPost(postId) {
-    console.log('[share] openShareModalForPost:', postId);
-    if (!shareModalOverlay || !modalPostIdInput) {
-      console.error('[share] Missing required elements to open share modal.');
-      return;
-    }
+      function openShareModalForPost(postId) {
+        console.log('[share] openShareModalForPost:', postId);
+        if (!shareModalOverlay || !modalPostIdInput) {
+          console.error('[share] Missing required elements to open share modal.');
+          return;
+        }
 
-    modalPostIdInput.value = String(postId);
+        modalPostIdInput.value = String(postId);
 
-    getForwardForms().forEach(form => {
-      const roomName = form.dataset.roomName;
-      if (!roomName) {
-        console.warn('[share] forward-form missing data-room-name', form);
-        return;
+        getForwardForms().forEach(form => {
+          const roomName = form.dataset.roomName;
+          if (!roomName) {
+            console.warn('[share] forward-form missing data-room-name', form);
+            return;
+          }
+          form.action = `/forward/${encodeURIComponent(roomName)}/${encodeURIComponent(postId)}/`;
+          const hiddenInput = form.querySelector('.forward-post-id-input');
+          if (hiddenInput) hiddenInput.value = postId;
+        });
+
+        shareModalOverlay.classList.remove('hidden');
       }
-      form.action = `/forward/${encodeURIComponent(roomName)}/${encodeURIComponent(postId)}/`;
-      const hiddenInput = form.querySelector('.forward-post-id-input');
-      if (hiddenInput) hiddenInput.value = postId;
-    });
 
-    shareModalOverlay.classList.remove('hidden');
-  }
-
-  function closeShareModal() {
-    if (!shareModalOverlay) return;
-    shareModalOverlay.classList.add('hidden');
-  }
-
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest && e.target.closest('.open-share-btn');
-    if (!btn) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const postIdFromBtn = btn.dataset.postId;
-    const fallbackPostId = modalPostIdInput ? modalPostIdInput.value : null;
-    const postId = postIdFromBtn || fallbackPostId;
-
-    if (!postId) {
-      console.error('[share] No post id available to open share modal. Button:', btn, 'modalPostIdInput:', modalPostIdInput);
-      alert('Cannot open share dialog: post id missing.');
-      return;
-    }
-
-    openShareModalForPost(postId);
-  });
-
-  if (closeShareBtn) {
-    closeShareBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeShareModal();
-    });
-  }
-
-  if (shareModalOverlay) {
-    shareModalOverlay.addEventListener('click', (e) => {
-      if (e.target === shareModalOverlay) closeShareModal();
-    });
-  }
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && shareModalOverlay && !shareModalOverlay.classList.contains('hidden')) {
-      closeShareModal();
-    }
-  });
-
-  if (modalOpenShareBtn) {
-    modalOpenShareBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const currentPostId = modalPostIdInput ? modalPostIdInput.value : null;
-      if (!currentPostId) {
-        console.error('[share] modalOpenShareBtn clicked but modalPostIdInput is empty.');
-        alert('Cannot share: post id missing.');
-        return;
+      function closeShareModal() {
+        if (!shareModalOverlay) return;
+        shareModalOverlay.classList.add('hidden');
       }
-      openShareModalForPost(currentPostId);
-    });
-  }
 
-  window.__debugShareModal = {
-    open: openShareModalForPost,
-    close: closeShareModal,
-    elements: {
-      shareModalOverlay,
-      modalPostIdInput,
-      getForwardForms,
-    }
-  };
-});
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest && e.target.closest('.open-share-btn');
+        if (!btn) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const postIdFromBtn = btn.dataset.postId;
+        const fallbackPostId = modalPostIdInput ? modalPostIdInput.value : null;
+        const postId = postIdFromBtn || fallbackPostId;
+
+        if (!postId) {
+          console.error('[share] No post id available to open share modal. Button:', btn, 'modalPostIdInput:', modalPostIdInput);
+          alert('Cannot open share dialog: post id missing.');
+          return;
+        }
+
+        openShareModalForPost(postId);
+      });
+
+      if (closeShareBtn) {
+        closeShareBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          closeShareModal();
+        });
+      }
+
+      if (shareModalOverlay) {
+        shareModalOverlay.addEventListener('click', (e) => {
+          if (e.target === shareModalOverlay) closeShareModal();
+        });
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && shareModalOverlay && !shareModalOverlay.classList.contains('hidden')) {
+          closeShareModal();
+        }
+      });
+
+      if (modalOpenShareBtn) {
+        modalOpenShareBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const currentPostId = modalPostIdInput ? modalPostIdInput.value : null;
+          if (!currentPostId) {
+            console.error('[share] modalOpenShareBtn clicked but modalPostIdInput is empty.');
+            alert('Cannot share: post id missing.');
+            return;
+          }
+          openShareModalForPost(currentPostId);
+        });
+      }
+
+      window.__debugShareModal = {
+        open: openShareModalForPost,
+        close: closeShareModal,
+        elements: {
+          shareModalOverlay,
+          modalPostIdInput,
+          getForwardForms,
+        }
+      };
+    });
 </script>
+<script>
+    document.querySelectorAll('.forward-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const postId = document.getElementById('modalPostIdInput').value;
+        const roomName = this.dataset.roomName;
 
+        fetch(`/forward/${roomName}/${postId}/`, {
+    method: 'POST',
+    headers: {"X-CSRFToken": getCookie('csrftoken')},
+    credentials: 'same-origin'
+}).then(res => res.json()).then(data => {
+            if (data.status === "ok") {
+                alert("Shared!");
+                document.getElementById('shareModalOverlay').classList.add('hidden');
+            }
+        });
+    });
+});
+
+</script>
+<script>
+    document.addEventListener("click", function(e){
+    const preview = e.target.closest(".post-preview");
+    if (!preview) return;
+
+    const postId = preview.dataset.postId;
+    const postType = preview.dataset.type;
+
+    const item = document.querySelector(`.explore-item[data-id="${postId}"][data-type="${postType}"]`);
+    if (item) {
+        const postData = {
+            type: item.dataset.type,
+            id: item.dataset.id,
+            url: item.dataset.url,
+            username: item.dataset.username,
+            userAvatar: item.dataset.userAvatar,
+            caption: item.dataset.caption,
+            likes: item.dataset.likes,
+            comments: item.dataset.comments,
+            location: item.dataset.location,
+            views: item.dataset.views
+        };
+        openModal(postData);
+    }
+});
+
+</script>
 {% endblock %}

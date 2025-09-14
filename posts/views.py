@@ -10,15 +10,17 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView, ListView
-from django.urls import reverse
-
 from chat.models import Room, Message
 from posts.forms import PostModelForm
 from posts.models import PostModel, PostLikeModel, CommentModel, CommentLikeModel, ReplyCommentModel, \
     ReplyCommentLikeModel, NotificationModel
 from collections import defaultdict
+from users.models import UserModel
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
-from users.models import UserModel, Follow
 
 
 @login_required(login_url='login')
@@ -681,48 +683,30 @@ def notification_view(request):
     return render(request, 'notifications.html', context)
 
 
-@login_required
-def forward_message(request, room_name, post_id):
-    if request.method != 'POST':
-        return redirect('chats')
 
-    post = get_object_or_404(PostModel, id=post_id)
-    room = get_object_or_404(Room, room_name=room_name)
+@csrf_exempt
+def share_post(request, room_name, post_id):
+    if request.method == "POST" and request.user.is_authenticated:
+        room = Room.objects.get(room_name=room_name)
+        post = PostModel.objects.get(id=post_id)
 
+        msg = Message.objects.create(room=room, sender=request.user, post=post)
 
-    if post.post_type == PostModel.PostTypeChoice.Reels:
-        page_name = 'reels'
-    else:
-        page_name = 'explore'
+        channel_layer = get_channel_layer()
+        data = {
+            "id": msg.id,
+            "room_name": room.room_name,
+            "sender": request.user.username,
+            "post_id": post.id,
+            "post_type": post.post_type,
+            "caption": post.caption,
+            "media_url": post.contentUrl.url,
+            "username": post.userID.username,
+        }
+        async_to_sync(channel_layer.group_send)(
+            f"room_{room.room_name}",
+            {"type": "send_message", "message": data}
+        )
+        return JsonResponse({"status": "ok", "message": data})
+    return JsonResponse({"status": "error"}, status=400)
 
-    try:
-        page_path = reverse(page_name)
-    except Exception:
-        page_path = reverse('home')
-
-    post_page_url = request.build_absolute_uri(f"{page_path}?post_id={post.id}")
-
-    try:
-        like_path = reverse('like', args=[post.id])
-        like_next = page_path
-        like_url = request.build_absolute_uri(f"{like_path}?next={like_next}")
-    except Exception:
-        like_url = ''
-
-    caption = (post.caption or '').strip()
-    message_text = f"Forwarded post #{post.id}"
-    if caption:
-        message_text += f": {caption}"
-    if post_page_url:
-        message_text += f" ({post_page_url})"
-    elif like_url:
-        message_text += f" ({like_url})"
-
-    Message.objects.create(
-        sender=request.user,
-        room=room,
-        message=message_text
-    )
-
-    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'home'
-    return redirect(next_url)

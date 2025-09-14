@@ -732,94 +732,129 @@
 
 {% block scripts %}
 <script>
-        const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
-    const socket = new WebSocket(`${protocol}${window.location.host}/ws/messages/{{room_name}}/`);
+const ROOM_NAME = "{{ room_name.room_name|escapejs }}";   // aniq room_name string
+const USERNAME = "{{ request.user.username|escapejs }}";
 
-    const messageForm = document.getElementById("msg-form");
-    const messageInput = document.getElementById("message");
-    const chatsDiv = document.getElementById("chats-container");
+const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+const socket = new WebSocket(`${protocol}${window.location.host}/ws/messages/${ROOM_NAME}/`);
 
-    // --- NEW: Get the arrow element ---
-    const scrollArrow = document.getElementById("scrollToBottomArrow");
+const messageForm = document.getElementById("msg-form");
+const messageInput = document.getElementById("message");
+const chatsDiv = document.getElementById("chats-container");
+const scrollArrow = document.getElementById("scrollToBottomArrow");
 
-    // Auto-resize textarea
-    messageInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-    });
+// auto-resize
+messageInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+});
 
-    function scrollToBottom() {
-        // We use scrollIntoView for a slightly more reliable smooth scroll effect
-        // The anchor link will still work as a fallback
-        const lastMessage = chatsDiv.lastElementChild;
-        if (lastMessage) {
-            lastMessage.scrollIntoView({ behavior: "smooth", block: "end" });
-        }
+function scrollToBottom() {
+    const lastMessage = chatsDiv.lastElementChild;
+    if (lastMessage) lastMessage.scrollIntoView({ behavior: "smooth", block: "end" });
+}
+
+function toggleScrollArrow() {
+    const buffer = 10;
+    if (chatsDiv.scrollHeight - chatsDiv.scrollTop - chatsDiv.clientHeight > buffer) {
+        if (scrollArrow) scrollArrow.style.display = 'block';
+    } else {
+        if (scrollArrow) scrollArrow.style.display = 'none';
     }
+}
 
-    // --- NEW: Function to check scroll position and toggle arrow visibility ---
-    function toggleScrollArrow() {
-        // A small buffer (e.g., 10px) to ensure it triggers correctly
-        const buffer = 10;
+// initial checks
+chatsDiv.scrollTop = chatsDiv.scrollHeight;
+toggleScrollArrow();
+chatsDiv.addEventListener('scroll', toggleScrollArrow);
 
-        // If the user's scroll position from the bottom is greater than the buffer, show the arrow
-        if (chatsDiv.scrollHeight - chatsDiv.scrollTop - chatsDiv.clientHeight > buffer) {
-            scrollArrow.style.display = 'block';
-        } else {
-            scrollArrow.style.display = 'none';
-        }
-    }
+// submit handler: send JSON to WS
+messageForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const message = messageInput.value.trim();
+    if (!message) return;
+    const payload = {
+        message: message,
+        room_name: ROOM_NAME,
+        sender: USERNAME
+    };
+    socket.send(JSON.stringify(payload));
+    messageInput.value = "";
+    messageInput.style.height = 'auto';
+});
 
-    // Initial scroll to the bottom when the page loads
-    chatsDiv.scrollTop = chatsDiv.scrollHeight;
+// single unified onmessage handler
+socket.addEventListener("message", function(e) {
+    // payload shape: {"message": {...}}
+    const wrapped = JSON.parse(e.data);
+    const data = wrapped.message;
+    const isCurrentUser = data.sender === USERNAME;
+    const now = new Date();
+    const timeString = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 
-    // --- NEW: Run the visibility check when the page loads and whenever the user scrolls ---
-    toggleScrollArrow();
-    chatsDiv.addEventListener('scroll', toggleScrollArrow);
+    // remove empty-state if exists
+    const emptyState = chatsDiv.querySelector('.empty-state');
+    if (emptyState) emptyState.remove();
 
-    messageForm.addEventListener("submit", function(e) {
-        e.preventDefault();
-        const message = messageInput.value.trim();
-        if (message) {
-            socket.send(JSON.stringify({
-                message: message,
-                room_name: "{{room_name}}",
-                sender: "{{user}}"
-            }));
-            messageInput.value = "";
-            messageInput.style.height = 'auto';
-        }
-    });
+    const div = document.createElement("div");
+    div.classList.add("single-message");
+    if (isCurrentUser) div.classList.add("sent");
 
-    messageInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            messageForm.dispatchEvent(new Event('submit'));
-        }
-    });
-
-    socket.addEventListener("message", (e) => {
-        const data = JSON.parse(e.data).message;
-        const isCurrentUser = data.sender === "{{user}}";
-
-        const emptyState = chatsDiv.querySelector('.empty-state');
-        if (emptyState) {
-            emptyState.remove();
-        }
-
-        const now = new Date();
-        const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-        chatsDiv.insertAdjacentHTML('beforeend', `
-            <div class="single-message ${isCurrentUser ? 'sent' : ''}">
-                <div class="msg-body">${data.message}</div>
-                <p class="sender">${isCurrentUser ? 'Me' : data.sender} • ${timeString}</p>
+    if (data.post_id) {
+        div.innerHTML = `
+          <div class="msg-body">
+            <div class="post-preview" data-post-id="${data.post_id}" data-type="${data.post_type || 'post'}">
+              <img src="${data.media_url}" style="width:200px;border-radius:8px;cursor:pointer">
+              <p><strong>${data.username}</strong>: ${escapeHtml(data.caption || '')}</p>
             </div>
-        `);
+          </div>
+          <p class="sender">${isCurrentUser ? 'Me' : escapeHtml(data.sender)} • ${timeString}</p>
+        `;
+    } else {
+        div.innerHTML = `
+          <div class="msg-body">${escapeHtml(data.message || '')}</div>
+          <p class="sender">${isCurrentUser ? 'Me' : escapeHtml(data.sender)} • ${timeString}</p>
+        `;
+    }
 
-        // Scroll to bottom and then check if the arrow should be visible (it shouldn't be)
-        scrollToBottom();
-        toggleScrollArrow();
+    chatsDiv.appendChild(div);
+    div.scrollIntoView({behavior: "smooth"});
+    toggleScrollArrow();
+});
+
+// helper to avoid XSS in inserted text
+function escapeHtml(unsafe) {
+    return (''+unsafe).replace(/[&<>"'`=\/]/g, function(s) {
+        return ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'
+        })[s];
     });
+}
+
+// handle clicking preview to open explore modal
+document.addEventListener("click", function(e){
+    const preview = e.target.closest(".post-preview");
+    if (!preview) return;
+
+    const postId = preview.dataset.postId;
+    const postType = preview.dataset.type;
+    const item = document.querySelector(`.explore-item[data-id="${postId}"][data-type="${postType}"]`);
+    if (item) {
+        const postData = {
+            type: item.dataset.type,
+            id: item.dataset.id,
+            url: item.dataset.url,
+            username: item.dataset.username,
+            userAvatar: item.dataset.userAvatar,
+            caption: item.dataset.caption,
+            likes: item.dataset.likes,
+            comments: item.dataset.comments,
+            location: item.dataset.location,
+            views: item.dataset.views
+        };
+        if (typeof openModal === 'function') openModal(postData);
+    }
+});
 </script>
+
 {% endblock %}
