@@ -683,15 +683,56 @@
             {% for message in messages %}
             {% if message.sender.username == request.user.username %}
             <div class="single-message sent">
+                {% if message.post %}
+                <div id="{{ message.id }}" class="msg-body" style="width: 250px;">
+                    {% if message.post.post_type == 'REELS' %}
+                    <div style="position: relative; display: inline-block; width: 100%;">
+                        <video src="{{ message.post.contentUrl.url }}"
+                               style="width: 100%; border-radius: 8px; display: block;">
+                        </video>
+                        <i class="fa-solid fa-play"
+                           style="position: absolute; top: 10px; left: 10px; color: white; font-size: 20px;">
+                        </i>
+                    </div>
+                    {% else %}
+                    <img src="{{ message.post.contentUrl.url }}" style="width:100%; border-radius:8px;">
+                    {% endif %}
+                    <p><strong>{{ message.post.userID.username }}</strong>: {{ message.post.caption|default:"Shared a post" }}</p>
+                </div>
+                {% else %}
                 <div id="{{ message.id }}" class="msg-body">{{ message.message }}</div>
+                {% endif %}
                 <p class="sender">Me • {{ message.created_at|time }}</p>
             </div>
             {% else %}
             <div class="single-message">
-                <div class="msg-body">{{ message.message }}</div>
+                {% if message.post %}
+                <div class="msg-body" style="width: 250px;">
+                    <div class="post-preview" data-post-id="{{ message.post.id }}"
+                         data-type="{{ message.post.post_type }}"
+                         style="cursor:pointer; width: 100%;">
+
+                        {% if message.post.post_type == 'REELS' %}
+                        <div style="position: relative; display: inline-block; width: 100%;">
+                            <video src="{{ message.post.contentUrl.url }}"
+                                   style="width: 100%; border-radius: 8px; display: block;">
+                            </video>
+                            <i class="fa-solid fa-play"
+                               style="position: absolute; top: 10px; left: 10px; color: white; font-size: 20px;">
+                            </i>
+                        </div>
+                        {% else %}
+                        <img src="{{ message.post.contentUrl.url }}" style="width:100%; border-radius:8px;">
+                        {% endif %}
+
+                        <p><strong>{{ message.post.userID.username }}</strong>: {{ message.post.caption|default:"Shared a post" }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="msg-body" style="max-width: 250px">{{ message.message }}</div>
+                {% endif %}
                 <p class="sender">{{ message.sender }} • {{ message.created_at|time }}</p>
             </div>
-
             {% endif %}
             {% empty %}
             <div class="empty-state">
@@ -703,7 +744,8 @@
         </div>
 
         <!--   BLUE ARROW HERE     -->
-<div id="scrollToBottomArrow" class="arrow" style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); display: none;">
+        <div id="scrollToBottomArrow" class="arrow"
+             style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); display: none;">
             <a href="#{{ messages.last.id }}">
                 <i class="fa-solid fa-arrow-down"
                    style="font-size: 24px; color: #0095f6; background-color: rgba(38,38,38,0.8); border-radius: 50%; padding: 8px;"></i>
@@ -732,129 +774,161 @@
 
 {% block scripts %}
 <script>
-const ROOM_NAME = "{{ room_name.room_name|escapejs }}";   // aniq room_name string
-const USERNAME = "{{ request.user.username|escapejs }}";
+    const ROOM_NAME = "{{ room_name.room_name|escapejs }}";   // aniq room_name string
+    const USERNAME = "{{ request.user.username|escapejs }}";
 
-const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
-const socket = new WebSocket(`${protocol}${window.location.host}/ws/messages/${ROOM_NAME}/`);
+    const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    const socket = new WebSocket(`${protocol}${window.location.host}/ws/messages/${ROOM_NAME}/`);
 
-const messageForm = document.getElementById("msg-form");
-const messageInput = document.getElementById("message");
-const chatsDiv = document.getElementById("chats-container");
-const scrollArrow = document.getElementById("scrollToBottomArrow");
+    const messageForm = document.getElementById("msg-form");
+    const messageInput = document.getElementById("message");
+    const chatsDiv = document.getElementById("chats-container");
+    const scrollArrow = document.getElementById("scrollToBottomArrow");
 
-// auto-resize
-messageInput.addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = (this.scrollHeight) + 'px';
-});
-
-function scrollToBottom() {
-    const lastMessage = chatsDiv.lastElementChild;
-    if (lastMessage) lastMessage.scrollIntoView({ behavior: "smooth", block: "end" });
-}
-
-function toggleScrollArrow() {
-    const buffer = 10;
-    if (chatsDiv.scrollHeight - chatsDiv.scrollTop - chatsDiv.clientHeight > buffer) {
-        if (scrollArrow) scrollArrow.style.display = 'block';
-    } else {
-        if (scrollArrow) scrollArrow.style.display = 'none';
-    }
-}
-
-// initial checks
-chatsDiv.scrollTop = chatsDiv.scrollHeight;
-toggleScrollArrow();
-chatsDiv.addEventListener('scroll', toggleScrollArrow);
-
-// submit handler: send JSON to WS
-messageForm.addEventListener("submit", function(e) {
-    e.preventDefault();
-    const message = messageInput.value.trim();
-    if (!message) return;
-    const payload = {
-        message: message,
-        room_name: ROOM_NAME,
-        sender: USERNAME
-    };
-    socket.send(JSON.stringify(payload));
-    messageInput.value = "";
-    messageInput.style.height = 'auto';
-});
-
-// single unified onmessage handler
-socket.addEventListener("message", function(e) {
-    // payload shape: {"message": {...}}
-    const wrapped = JSON.parse(e.data);
-    const data = wrapped.message;
-    const isCurrentUser = data.sender === USERNAME;
-    const now = new Date();
-    const timeString = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-
-    // remove empty-state if exists
-    const emptyState = chatsDiv.querySelector('.empty-state');
-    if (emptyState) emptyState.remove();
-
-    const div = document.createElement("div");
-    div.classList.add("single-message");
-    if (isCurrentUser) div.classList.add("sent");
-
-    if (data.post_id) {
-        div.innerHTML = `
-          <div class="msg-body">
-            <div class="post-preview" data-post-id="${data.post_id}" data-type="${data.post_type || 'post'}">
-              <img src="${data.media_url}" style="width:200px;border-radius:8px;cursor:pointer">
-              <p><strong>${data.username}</strong>: ${escapeHtml(data.caption || '')}</p>
-            </div>
-          </div>
-          <p class="sender">${isCurrentUser ? 'Me' : escapeHtml(data.sender)} • ${timeString}</p>
-        `;
-    } else {
-        div.innerHTML = `
-          <div class="msg-body">${escapeHtml(data.message || '')}</div>
-          <p class="sender">${isCurrentUser ? 'Me' : escapeHtml(data.sender)} • ${timeString}</p>
-        `;
-    }
-
-    chatsDiv.appendChild(div);
-    div.scrollIntoView({behavior: "smooth"});
-    toggleScrollArrow();
-});
-
-// helper to avoid XSS in inserted text
-function escapeHtml(unsafe) {
-    return (''+unsafe).replace(/[&<>"'`=\/]/g, function(s) {
-        return ({
-            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'
-        })[s];
+    // auto-resize
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
     });
-}
 
-// handle clicking preview to open explore modal
-document.addEventListener("click", function(e){
-    const preview = e.target.closest(".post-preview");
-    if (!preview) return;
-
-    const postId = preview.dataset.postId;
-    const postType = preview.dataset.type;
-    const item = document.querySelector(`.explore-item[data-id="${postId}"][data-type="${postType}"]`);
-    if (item) {
-        const postData = {
-            type: item.dataset.type,
-            id: item.dataset.id,
-            url: item.dataset.url,
-            username: item.dataset.username,
-            userAvatar: item.dataset.userAvatar,
-            caption: item.dataset.caption,
-            likes: item.dataset.likes,
-            comments: item.dataset.comments,
-            location: item.dataset.location,
-            views: item.dataset.views
-        };
-        if (typeof openModal === 'function') openModal(postData);
+    function scrollToBottom() {
+        const lastMessage = chatsDiv.lastElementChild;
+        if (lastMessage) lastMessage.scrollIntoView({ behavior: "smooth", block: "end" });
     }
-});
-</script>
 
+    function toggleScrollArrow() {
+        const buffer = 10;
+        if (chatsDiv.scrollHeight - chatsDiv.scrollTop - chatsDiv.clientHeight > buffer) {
+            if (scrollArrow) scrollArrow.style.display = 'block';
+        } else {
+            if (scrollArrow) scrollArrow.style.display = 'none';
+        }
+    }
+
+    // initial checks
+    chatsDiv.scrollTop = chatsDiv.scrollHeight;
+    toggleScrollArrow();
+    chatsDiv.addEventListener('scroll', toggleScrollArrow);
+
+    // submit handler: send JSON to WS
+    messageForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+        if (!message) return;
+        const payload = {
+            message: message,
+            room_name: ROOM_NAME,
+            sender: USERNAME
+        };
+        socket.send(JSON.stringify(payload));
+        messageInput.value = "";
+        messageInput.style.height = 'auto';
+    });
+
+    // single unified onmessage handler
+    // messages.html - Fix the WebSocket message handling
+    // messages.html - Fix WebSocket message handling for persistent posts
+    socket.addEventListener("message", function(e) {
+        const wrapped = JSON.parse(e.data);
+        const data = wrapped.message;
+        const isCurrentUser = data.sender === USERNAME;
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+        // Remove empty-state if exists
+        const emptyState = chatsDiv.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+
+        const div = document.createElement("div");
+        div.classList.add("single-message");
+        if (isCurrentUser) div.classList.add("sent");
+
+        // Handle post shares with proper data and click functionality
+        if (data.post_id) {
+            div.innerHTML = `
+              <div class="msg-body">
+                <div class="post-preview" data-post-id="${data.post_id}" data-type="${data.post_type || 'post'}"
+                     style="cursor:pointer;max-width:200px">
+                  <img src="${data.media_url}" style="width:100%;border-radius:8px;">
+                  <p><strong>${data.username}</strong>: ${escapeHtml(data.caption || 'Shared a post')}</p>
+                </div>
+              </div>
+              <p class="sender">${isCurrentUser ? 'Me' : escapeHtml(data.sender)} • ${timeString}</p>
+            `;
+
+            // Add click handler to redirect to explore page
+            const preview = div.querySelector('.post-preview');
+            preview.addEventListener('click', function() {
+                window.location.href = `/explore/?post_id=${data.post_id}`;
+            });
+        } else {
+            // Regular message
+            div.innerHTML = `
+              <div class="msg-body">${escapeHtml(data.message || '')}</div>
+              <p class="sender">${isCurrentUser ? 'Me' : escapeHtml(data.sender)} • ${timeString}</p>
+            `;
+        }
+
+        chatsDiv.appendChild(div);
+        div.scrollIntoView({behavior: "smooth"});
+        toggleScrollArrow();
+    });
+
+    // helper to avoid XSS in inserted text
+    function escapeHtml(unsafe) {
+        return (''+unsafe).replace(/[&<>"'`=\/]/g, function(s) {
+            return ({
+                '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'
+            })[s];
+        });
+    }
+
+    // handle clicking preview to open explore modal
+    document.addEventListener("click", function(e){
+        const preview = e.target.closest(".post-preview");
+        if (!preview) return;
+
+        const postId = preview.dataset.postId;
+        const postType = preview.dataset.type;
+        const item = document.querySelector(`.explore-item[data-id="${postId}"][data-type="${postType}"]`);
+        if (item) {
+            const postData = {
+                type: item.dataset.type,
+                id: item.dataset.id,
+                url: item.dataset.url,
+                username: item.dataset.username,
+                userAvatar: item.dataset.userAvatar,
+                caption: item.dataset.caption,
+                likes: item.dataset.likes,
+                comments: item.dataset.comments,
+                location: item.dataset.location,
+                views: item.dataset.views
+            };
+            if (typeof openModal === 'function') openModal(postData);
+        }
+    });
+        // messages.html - Add click handler for persisted post previews
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle clicks on post previews (both WebSocket and persisted)
+        document.addEventListener('click', function(e) {
+            const preview = e.target.closest('.post-preview');
+            if (!preview) return;
+
+            const postId = preview.dataset.postId;
+            const postType = preview.dataset.type;
+
+            // Redirect to explore page with post_id parameter
+            window.location.href = `/explore/?post_id=${postId}`;
+        });
+
+        // Also make sure room previews show post information
+        const roomPreviews = document.querySelectorAll('.room-preview');
+        roomPreviews.forEach(preview => {
+            if (preview.textContent.includes('Shared a post') || preview.textContent.includes('Shared a reel')) {
+                preview.style.fontStyle = 'italic';
+                preview.style.color = 'var(--accent-blue)';
+            }
+        });
+    });
+</script>
 {% endblock %}

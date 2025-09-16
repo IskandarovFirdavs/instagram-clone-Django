@@ -683,30 +683,40 @@ def notification_view(request):
     return render(request, 'notifications.html', context)
 
 
-
+# views.py - Update your share_post view
 @csrf_exempt
 def share_post(request, room_name, post_id):
     if request.method == "POST" and request.user.is_authenticated:
-        room = Room.objects.get(room_name=room_name)
-        post = PostModel.objects.get(id=post_id)
+        try:
+            room = Room.objects.get(room_name=room_name)
+            post = PostModel.objects.get(id=post_id)
 
-        msg = Message.objects.create(room=room, sender=request.user, post=post)
+            # Create message with post reference
+            msg = Message.objects.create(
+                room=room,
+                sender=request.user,
+                post=post,
+                message=f"Shared a {post.post_type}"  # Add a default message
+            )
 
-        channel_layer = get_channel_layer()
-        data = {
-            "id": msg.id,
-            "room_name": room.room_name,
-            "sender": request.user.username,
-            "post_id": post.id,
-            "post_type": post.post_type,
-            "caption": post.caption,
-            "media_url": post.contentUrl.url,
-            "username": post.userID.username,
-        }
-        async_to_sync(channel_layer.group_send)(
-            f"room_{room.room_name}",
-            {"type": "send_message", "message": data}
-        )
-        return JsonResponse({"status": "ok", "message": data})
+            channel_layer = get_channel_layer()
+            data = {
+                "id": msg.id,
+                "room_name": room.room_name,
+                "sender": request.user.username,
+                "post_id": post.id,
+                "post_type": post.post_type,
+                "caption": post.caption,
+                "media_url": post.contentUrl.url,
+                "username": post.userID.username,
+                "message": f"Shared a {post.post_type}"  # Include message text
+            }
+
+            async_to_sync(channel_layer.group_send)(
+                f"room_{room.room_name}",
+                {"type": "send_message", "message": data}
+            )
+            return JsonResponse({"status": "ok", "message": data})
+        except (Room.DoesNotExist, PostModel.DoesNotExist):
+            return JsonResponse({"status": "error", "message": "Room or post not found"}, status=404)
     return JsonResponse({"status": "error"}, status=400)
-

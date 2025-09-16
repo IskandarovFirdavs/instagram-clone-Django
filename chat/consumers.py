@@ -58,33 +58,50 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.send(text_data=json.dumps({"message": response}))
 
+    # consumers.py - Fix the create_message method
+    # consumers.py - Ensure proper message saving for posts
     @database_sync_to_async
     def create_message(self, data):
-        # find room by room_name (string)
         try:
             room = Room.objects.get(room_name=data.get("room_name") or self.room_name)
-        except Room.DoesNotExist:
-            return
-
-        # find sender user
-        try:
             sender_user = UserModel.objects.get(username=data.get('sender'))
-        except UserModel.DoesNotExist:
-            return
 
-        # if this is a post share
-        if data.get("post_id"):
-            try:
-                post = PostModel.objects.get(id=data.get("post_id"))
-            except Exception:
-                post = None
-            # create message with post attached
-            Message.objects.create(room=room, sender=sender_user, post=post)
-            return
+            # If this is a post share
+            if data.get("post_id"):
+                try:
+                    post = PostModel.objects.get(id=data.get("post_id"))
+                    # Create message with post attached - this ensures persistence
+                    message_obj = Message.objects.create(
+                        room=room,
+                        sender=sender_user,
+                        post=post,
+                        message=data.get("message", f"Shared a {post.post_type}")
+                    )
+                    # Return the complete data for WebSocket broadcast
+                    return {
+                        "id": message_obj.id,
+                        "sender": sender_user.username,
+                        "post_id": post.id,
+                        "post_type": post.post_type,
+                        "caption": post.caption,
+                        "media_url": post.contentUrl.url,
+                        "username": post.userID.username,
+                        "message": data.get("message", f"Shared a {post.post_type}")
+                    }
+                except PostModel.DoesNotExist:
+                    # Fallback if post doesn't exist
+                    message_obj = Message.objects.create(
+                        room=room,
+                        sender=sender_user,
+                        message=data.get("message", "Shared content")
+                    )
+                    return {"sender": sender_user.username, "message": data.get("message", "Shared content")}
+            else:
+                # Regular text message
+                text = data.get("message")
+                if text:
+                    message_obj = Message.objects.create(room=room, message=text, sender=sender_user)
+                    return {"sender": sender_user.username, "message": text}
 
-        # else if text message
-        text = data.get("message")
-        if text:
-            # optional: prevent exact duplicate messages (your previous logic)
-            if not Message.objects.filter(message=text, sender=sender_user, room=room).exists():
-                Message.objects.create(room=room, message=text, sender=sender_user)
+        except (Room.DoesNotExist, UserModel.DoesNotExist):
+            return None
